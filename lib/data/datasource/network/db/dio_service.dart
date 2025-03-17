@@ -5,6 +5,7 @@ import '../../../../core/helper/dialog_helper.dart';
 
 enum UrlType {
   baseUrl,
+  customUrl, // For handling complete URLs
 }
 
 class DioService {
@@ -13,7 +14,9 @@ class DioService {
   static String getBaseUrl(UrlType urlType) {
     switch (urlType) {
       case UrlType.baseUrl:
-        return "https://reqres.in/api";
+        return "https://pokeapi.co/api/v2";
+      case UrlType.customUrl:
+        return ""; // Empty string as we'll use the full path for custom URLs
     }
   }
 
@@ -26,6 +29,12 @@ class DioService {
     _dio.interceptors.addAll([
       PrettyDioLogger(
         request: false,
+        // requestHeader: true,
+        // requestBody: true,
+        // responseHeader: true,
+        responseBody: false,
+        // error: true,
+        // compact: true,
       ),
       _TokenInterceptor(),
     ]);
@@ -36,8 +45,10 @@ class DioService {
     Map<String, dynamic>? queryParameters,
     Options? options,
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false, // Flag to indicate if path is a complete URL
   }) async {
-    var url = getBaseUrl(urlType) + path;
+    // If isFullUrl is true, use the path as is, otherwise combine with base URL
+    var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
     try {
       final response = await _dio.get(
@@ -58,9 +69,11 @@ class DioService {
     Map<String, dynamic>? queryParameters,
     Options? options,
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.post(url,
           data: data, queryParameters: queryParameters, options: options);
@@ -77,9 +90,11 @@ class DioService {
     Map<String, dynamic>? queryParameters,
     Options? options,
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.put(url,
           data: data, queryParameters: queryParameters, options: options);
@@ -96,9 +111,11 @@ class DioService {
     Map<String, dynamic>? queryParameters,
     Options? options,
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.patch(url,
           data: data, queryParameters: queryParameters, options: options);
@@ -114,9 +131,11 @@ class DioService {
     Map<String, dynamic>? queryParameters,
     Options? options,
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.delete(url,
           queryParameters: queryParameters, options: options);
@@ -131,9 +150,11 @@ class DioService {
     String path,
     FormData formData, {
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.post(
         url,
@@ -153,9 +174,11 @@ class DioService {
     String path,
     FormData formData, {
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.put(
         url,
@@ -175,9 +198,11 @@ class DioService {
     String path,
     FormData formData, {
     UrlType urlType = UrlType.baseUrl,
+    bool isFullUrl = false,
   }) async {
     try {
-      var url = getBaseUrl(urlType) + path;
+      // If isFullUrl is true, use the path as is, otherwise combine with base URL
+      var url = isFullUrl ? path : getBaseUrl(urlType) + path;
 
       final response = await _dio.patch(
         url,

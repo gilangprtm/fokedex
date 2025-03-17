@@ -43,29 +43,42 @@ class AppEnvironment {
 
   /// Memuat konfigurasi berdasarkan environment
   void _loadConfig() {
+    // Base PokeAPI URL for all environments
+    const String pokeApiBaseUrl = 'https://pokeapi.co/api/v2';
+
     switch (_environment) {
       case Environment.development:
         _config.addAll({
-          'apiUrl': 'https://dev-api.example.com',
+          'apiUrl': pokeApiBaseUrl,
           'enableDetailedLogs': true,
           'logLevel': 'debug',
           'maxLogHistory': 1000,
+          'pokemonLimit': 20, // Limit for pagination
+          'cacheEnabled': true,
+          'cacheDuration': const Duration(days: 7), // Cache data for 7 days
         });
         break;
       case Environment.staging:
         _config.addAll({
-          'apiUrl': 'https://staging-api.example.com',
+          'apiUrl': pokeApiBaseUrl,
           'enableDetailedLogs': true,
           'logLevel': 'info',
           'maxLogHistory': 500,
+          'pokemonLimit': 20,
+          'cacheEnabled': true,
+          'cacheDuration': const Duration(days: 7),
         });
         break;
       case Environment.production:
         _config.addAll({
-          'apiUrl': 'https://api.example.com',
+          'apiUrl': pokeApiBaseUrl,
           'enableDetailedLogs': false,
           'logLevel': 'error',
           'maxLogHistory': 100,
+          'pokemonLimit': 20,
+          'cacheEnabled': true,
+          'cacheDuration':
+              const Duration(days: 14), // Cache longer in production
         });
         break;
     }

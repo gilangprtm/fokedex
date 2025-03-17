@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+import '../../../../data/datasource/models/evolution_stage_model.dart';
+import '../../pokemon_detail/pokemon_detail_page.dart';
+
+class PokemonEvolutionWidget extends StatelessWidget {
+  final List<EvolutionStage> evolutionStages;
+
+  const PokemonEvolutionWidget({Key? key, required this.evolutionStages})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (evolutionStages.isEmpty) {
+      return const Center(
+        child: Text('No evolution data available'),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: evolutionStages.length == 1
+          ? _buildSingleEvolution()
+          : _buildEvolutionChain(context),
+    );
+  }
+
+  Widget _buildSingleEvolution() {
+    final stage = evolutionStages.first;
+
+    return Column(
+      children: [
+        Text(
+          'This Pokémon does not evolve',
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildPokemonAvatar(null, stage),
+      ],
+    );
+  }
+
+  Widget _buildEvolutionChain(BuildContext context) {
+    return Column(
+      children: [
+        for (int i = 0; i < evolutionStages.length; i++)
+          Column(
+            children: [
+              _buildPokemonAvatar(context, evolutionStages[i]),
+
+              // Show evolution details between stages
+              if (i < evolutionStages.length - 1)
+                Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    Icon(Icons.arrow_downward, color: Colors.grey.shade600),
+                    const SizedBox(height: 8),
+                    if (evolutionStages[i + 1].evolutionDetails.isNotEmpty)
+                      Text(
+                        evolutionStages[i + 1].evolutionDetails.join(', '),
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPokemonAvatar(BuildContext? context, EvolutionStage stage) {
+    return GestureDetector(
+      onTap: context != null
+          ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PokemonDetailPage(
+                    pokemonId: stage.id.toString(),
+                    pokemonName: stage.name,
+                  ),
+                ),
+              );
+            }
+          : null,
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.white,
+            child: ClipOval(
+              child: Image.network(
+                stage.imageUrl,
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.catching_pokemon,
+                    size: 40,
+                    color: Colors.grey.shade400,
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _capitalizeFirstLetter(stage.name),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            '#${stage.id.toString().padLeft(3, '0')}',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text.substring(0, 1).toUpperCase() + text.substring(1);
+  }
+}

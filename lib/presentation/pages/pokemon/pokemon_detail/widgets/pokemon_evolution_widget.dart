@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../../../data/datasource/models/evolution_stage_model.dart';
-import '../../pokemon_detail/pokemon_detail_page.dart';
+import '../../../../../core/utils/mahas.dart';
+import '../../../../../data/datasource/models/evolution_stage_model.dart';
+import '../../../../routes/app_routes.dart';
 
 class PokemonEvolutionWidget extends StatelessWidget {
   final List<EvolutionStage> evolutionStages;
+  final String pokemonId;
 
-  const PokemonEvolutionWidget({Key? key, required this.evolutionStages})
-      : super(key: key);
+  const PokemonEvolutionWidget({
+    super.key,
+    required this.evolutionStages,
+    required this.pokemonId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,16 +88,14 @@ class PokemonEvolutionWidget extends StatelessWidget {
 
   Widget _buildPokemonAvatar(BuildContext? context, EvolutionStage stage) {
     return GestureDetector(
-      onTap: context != null
+      onTap: stage.id != pokemonId
           ? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PokemonDetailPage(
-                    pokemonId: stage.id.toString(),
-                    pokemonName: stage.name,
-                  ),
-                ),
+              Mahas.routeTo(
+                AppRoutes.pokemonDetail,
+                arguments: {
+                  'id': stage.id,
+                  'name': stage.name,
+                },
               );
             }
           : null,

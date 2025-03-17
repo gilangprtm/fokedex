@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../../core/utils/pokemon_type_utils.dart';
+import '../../../../../core/utils/pokemon_type_utils.dart';
 
 class PokemonTypeBadge extends StatelessWidget {
   final String typeName;
 
-  const PokemonTypeBadge({Key? key, required this.typeName}) : super(key: key);
+  const PokemonTypeBadge({super.key, required this.typeName});
 
   @override
   Widget build(BuildContext context) {

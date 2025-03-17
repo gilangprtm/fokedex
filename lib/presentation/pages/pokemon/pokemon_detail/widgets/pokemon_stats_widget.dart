@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../../data/datasource/models/pokemon_model.dart';
 
 class PokemonStatsWidget extends StatelessWidget {
   final List<PokemonStat> stats;
 
-  const PokemonStatsWidget({Key? key, required this.stats}) : super(key: key);
+  const PokemonStatsWidget({super.key, required this.stats});
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_pokedex/core/utils/mahas.dart';
 import '../../core/base/base_provider.dart';
 import '../../data/datasource/models/pokemon_model.dart';
 import '../../data/datasource/models/evolution_stage_model.dart';
@@ -24,9 +26,11 @@ class PokemonDetailProvider extends BaseProvider {
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
-  // Untuk menyimpan ID Pokemon yang sedang ditampilkan
+  // Untuk menyimpan ID dan Nama Pokemon yang sedang ditampilkan
   String _currentPokemonId = '';
   String get currentPokemonId => _currentPokemonId;
+  String _currentPokemonName = '';
+  String get currentPokemonName => _currentPokemonName;
 
   // Data species Pokemon
   Map<String, dynamic>? _speciesData;
@@ -36,17 +40,17 @@ class PokemonDetailProvider extends BaseProvider {
   Map<String, dynamic>? _evolutionData;
   Map<String, dynamic>? get evolutionData => _evolutionData;
 
-  // Constructor with optional parameter for initialization
-  DetailProvider({String? pokemonId}) {
-    if (pokemonId != null) {
-      loadPokemonDetail(pokemonId);
-    }
-  }
-
   @override
   void onInit() {
     super.onInit();
+    getArgs();
+    loadPokemonDetail(_currentPokemonId);
     // Any additional initialization
+  }
+
+  void getArgs() {
+    _currentPokemonId = Mahas.argument<String>('id') ?? '';
+    _currentPokemonName = Mahas.argument<String>('name') ?? '';
   }
 
   // Load detail Pokemon berdasarkan ID atau nama
@@ -64,7 +68,7 @@ class PokemonDetailProvider extends BaseProvider {
 
       try {
         // Load Pokemon detail
-        _pokemon = await _pokemonService.getPokemonDetail(idOrName);
+        _pokemon = await _pokemonService.getPokemonDetail(idOrName.toString());
 
         // Load species data if available
         if (_pokemon?.species != null) {

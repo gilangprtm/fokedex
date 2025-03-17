@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/utils/pokemon_type_utils.dart';
+import '../../../../../core/utils/pokemon_type_utils.dart';
 
 /// A widget that displays all Pokemon type icons in a grid
 class TypeIconGrid extends StatelessWidget {

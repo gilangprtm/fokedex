@@ -1,16 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
-import '../../pokemon_detail/pokemon_detail_page.dart';
+import 'package:provider/provider.dart';
+import '../../../../../data/datasource/models/api_response_model.dart';
+import '../../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../../core/theme/app_color.dart';
+import '../../../../../core/utils/pokemon_type_utils.dart';
+import '../../../../providers/pokemon_list_provider.dart';
 
 class PokemonGridItem extends StatelessWidget {
   final ResourceListItem pokemon;
+  final VoidCallback? onTap;
 
-  const PokemonGridItem({Key? key, required this.pokemon}) : super(key: key);
+  const PokemonGridItem({
+    super.key,
+    required this.pokemon,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     // Extract ID from URL
     final pokemonId = pokemon.id;
+
+    // Get Pokemon details from provider
+    final provider = context.watch<PokemonListProvider>();
+    final pokemonDetails = provider.getPokemonDetails(pokemonId);
+
+    // Get primary type color
+    final Color typeColor = pokemonDetails?.types?.isNotEmpty == true
+        ? PokemonTypeUtils.getTypeColor(pokemonDetails!.types!.first.type.name)
+        : AppColors.pokemonRed;
 
     // Image URL for the Pokemon
     final imageUrl =
@@ -24,17 +42,7 @@ class PokemonGridItem extends StatelessWidget {
         pokemon.name.substring(0, 1).toUpperCase() + pokemon.name.substring(1);
 
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PokemonDetailPage(
-              pokemonId: pokemonId.toString(),
-              pokemonName: pokemon.name,
-            ),
-          ),
-        );
-      },
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -77,14 +85,15 @@ class PokemonGridItem extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Hero(
-                  tag: 'pokemon-image-$pokemonId',
+                  tag: 'pokemon-${pokemonId}',
                   child: Image.network(
                     imageUrl,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'assets/images/pokeball.png',
-                        fit: BoxFit.contain,
+                      return const Icon(
+                        Icons.catching_pokemon,
+                        size: 60,
+                        color: AppColors.pokemonGray,
                       );
                     },
                     loadingBuilder: (context, child, loadingProgress) {
@@ -95,6 +104,9 @@ class PokemonGridItem extends StatelessWidget {
                               ? loadingProgress.cumulativeBytesLoaded /
                                   loadingProgress.expectedTotalBytes!
                               : null,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            typeColor.withOpacity(0.7),
+                          ),
                         ),
                       );
                     },
@@ -107,7 +119,7 @@ class PokemonGridItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: typeColor,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),

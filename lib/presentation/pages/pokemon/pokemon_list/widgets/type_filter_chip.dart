@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/utils/pokemon_type_utils.dart';
+import '../../../../../core/utils/pokemon_type_utils.dart';
 
 class TypeFilterChip extends StatelessWidget {
   final String typeName;
@@ -7,11 +7,11 @@ class TypeFilterChip extends StatelessWidget {
   final VoidCallback onSelected;
 
   const TypeFilterChip({
-    Key? key,
+    super.key,
     required this.typeName,
     required this.isSelected,
     required this.onSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

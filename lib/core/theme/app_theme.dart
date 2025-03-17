@@ -8,7 +8,7 @@ import 'app_typografi.dart';
 /// This class provides a consistent theme system for both light and dark modes.
 class AppTheme {
   // Common theme properties
-  static const double _borderRadius = 10.0;
+  static const double _borderRadius = 12.0;
   static const double _elevation = 2.0;
   static const double borderRadius = _borderRadius;
   static const double elevation = _elevation;
@@ -36,22 +36,23 @@ class AppTheme {
     borderRadius: BorderRadius.circular(_borderRadius),
   );
 
-  // Light Theme
+  // Light Theme (Pokéball Theme)
   static final ThemeData lightTheme = ThemeData(
-    useMaterial3: false,
-    fontFamily: GoogleFonts.poppins().fontFamily,
+    useMaterial3: true,
+    fontFamily: AppTypography.bodyFontFamily,
     brightness: Brightness.light,
-    primaryColor: AppColors.primaryColor,
+    primaryColor: AppColors.pokemonRed,
     colorScheme: const ColorScheme.light(
-      primary: AppColors.primaryColor,
+      primary: AppColors.pokemonRed,
       primaryContainer: AppColors.primaryLightColor,
-      secondary: AppColors.lightSecondaryColor,
-      secondaryContainer: AppColors.lightSecondaryLightColor,
-      surface: AppColors.lightSurfaceColor,
+      secondary: AppColors.pokemonBlack,
+      secondaryContainer: AppColors.secondaryLightColor,
+      tertiary: AppColors.pokemonYellow,
+      surface: AppColors.pokemonWhite,
       error: AppColors.errorColor,
       onPrimary: Colors.white,
-      onSecondary: AppColors.lightTextPrimaryColor,
-      onSurface: AppColors.lightTextPrimaryColor,
+      onSecondary: Colors.white,
+      onSurface: AppColors.pokemonBlack,
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: AppColors.lightBackgroundColor,
@@ -60,17 +61,25 @@ class AppTheme {
       color: AppColors.lightCardColor,
       shape: _cardShape,
       elevation: _elevation,
+      shadowColor: AppColors.pokemonGray.withOpacity(0.2),
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.primaryColor,
+      backgroundColor: AppColors.pokemonRed,
       foregroundColor: Colors.white,
       titleTextStyle: AppTypography.headline6.copyWith(color: Colors.white),
       elevation: 0,
+      shadowColor: AppColors.pokemonBlack.withOpacity(0.3),
     ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: AppColors.lightCardColor,
-      selectedItemColor: AppColors.primaryColor,
-      unselectedItemColor: AppColors.lightTextSecondaryColor,
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: AppColors.pokemonWhite,
+      selectedItemColor: AppColors.pokemonRed,
+      unselectedItemColor: AppColors.pokemonGray,
+      type: BottomNavigationBarType.fixed,
+      elevation: 8,
+      selectedLabelStyle: AppTypography.caption.copyWith(
+        fontWeight: FontWeight.bold,
+      ),
+      unselectedLabelStyle: AppTypography.caption,
     ),
     textTheme: TextTheme(
       displayLarge: AppTypography.headline1
@@ -102,17 +111,30 @@ class AppTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: AppColors.pokemonRed,
         textStyle: AppTypography.button,
         shape: _buttonShape,
-        minimumSize: const Size(88, 40),
+        minimumSize: const Size(88, 44),
         padding: const EdgeInsets.symmetric(
             horizontal: spacing16, vertical: spacing8),
+        elevation: 2,
+        shadowColor: AppColors.pokemonRed.withOpacity(0.4),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
+        foregroundColor: AppColors.pokemonRed,
+        textStyle: AppTypography.button,
         minimumSize: const Size(88, 40),
+        shape: _buttonShape,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.pokemonRed,
+        textStyle: AppTypography.button,
+        side: const BorderSide(color: AppColors.pokemonRed, width: 2),
+        minimumSize: const Size(88, 44),
         shape: _buttonShape,
       ),
     ),
@@ -131,7 +153,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(_borderRadius),
-        borderSide: const BorderSide(color: AppColors.primaryColor),
+        borderSide: const BorderSide(color: AppColors.pokemonRed, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(_borderRadius),
@@ -139,10 +161,13 @@ class AppTheme {
       ),
       labelStyle: AppTypography.formLabel
           .copyWith(color: AppColors.lightTextSecondaryColor),
+      floatingLabelStyle:
+          AppTypography.formLabel.copyWith(color: AppColors.pokemonRed),
       errorStyle: AppTypography.caption.copyWith(color: AppColors.errorColor),
     ),
     dialogTheme: DialogTheme(
       shape: _dialogShape,
+      backgroundColor: AppColors.pokemonWhite,
       titleTextStyle: AppTypography.headline6
           .copyWith(color: AppColors.lightTextPrimaryColor),
       contentTextStyle: AppTypography.bodyText1
@@ -150,7 +175,7 @@ class AppTheme {
       actionsPadding: const EdgeInsets.all(spacing16),
     ),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.darkSurfaceColor,
+      backgroundColor: AppColors.pokemonBlack,
       contentTextStyle: AppTypography.bodyText1.copyWith(color: Colors.white),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
@@ -158,78 +183,89 @@ class AppTheme {
       ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: AppColors.lightSurfaceColor,
+      backgroundColor: AppColors.pokemonWhite,
       shape: RoundedRectangleBorder(
         borderRadius:
-            BorderRadius.vertical(top: Radius.circular(_borderRadius)),
+            BorderRadius.vertical(top: Radius.circular(_borderRadius * 2)),
       ),
     ),
-    drawerTheme: const DrawerThemeData(
-      backgroundColor: AppColors.lightSurfaceColor,
-      elevation: _elevation,
-    ),
-    tabBarTheme: const TabBarTheme(
-      labelColor: AppColors.primaryColor,
-      unselectedLabelColor: AppColors.lightTextSecondaryColor,
-      labelStyle: AppTypography.button,
-      unselectedLabelStyle: AppTypography.button,
+    dividerTheme: const DividerThemeData(
+      color: AppColors.lightDividerColor,
+      thickness: 1,
+      space: 1,
     ),
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.lightSecondaryColor,
       labelStyle: AppTypography.bodyText2
           .copyWith(color: AppColors.lightTextPrimaryColor),
-      selectedColor: AppColors.primaryColor,
-      secondarySelectedColor: AppColors.primaryColor,
-    ),
-    switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryColor;
-        }
-        return AppColors.lightTextSecondaryColor;
-      }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryLightColor;
-        }
-        return AppColors.lightSecondaryColor;
-      }),
-    ),
-    radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryColor;
-        }
-        return AppColors.lightTextSecondaryColor;
-      }),
+      selectedColor: AppColors.pokemonRed,
+      secondarySelectedColor: AppColors.pokemonRed,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_borderRadius),
+      ),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryColor;
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return AppColors.pokemonRed;
         }
         return AppColors.lightTextSecondaryColor;
       }),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+    ),
+    tabBarTheme: TabBarTheme(
+      labelColor: AppColors.pokemonRed,
+      unselectedLabelColor: AppColors.pokemonGray,
+      labelStyle: AppTypography.button,
+      unselectedLabelStyle: AppTypography.button,
+      indicator: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.pokemonRed,
+            width: 3,
+          ),
+        ),
+      ),
+    ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.pokemonRed,
+      circularTrackColor: AppColors.lightBackgroundColor,
+      linearTrackColor: AppColors.lightBackgroundColor,
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: AppColors.pokemonRed,
+      foregroundColor: Colors.white,
+      elevation: 4,
+      highlightElevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_borderRadius),
+      ),
     ),
     visualDensity: VisualDensity.adaptivePlatformDensity,
   );
 
-  // Dark Theme
+  // Dark Theme (Dark Pokéball Theme)
   static final ThemeData darkTheme = ThemeData(
-    useMaterial3: false,
-    fontFamily: GoogleFonts.poppins().fontFamily,
+    useMaterial3: true,
+    fontFamily: AppTypography.bodyFontFamily,
     brightness: Brightness.dark,
-    primaryColor: AppColors.primaryColor,
+    primaryColor: AppColors.pokemonRed,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.primaryColor,
-      primaryContainer: AppColors.primaryLightColor,
-      secondary: AppColors.darkSecondaryColor,
-      secondaryContainer: AppColors.darkSecondaryLightColor,
+      primary: AppColors.pokemonRed,
+      primaryContainer: AppColors.primaryDarkColor,
+      secondary: AppColors.pokemonGray,
+      secondaryContainer: AppColors.secondaryLightColor,
+      tertiary: AppColors.pokemonYellow,
       surface: AppColors.darkSurfaceColor,
+      background: AppColors.darkBackgroundColor,
       error: AppColors.errorColor,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Colors.white,
+      onBackground: Colors.white,
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: AppColors.darkBackgroundColor,
@@ -240,155 +276,37 @@ class AppTheme {
       elevation: _elevation,
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.primaryColor,
+      backgroundColor: AppColors.pokemonRed,
       foregroundColor: Colors.white,
       titleTextStyle: AppTypography.headline6.copyWith(color: Colors.white),
       elevation: 0,
     ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.darkCardColor,
-      selectedItemColor: AppColors.primaryLightColor,
-      unselectedItemColor: Colors.white70,
-    ),
-    textTheme: TextTheme(
-      displayLarge: AppTypography.headline1
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      displayMedium: AppTypography.headline2
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      displaySmall: AppTypography.headline3
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      headlineMedium: AppTypography.headline4
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      headlineSmall: AppTypography.headline5
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      titleLarge: AppTypography.headline6
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      titleMedium: AppTypography.subtitle1
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      titleSmall: AppTypography.subtitle2
-          .copyWith(color: AppColors.darkTextSecondaryColor),
-      bodyLarge: AppTypography.bodyText1
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      bodyMedium: AppTypography.bodyText2
-          .copyWith(color: AppColors.darkTextSecondaryColor),
-      labelLarge: AppTypography.button.copyWith(color: Colors.black),
-      bodySmall: AppTypography.caption
-          .copyWith(color: AppColors.darkTextSecondaryColor),
-      labelSmall: AppTypography.overline
-          .copyWith(color: AppColors.darkTextSecondaryColor),
+      selectedItemColor: AppColors.pokemonYellow,
+      unselectedItemColor: AppColors.darkTextSecondaryColor,
+      selectedLabelStyle: AppTypography.caption.copyWith(
+        fontWeight: FontWeight.bold,
+      ),
+      unselectedLabelStyle: AppTypography.caption,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: AppColors.pokemonRed,
         textStyle: AppTypography.button,
         shape: _buttonShape,
-        minimumSize: const Size(88, 40),
+        minimumSize: const Size(88, 44),
         padding: const EdgeInsets.symmetric(
             horizontal: spacing16, vertical: spacing8),
+        elevation: 2,
       ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        minimumSize: const Size(88, 40),
-        shape: _buttonShape,
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColors.darkSurfaceColor,
-      contentPadding: const EdgeInsets.symmetric(
-          horizontal: spacing16, vertical: spacing12),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_borderRadius),
-        borderSide: const BorderSide(color: AppColors.darkBorderColor),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_borderRadius),
-        borderSide: const BorderSide(color: AppColors.darkBorderColor),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_borderRadius),
-        borderSide: const BorderSide(color: AppColors.primaryColor),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_borderRadius),
-        borderSide: const BorderSide(color: AppColors.errorColor),
-      ),
-      labelStyle: AppTypography.formLabel
-          .copyWith(color: AppColors.darkTextSecondaryColor),
-      errorStyle: AppTypography.caption.copyWith(color: AppColors.errorColor),
-    ),
-    dialogTheme: DialogTheme(
-      shape: _dialogShape,
-      titleTextStyle: AppTypography.headline6
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      contentTextStyle: AppTypography.bodyText1
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      actionsPadding: const EdgeInsets.all(spacing16),
-    ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.darkSurfaceColor,
-      contentTextStyle: AppTypography.bodyText1.copyWith(color: Colors.white),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_borderRadius),
-      ),
-    ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: AppColors.darkSurfaceColor,
-      shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(_borderRadius)),
-      ),
-    ),
-    drawerTheme: const DrawerThemeData(
-      backgroundColor: AppColors.darkSurfaceColor,
-      elevation: _elevation,
-    ),
-    tabBarTheme: const TabBarTheme(
-      labelColor: AppColors.primaryColor,
-      unselectedLabelColor: AppColors.darkTextSecondaryColor,
-      labelStyle: AppTypography.button,
-      unselectedLabelStyle: AppTypography.button,
-    ),
-    chipTheme: ChipThemeData(
-      backgroundColor: AppColors.darkSecondaryColor,
-      labelStyle: AppTypography.bodyText2
-          .copyWith(color: AppColors.darkTextPrimaryColor),
-      selectedColor: AppColors.primaryColor,
-      secondarySelectedColor: AppColors.primaryColor,
-    ),
-    switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryColor;
-        }
-        return AppColors.darkTextSecondaryColor;
-      }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryLightColor;
-        }
-        return AppColors.darkSecondaryColor;
-      }),
-    ),
-    radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryColor;
-        }
-        return AppColors.darkTextSecondaryColor;
-      }),
-    ),
-    checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryColor;
-        }
-        return AppColors.darkTextSecondaryColor;
-      }),
     ),
     visualDensity: VisualDensity.adaptivePlatformDensity,
   );
+
+  // Method to get the current theme based on brightness
+  static ThemeData getTheme(Brightness brightness) {
+    return brightness == Brightness.light ? lightTheme : darkTheme;
+  }
 }

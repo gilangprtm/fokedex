@@ -1,225 +1,222 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/base/provider_widget.dart';
+import '../../../core/theme/app_typografi.dart';
+import '../../../core/utils/mahas.dart';
 import '../../providers/home_provider.dart';
-import 'widgets/pokemon_grid_item.dart';
-import 'widgets/type_filter_chip.dart';
-import 'widgets/type_icon_grid.dart';
+import '../../../core/mahas/mahas_type.dart';
+import '../../routes/app_routes.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ProviderPage<HomeProvider>(
       createProvider: () => HomeProvider(),
-      builder: (context, provider) => _buildHomePage(context, provider),
-    );
-  }
-
-  Widget _buildHomePage(BuildContext context, HomeProvider provider) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pokédex'),
-        elevation: 0,
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        actions: [
-          // Add a button to toggle type icons display
-          IconButton(
-            icon: Icon(provider.showTypeIcons ? Icons.grid_off : Icons.grid_on),
-            onPressed: () => provider.toggleTypeIcons(),
-            tooltip: 'Toggle Type Icons',
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: provider.searchController,
-              decoration: InputDecoration(
-                hintText: 'Search Pokémon',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: provider.searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => provider.clearSearch(),
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onChanged: provider.onSearchChanged,
-            ),
-          ),
-
-          // Type filter
-          _buildTypeFilter(context, provider),
-
-          // Type Icons Grid (conditionally shown)
-          if (provider.showTypeIcons)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pokémon Type Icons',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  const TypeIconGrid(),
-                ],
-              ),
+      builder: (context, provider) => Scaffold(
+        backgroundColor: Colors.white,
+        body: CustomScrollView(
+          slivers: [
+            // Search Header
+            SliverToBoxAdapter(
+              child: _buildSearchHeader(context),
             ),
 
-          // Pokemon grid
-          Expanded(
-            child: _buildPokemonGrid(context, provider),
-          ),
-        ],
+            // Category Buttons
+            SliverToBoxAdapter(
+              child: _buildCategoryButtons(context),
+            ),
+
+            // Bottom Padding
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 24),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTypeFilter(BuildContext context, HomeProvider provider) {
-    if (provider.pokemonTypes.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
+  Widget _buildSearchHeader(BuildContext context) {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 60, 16, 24),
+      decoration: BoxDecoration(
+        color: Colors.redAccent,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(0),
+          bottomRight: Radius.circular(0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // All types option
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: FilterChip(
-              label: const Text('All'),
-              selected: provider.activeTypeFilter == null,
-              onSelected: (_) => provider.filterByType(null),
-              backgroundColor: Colors.grey.shade200,
-              selectedColor:
-                  Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          Text(
+            'What Pokémon\nare you looking for?',
+            style: AppTypography.headline5.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
-
-          // Type filters
-          ...provider.pokemonTypes.map((type) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: TypeFilterChip(
-                  typeName: type.name,
-                  isSelected: provider.activeTypeFilter == type.name,
-                  onSelected: () => provider.filterByType(type.name),
+          const SizedBox(height: 24),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
                 ),
-              )),
+              ],
+            ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search Pokemon, Move, Ability, etc',
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+              ),
+              onSubmitted: (value) {
+                if (value.isNotEmpty) {
+                  Mahas.routeTo('/pokemon', arguments: {'search': value});
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPokemonGrid(BuildContext context, HomeProvider provider) {
-    if (provider.hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading Pokémon',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(provider.errorMessage),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => provider.loadInitialData(),
-              child: const Text('Try Again'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (provider.pokemonList.isEmpty && provider.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    final pokemonList = provider.filteredPokemonList;
-
-    if (pokemonList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.catching_pokemon, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'No Pokémon found',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            if (provider.activeTypeFilter != null ||
-                provider.searchController.text.isNotEmpty)
-              ElevatedButton(
-                onPressed: () => provider.resetFilters(),
-                child: const Text('Clear Filters'),
+  Widget _buildCategoryButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildCategoryButton(
+                  context,
+                  'Pokedex',
+                  Colors.greenAccent,
+                  () => Mahas.routeTo(AppRoutes.pokemonList),
+                ),
               ),
-          ],
-        ),
-      );
-    }
-
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: () => provider.loadPokemonList(refresh: true),
-          child: GridView.builder(
-            controller: provider.scrollController,
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: pokemonList.length +
-                (provider.hasMoreData && provider.activeTypeFilter == null
-                    ? 1
-                    : 0),
-            itemBuilder: (context, index) {
-              if (index == pokemonList.length) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              final pokemon = pokemonList[index];
-              return PokemonGridItem(pokemon: pokemon);
-            },
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildCategoryButton(
+                  context,
+                  'Moves',
+                  Colors.redAccent,
+                  () {
+                    // Navigate to moves page
+                  },
+                ),
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildCategoryButton(
+                  context,
+                  'Abilities',
+                  Colors.blueAccent,
+                  () {
+                    // Navigate to abilities page
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildCategoryButton(
+                  context,
+                  'Items',
+                  Colors.amberAccent,
+                  () {
+                    // Navigate to items page
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildCategoryButton(
+                  context,
+                  'Locations',
+                  Colors.purpleAccent,
+                  () {
+                    // Navigate to locations page
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildCategoryButton(
+                  context,
+                  'Type Charts',
+                  Colors.brown,
+                  () {
+                    // Navigate to type charts page
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-        // Loading indicator at the top
-        if (provider.isLoading && provider.pokemonList.isNotEmpty)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.white.withOpacity(0.7),
-              child: const LinearProgressIndicator(),
+  Widget _buildCategoryButton(
+    BuildContext context,
+    String title,
+    Color color,
+    VoidCallback onPressed,
+  ) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: MahasBorderRadius.large,
+        ),
+        minimumSize: const Size(double.infinity, 60),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: AppTypography.button.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
-      ],
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_forward,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

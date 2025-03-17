@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../../data/datasource/models/pokemon_model.dart';
 
 class PokemonMovesWidget extends StatefulWidget {
   final List<PokemonMove> moves;
 
-  const PokemonMovesWidget({Key? key, required this.moves}) : super(key: key);
+  const PokemonMovesWidget({super.key, required this.moves});
 
   @override
   State<PokemonMovesWidget> createState() => _PokemonMovesWidgetState();

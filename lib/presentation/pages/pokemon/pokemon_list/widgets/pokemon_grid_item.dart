@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../data/datasource/models/api_response_model.dart';
-import '../../../../../data/datasource/models/pokemon_model.dart';
 import '../../../../../core/theme/app_color.dart';
 import '../../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../providers/pokemon_list_provider.dart';

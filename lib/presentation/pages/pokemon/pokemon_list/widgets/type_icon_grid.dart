@@ -3,7 +3,7 @@ import '../../../../../core/utils/pokemon_type_utils.dart';
 
 /// A widget that displays all Pokemon type icons in a grid
 class TypeIconGrid extends StatelessWidget {
-  const TypeIconGrid({Key? key}) : super(key: key);
+  const TypeIconGrid({super.key});
 
   @override
   Widget build(BuildContext context) {

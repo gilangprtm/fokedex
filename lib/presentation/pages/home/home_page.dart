@@ -41,9 +41,9 @@ class HomePage extends StatelessWidget {
   Widget _buildSearchHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 60, 16, 24),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.redAccent,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(0),
           bottomRight: Radius.circular(0),
         ),
@@ -72,11 +72,11 @@ class HomePage extends StatelessWidget {
               ],
             ),
             child: TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search Pokemon, Move, Ability, etc',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                contentPadding: EdgeInsets.symmetric(vertical: 15),
               ),
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
@@ -187,7 +187,7 @@ class HomePage extends StatelessWidget {
         backgroundColor: color,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: MahasBorderRadius.large,
         ),
         minimumSize: const Size(double.infinity, 60),

@@ -1,33 +1,24 @@
 import '../../../../core/base/base_network.dart';
-import '../../../../core/env/app_environment.dart';
 import '../../../datasource/models/api_response_model.dart';
-import '../db/dio_service.dart';
+import '../repository/item_repository.dart';
 
+/// Service untuk mengelola logika bisnis terkait Item
 class ItemService extends BaseService {
-  final DioService _dioService = DioService();
+  final ItemRepository _itemRepository = ItemRepository();
 
-  /// Get list of items with pagination
+  /// Ambil daftar Item dengan pagination
   Future<PaginatedApiResponse<ResourceListItem>> getItemList({
     int offset = 0,
     int? limit,
   }) async {
-    final itemLimit = limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
-
     return performanceAsync(
       operationName: 'ItemService.getItemList',
       function: () async {
         try {
-          final response = await _dioService.get(
-            '/item',
-            queryParameters: {
-              'offset': offset,
-              'limit': itemLimit,
-            },
-          );
-
-          return PaginatedApiResponse<ResourceListItem>.fromJson(
-            response.data,
-            (item) => ResourceListItem.fromJson(item),
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _itemRepository.getItemList(
+            offset: offset,
+            limit: limit,
           );
         } catch (e, stackTrace) {
           logger.e(
@@ -43,14 +34,13 @@ class ItemService extends BaseService {
     );
   }
 
-  /// Get item detail by ID or name
+  /// Ambil detail Item berdasarkan ID atau nama
   Future<Map<String, dynamic>> getItemDetail(String idOrName) async {
     return performanceAsync(
       operationName: 'ItemService.getItemDetail',
       function: () async {
         try {
-          final response = await _dioService.get('/item/$idOrName');
-          return response.data;
+          return await _itemRepository.getItemDetail(idOrName);
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load item detail',

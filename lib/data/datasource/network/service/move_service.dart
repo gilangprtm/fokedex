@@ -1,33 +1,24 @@
 import '../../../../core/base/base_network.dart';
-import '../../../../core/env/app_environment.dart';
 import '../../../datasource/models/api_response_model.dart';
-import '../db/dio_service.dart';
+import '../repository/move_repository.dart';
 
+/// Service untuk mengelola logika bisnis terkait Move
 class MoveService extends BaseService {
-  final DioService _dioService = DioService();
+  final MoveRepository _moveRepository = MoveRepository();
 
-  /// Get list of moves with pagination
+  /// Ambil daftar Move dengan pagination
   Future<PaginatedApiResponse<ResourceListItem>> getMoveList({
     int offset = 0,
     int? limit,
   }) async {
-    final moveLimit = limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
-
     return performanceAsync(
       operationName: 'MoveService.getMoveList',
       function: () async {
         try {
-          final response = await _dioService.get(
-            '/move',
-            queryParameters: {
-              'offset': offset,
-              'limit': moveLimit,
-            },
-          );
-
-          return PaginatedApiResponse<ResourceListItem>.fromJson(
-            response.data,
-            (item) => ResourceListItem.fromJson(item),
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _moveRepository.getMoveList(
+            offset: offset,
+            limit: limit,
           );
         } catch (e, stackTrace) {
           logger.e(
@@ -43,14 +34,13 @@ class MoveService extends BaseService {
     );
   }
 
-  /// Get move detail by ID or name
+  /// Ambil detail Move berdasarkan ID atau nama
   Future<Map<String, dynamic>> getMoveDetail(String idOrName) async {
     return performanceAsync(
       operationName: 'MoveService.getMoveDetail',
       function: () async {
         try {
-          final response = await _dioService.get('/move/$idOrName');
-          return response.data;
+          return await _moveRepository.getMoveDetail(idOrName);
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load move detail',

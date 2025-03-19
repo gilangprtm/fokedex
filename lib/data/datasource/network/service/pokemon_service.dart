@@ -1,5 +1,4 @@
 import '../../../../core/base/base_network.dart';
-import '../../../../core/env/app_environment.dart';
 import '../../../datasource/models/pokemon_model.dart';
 import '../../../datasource/models/api_response_model.dart';
 import '../repository/pokemon_repository.dart';
@@ -13,21 +12,14 @@ class PokemonService extends BaseService {
     int offset = 0,
     int? limit,
   }) async {
-    final pokemonLimit =
-        limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
-
     return performanceAsync(
       operationName: 'PokemonService.getPokemonList',
       function: () async {
         try {
-          final response = await _pokemonRepository.getPokemonList(
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _pokemonRepository.getPokemonList(
             offset: offset,
-            limit: pokemonLimit,
-          );
-
-          return PaginatedApiResponse<ResourceListItem>.fromJson(
-            response,
-            (item) => ResourceListItem.fromJson(item),
+            limit: limit,
           );
         } catch (e, stackTrace) {
           logger.e(
@@ -36,7 +28,7 @@ class PokemonService extends BaseService {
             stackTrace: stackTrace,
             tag: 'PokemonService',
           );
-          rethrow; // DioService already handles the specific error types
+          rethrow;
         }
       },
       tag: 'PokemonService',
@@ -49,8 +41,8 @@ class PokemonService extends BaseService {
       operationName: 'PokemonService.getPokemonDetail',
       function: () async {
         try {
-          final response = await _pokemonRepository.getPokemonDetail(idOrName);
-          return Pokemon.fromJson(response);
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _pokemonRepository.getPokemonDetail(idOrName);
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load Pokemon detail',
@@ -58,7 +50,7 @@ class PokemonService extends BaseService {
             stackTrace: stackTrace,
             tag: 'PokemonService',
           );
-          rethrow; // DioService already handles the specific error types
+          rethrow;
         }
       },
       tag: 'PokemonService',
@@ -71,12 +63,8 @@ class PokemonService extends BaseService {
       operationName: 'PokemonService.getPokemonTypes',
       function: () async {
         try {
-          final response = await _pokemonRepository.getPokemonTypes();
-
-          return PaginatedApiResponse<ResourceListItem>.fromJson(
-            response,
-            (item) => ResourceListItem.fromJson(item),
-          );
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _pokemonRepository.getPokemonTypes();
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load Pokemon types',
@@ -84,7 +72,7 @@ class PokemonService extends BaseService {
             stackTrace: stackTrace,
             tag: 'PokemonService',
           );
-          rethrow; // DioService already handles the specific error types
+          rethrow;
         }
       },
       tag: 'PokemonService',
@@ -105,7 +93,7 @@ class PokemonService extends BaseService {
             stackTrace: stackTrace,
             tag: 'PokemonService',
           );
-          rethrow; // DioService already handles the specific error types
+          rethrow;
         }
       },
       tag: 'PokemonService',
@@ -118,16 +106,8 @@ class PokemonService extends BaseService {
       operationName: 'PokemonService.getPokemonByType',
       function: () async {
         try {
-          final response =
-              await _pokemonRepository.getPokemonTypeDetail(typeName);
-          final pokemonList = response['pokemon'] as List<dynamic>;
-
-          return pokemonList
-              .map((item) => ResourceListItem.fromJson({
-                    'name': item['pokemon']['name'],
-                    'url': item['pokemon']['url'],
-                  }))
-              .toList();
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _pokemonRepository.getPokemonByType(typeName);
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load Pokemon by type',
@@ -135,7 +115,98 @@ class PokemonService extends BaseService {
             stackTrace: stackTrace,
             tag: 'PokemonService',
           );
-          rethrow; // DioService already handles the specific error types
+          rethrow;
+        }
+      },
+      tag: 'PokemonService',
+    );
+  }
+
+  /// Ambil daftar ability Pokemon
+  Future<PaginatedApiResponse<ResourceListItem>> getPokemonAbilities({
+    int offset = 0,
+    int? limit,
+  }) async {
+    return performanceAsync(
+      operationName: 'PokemonService.getPokemonAbilities',
+      function: () async {
+        try {
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _pokemonRepository.getPokemonAbilities(
+            offset: offset,
+            limit: limit,
+          );
+        } catch (e, stackTrace) {
+          logger.e(
+            'Failed to load Pokemon abilities',
+            error: e,
+            stackTrace: stackTrace,
+            tag: 'PokemonService',
+          );
+          rethrow;
+        }
+      },
+      tag: 'PokemonService',
+    );
+  }
+
+  /// Ambil detail ability Pokemon
+  Future<Map<String, dynamic>> getPokemonAbilityDetail(String nameOrId) async {
+    return performanceAsync(
+      operationName: 'PokemonService.getPokemonAbilityDetail',
+      function: () async {
+        try {
+          return await _pokemonRepository.getPokemonAbilityDetail(nameOrId);
+        } catch (e, stackTrace) {
+          logger.e(
+            'Failed to load Pokemon ability detail',
+            error: e,
+            stackTrace: stackTrace,
+            tag: 'PokemonService',
+          );
+          rethrow;
+        }
+      },
+      tag: 'PokemonService',
+    );
+  }
+
+  /// Ambil informasi species Pokemon
+  Future<Map<String, dynamic>> getPokemonSpecies(String idOrName) async {
+    return performanceAsync(
+      operationName: 'PokemonService.getPokemonSpecies',
+      function: () async {
+        try {
+          return await _pokemonRepository.getPokemonSpecies(idOrName);
+        } catch (e, stackTrace) {
+          logger.e(
+            'Failed to load Pokemon species',
+            error: e,
+            stackTrace: stackTrace,
+            tag: 'PokemonService',
+          );
+          rethrow;
+        }
+      },
+      tag: 'PokemonService',
+    );
+  }
+
+  /// Ambil rantai evolusi Pokemon
+  Future<Map<String, dynamic>> getEvolutionChain(String url) async {
+    return performanceAsync(
+      operationName: 'PokemonService.getEvolutionChain',
+      function: () async {
+        try {
+          return await _pokemonRepository.getEvolutionChain(url);
+        } catch (e, stackTrace) {
+          logger.e(
+            'Failed to load evolution chain',
+            error: e,
+            stackTrace: stackTrace,
+            tag: 'PokemonService',
+          );
+          rethrow;
         }
       },
       tag: 'PokemonService',

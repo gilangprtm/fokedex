@@ -3,12 +3,10 @@ import '../../core/base/base_provider.dart';
 import '../../data/datasource/models/api_response_model.dart';
 import '../../data/datasource/models/pokemon_model.dart';
 import '../../data/datasource/network/service/pokemon_service.dart';
-import '../../data/datasource/network/repository/pokemon_repository.dart';
 
 class PokemonListProvider extends BaseProvider {
   // Service dan repository
   final PokemonService _pokemonService = PokemonService();
-  final PokemonRepository _repository = PokemonRepository();
 
   // Controllers
   final ScrollController scrollController = ScrollController();
@@ -70,13 +68,6 @@ class PokemonListProvider extends BaseProvider {
     super.onInit();
     _setupScrollListener();
     loadInitialData();
-  }
-
-  @override
-  void onClose() {
-    scrollController.dispose();
-    searchController.dispose();
-    super.onClose();
   }
 
   // Setup scroll controller listener

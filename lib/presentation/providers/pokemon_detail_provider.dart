@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_pokedex/core/utils/mahas.dart';
 import '../../core/base/base_provider.dart';
 import '../../data/datasource/models/pokemon_model.dart';

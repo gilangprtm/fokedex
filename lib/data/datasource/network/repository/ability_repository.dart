@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/ability_model.dart';
 import '../../../../core/env/app_environment.dart';
 
 /// Repository untuk mengambil data dari Ability endpoint
@@ -30,13 +31,14 @@ class AbilityRepository extends BaseRepository {
   }
 
   /// Ambil detail Ability berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getAbilityDetail(String idOrName) async {
+  Future<Ability> getAbilityDetail(String idOrName) async {
     final String endpoint = '/ability/$idOrName';
 
     logInfo('Fetching Ability detail: $endpoint', tag: 'AbilityRepository');
     try {
       final response = await dioService.get(endpoint);
-      return response.data;
+      // Konversi data JSON ke model Ability
+      return Ability.fromJson(response.data);
     } catch (e, stackTrace) {
       logError('Failed to fetch Ability detail',
           error: e, stackTrace: stackTrace, tag: 'AbilityRepository');

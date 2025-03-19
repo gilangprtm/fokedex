@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/location_model.dart';
 import '../../../../core/env/app_environment.dart';
 
 /// Repository untuk mengambil data dari Location endpoint
@@ -30,15 +31,33 @@ class LocationRepository extends BaseRepository {
   }
 
   /// Ambil detail Location berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getLocationDetail(String idOrName) async {
+  Future<Location> getLocationDetail(String idOrName) async {
     final String endpoint = '/location/$idOrName';
 
     logInfo('Fetching Location detail: $endpoint', tag: 'LocationRepository');
     try {
       final response = await dioService.get(endpoint);
-      return response.data;
+      // Konversi data JSON ke model Location
+      return Location.fromJson(response.data);
     } catch (e, stackTrace) {
       logError('Failed to fetch Location detail',
+          error: e, stackTrace: stackTrace, tag: 'LocationRepository');
+      rethrow;
+    }
+  }
+
+  /// Ambil detail Location Area berdasarkan ID atau nama
+  Future<LocationAreaDetail> getLocationAreaDetail(String idOrName) async {
+    final String endpoint = '/location-area/$idOrName';
+
+    logInfo('Fetching Location Area detail: $endpoint',
+        tag: 'LocationRepository');
+    try {
+      final response = await dioService.get(endpoint);
+      // Konversi data JSON ke model LocationAreaDetail
+      return LocationAreaDetail.fromJson(response.data);
+    } catch (e, stackTrace) {
+      logError('Failed to fetch Location Area detail',
           error: e, stackTrace: stackTrace, tag: 'LocationRepository');
       rethrow;
     }

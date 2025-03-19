@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/item_model.dart';
 import '../repository/item_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Item
@@ -35,7 +36,7 @@ class ItemService extends BaseService {
   }
 
   /// Ambil detail Item berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getItemDetail(String idOrName) async {
+  Future<Item> getItemDetail(String idOrName) async {
     return performanceAsync(
       operationName: 'ItemService.getItemDetail',
       function: () async {

@@ -1,6 +1,8 @@
 import '../pages/home/home_page.dart';
 import '../pages/pokemon/pokemon_list/pokemon_list_page.dart';
 import '../pages/pokemon/pokemon_detail/pokemon_detail_page.dart';
+import '../pages/move/move_list/move_list_page.dart';
+import '../pages/move/move_detail/move_detail_page.dart';
 
 import 'package:flutter/material.dart';
 import 'app_routes.dart';
@@ -13,6 +15,8 @@ class AppRoutesProvider {
       // directly from the home page. This route is just for reference or deep linking.
       AppRoutes.pokemonList: (context) => const PokemonListPage(),
       AppRoutes.pokemonDetail: (context) => const PokemonDetailPage(),
+      AppRoutes.moveList: (context) => const MoveListPage(),
+      AppRoutes.moveDetail: (context) => const MoveDetailPage(),
     };
   }
 }

@@ -111,9 +111,7 @@ class HomePage extends StatelessWidget {
                   context,
                   'Moves',
                   Colors.redAccent,
-                  () {
-                    // Navigate to moves page
-                  },
+                  () => Mahas.routeTo(AppRoutes.moveList),
                 ),
               ),
             ],

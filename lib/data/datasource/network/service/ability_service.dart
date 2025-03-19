@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/ability_model.dart';
 import '../repository/ability_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Ability
@@ -35,7 +36,7 @@ class AbilityService extends BaseService {
   }
 
   /// Ambil detail Ability berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getAbilityDetail(String idOrName) async {
+  Future<Ability> getAbilityDetail(String idOrName) async {
     return performanceAsync(
       operationName: 'AbilityService.getAbilityDetail',
       function: () async {

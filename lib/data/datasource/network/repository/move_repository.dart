@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/move_model.dart';
 import '../../../../core/env/app_environment.dart';
 
 /// Repository untuk mengambil data dari Move endpoint
@@ -29,13 +30,14 @@ class MoveRepository extends BaseRepository {
   }
 
   /// Ambil detail Move berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getMoveDetail(String idOrName) async {
+  Future<Move> getMoveDetail(String idOrName) async {
     final String endpoint = '/move/$idOrName';
 
     logInfo('Fetching Move detail: $endpoint', tag: 'MoveRepository');
     try {
       final response = await dioService.get(endpoint);
-      return response.data;
+      // Konversi data JSON ke model Move
+      return Move.fromJson(response.data);
     } catch (e, stackTrace) {
       logError('Failed to fetch Move detail',
           error: e, stackTrace: stackTrace, tag: 'MoveRepository');

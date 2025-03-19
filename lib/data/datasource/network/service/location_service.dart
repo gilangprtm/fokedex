@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/location_model.dart';
 import '../repository/location_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Location
@@ -35,7 +36,7 @@ class LocationService extends BaseService {
   }
 
   /// Ambil detail Location berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getLocationDetail(String idOrName) async {
+  Future<Location> getLocationDetail(String idOrName) async {
     return performanceAsync(
       operationName: 'LocationService.getLocationDetail',
       function: () async {
@@ -44,6 +45,27 @@ class LocationService extends BaseService {
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load location detail',
+            error: e,
+            stackTrace: stackTrace,
+            tag: 'LocationService',
+          );
+          rethrow;
+        }
+      },
+      tag: 'LocationService',
+    );
+  }
+
+  /// Ambil detail Location Area berdasarkan ID atau nama
+  Future<LocationAreaDetail> getLocationAreaDetail(String idOrName) async {
+    return performanceAsync(
+      operationName: 'LocationService.getLocationAreaDetail',
+      function: () async {
+        try {
+          return await _locationRepository.getLocationAreaDetail(idOrName);
+        } catch (e, stackTrace) {
+          logger.e(
+            'Failed to load location area detail',
             error: e,
             stackTrace: stackTrace,
             tag: 'LocationService',

@@ -1,5 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../../datasource/models/move_model.dart';
 import '../repository/move_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Move
@@ -35,7 +36,7 @@ class MoveService extends BaseService {
   }
 
   /// Ambil detail Move berdasarkan ID atau nama
-  Future<Map<String, dynamic>> getMoveDetail(String idOrName) async {
+  Future<Move> getMoveDetail(String idOrName) async {
     return performanceAsync(
       operationName: 'MoveService.getMoveDetail',
       function: () async {

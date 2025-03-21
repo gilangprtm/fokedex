@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/base/provider_widget.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -9,6 +10,7 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../core/utils/mahas.dart';
+import '../../../../core/utils/image_cache_utils.dart';
 import '../../../providers/move_detail_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../../pages/pokemon/pokemon_detail/widgets/pokemon_type_badge.dart';
@@ -313,12 +315,13 @@ class MoveDetailPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.network(
-                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokemonId.png',
+                ImageCacheUtils.buildPokemonImage(
+                  imageUrl:
+                      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokemonId.png',
                   height: 60,
                   width: 60,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
+                  progressColor: Colors.grey.shade400,
+                  errorWidget: (context, url, error) {
                     return const Icon(Icons.catching_pokemon, size: 40);
                   },
                 ),

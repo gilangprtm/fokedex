@@ -5,6 +5,7 @@ import 'services/storage_service.dart';
 import 'services/logger_service.dart';
 import 'services/error_handler_service.dart';
 import '../env/app_environment.dart';
+import 'services/initial_route_service.dart';
 
 /// MahasService adalah kelas singleton yang mengelola inisialisasi aplikasi
 /// seperti service locator, firebase, local storage, dll.
@@ -53,6 +54,24 @@ class MahasService {
         tag: 'MAHAS',
       );
       rethrow;
+    }
+  }
+
+  /// Determine the initial route based on application state
+  static Future<String> determineInitialRoute() async {
+    try {
+      // Use the InitialRouteService to determine the initial route
+      final initialRouteService = serviceLocator<InitialRouteService>();
+      return await initialRouteService.determineInitialRoute();
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error determining initial route',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      // Return the welcome route as fallback
+      return '/welcome';
     }
   }
 

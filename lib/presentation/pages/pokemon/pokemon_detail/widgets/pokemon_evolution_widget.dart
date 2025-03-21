@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/utils/mahas.dart';
+import '../../../../../core/utils/image_cache_utils.dart';
 import '../../../../../data/datasource/models/evolution_stage_model.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../../presentation/routes/app_routes.dart';
 
 class PokemonEvolutionWidget extends StatelessWidget {
   final List<EvolutionStage> evolutionStages;
@@ -105,12 +106,12 @@ class PokemonEvolutionWidget extends StatelessWidget {
             radius: 40,
             backgroundColor: Colors.white,
             child: ClipOval(
-              child: Image.network(
-                stage.imageUrl,
-                width: 60,
+              child: ImageCacheUtils.buildPokemonImage(
+                imageUrl: stage.imageUrl,
                 height: 60,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
+                width: 60,
+                progressColor: Colors.grey.shade300,
+                errorWidget: (context, url, error) {
                   return Icon(
                     Icons.catching_pokemon,
                     size: 40,

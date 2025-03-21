@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../../data/datasource/models/api_response_model.dart';
 import '../../../../../core/theme/app_color.dart';
 import '../../../../../core/utils/pokemon_type_utils.dart';
+import '../../../../../core/utils/image_cache_utils.dart';
 import '../../../../providers/pokemon_list_provider.dart';
 
 class PokemonGridItem extends StatelessWidget {
@@ -98,30 +99,16 @@ class PokemonGridItem extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Hero(
                   tag: 'pokemon-${pokemonId}',
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.catching_pokemon,
-                        size: 60,
-                        color: AppColors.pokemonGray,
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            typeColor.withOpacity(0.7),
-                          ),
-                        ),
-                      );
-                    },
+                  child: ImageCacheUtils.buildPokemonImage(
+                    imageUrl: imageUrl,
+                    height: 80,
+                    width: 80,
+                    progressColor: typeColor.withOpacity(0.7),
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.catching_pokemon,
+                      size: 60,
+                      color: AppColors.pokemonGray,
+                    ),
                   ),
                 ),
               ),

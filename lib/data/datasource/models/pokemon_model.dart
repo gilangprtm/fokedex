@@ -13,6 +13,12 @@ class Pokemon {
   final PokemonSprites? sprites;
   final String? species;
 
+  // Cache for image URLs
+  String? _cachedImageUrl;
+  String? _cachedOfficialArtwork;
+  String? _cachedHomeImageUrl;
+  String? _cachedDreamWorldImageUrl;
+
   Pokemon({
     required this.id,
     required this.name,
@@ -180,20 +186,42 @@ class Pokemon {
     };
   }
 
-  // To get Pokemon image URL based on ID
-  String get imageUrl =>
-      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png';
+  // To get Pokemon image URL based on ID with caching
+  String get imageUrl {
+    _cachedImageUrl ??=
+        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png';
+    return _cachedImageUrl!;
+  }
 
-  // Higher quality alternative
-  String get dreamWorldImageUrl =>
-      sprites?.other?.dreamWorld?.frontDefault ?? '';
+  // Higher quality alternatives with caching
+  String get dreamWorldImageUrl {
+    if (sprites?.other?.dreamWorld?.frontDefault != null &&
+        sprites!.other!.dreamWorld!.frontDefault!.isNotEmpty) {
+      _cachedDreamWorldImageUrl ??= sprites!.other!.dreamWorld!.frontDefault!;
+      return _cachedDreamWorldImageUrl!;
+    }
+    return imageUrl; // Fallback to default
+  }
 
   // Get the Home artwork if available
-  String get homeImageUrl => sprites?.other?.home?.frontDefault ?? '';
+  String get homeImageUrl {
+    if (sprites?.other?.home?.frontDefault != null &&
+        sprites!.other!.home!.frontDefault!.isNotEmpty) {
+      _cachedHomeImageUrl ??= sprites!.other!.home!.frontDefault!;
+      return _cachedHomeImageUrl!;
+    }
+    return imageUrl; // Fallback to default
+  }
 
   // Get official artwork if available
-  String get officialArtworkImageUrl =>
-      sprites?.other?.officialArtwork?.frontDefault ?? '';
+  String get officialArtworkImageUrl {
+    if (sprites?.other?.officialArtwork?.frontDefault != null &&
+        sprites!.other!.officialArtwork!.frontDefault!.isNotEmpty) {
+      _cachedOfficialArtwork ??= sprites!.other!.officialArtwork!.frontDefault!;
+      return _cachedOfficialArtwork!;
+    }
+    return imageUrl; // Fallback to default
+  }
 
   // Get formatted ID (e.g., #001, #025, #150)
   String get formattedId => '#${id.toString().padLeft(3, '0')}';

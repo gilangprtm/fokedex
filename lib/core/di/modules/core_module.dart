@@ -4,6 +4,7 @@ import '../../mahas/services/storage_service.dart';
 import '../../mahas/services/logger_service.dart';
 import '../../mahas/services/error_handler_service.dart';
 import '../../mahas/services/performance_service.dart';
+import '../../mahas/services/initial_route_service.dart';
 
 /// Mendaftarkan semua layanan inti aplikasi
 Future<void> setupCoreModule(GetIt serviceLocator) async {
@@ -20,6 +21,11 @@ Future<void> setupCoreModule(GetIt serviceLocator) async {
   // Register PerformanceService
   serviceLocator.registerSingleton<PerformanceService>(
     PerformanceService.instance,
+  );
+
+  // Register InitialRouteService
+  serviceLocator.registerSingleton<InitialRouteService>(
+    InitialRouteService(),
   );
 
   // Core Services lainnya

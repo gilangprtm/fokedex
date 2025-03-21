@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/base/provider_widget.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -11,6 +12,7 @@ import '../../../../core/theme/app_typografi.dart';
 import '../../../../data/datasource/models/pokemon_model.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../core/utils/mahas.dart';
+import '../../../../core/utils/image_cache_utils.dart';
 import '../../../providers/pokemon_detail_provider.dart';
 import 'widgets/pokemon_stats_widget.dart';
 import 'widgets/pokemon_type_badge.dart';
@@ -405,26 +407,14 @@ class PokemonDetailPage extends StatelessWidget {
               alignment: Alignment.center,
               child: Hero(
                 tag: 'pokemon-${pokemon.id}',
-                child: Image.network(
-                  pokemon.sprites?.frontDefault ??
+                child: ImageCacheUtils.buildPokemonImage(
+                  imageUrl: pokemon.sprites?.frontDefault ??
                       (pokemon.sprites?.other?.officialArtwork?.frontDefault ??
                           ''),
                   height: 200,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
+                  width: 200,
+                  progressColor: Colors.white,
+                  errorWidget: (context, url, error) {
                     return Container(
                       height: 200,
                       color: appBarColor.withOpacity(0.5),

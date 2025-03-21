@@ -3,10 +3,12 @@ import '../../core/base/base_provider.dart';
 import '../../data/datasource/models/api_response_model.dart';
 import '../../data/datasource/models/pokemon_model.dart';
 import '../../data/datasource/network/service/pokemon_service.dart';
+import '../../data/local/services/local_pokemon_service.dart';
 
 class PokemonListProvider extends BaseProvider {
   // Service dan repository
   final PokemonService _pokemonService = PokemonService();
+  final LocalPokemonService _localService = LocalPokemonService();
 
   // Controllers
   final ScrollController scrollController = ScrollController();
@@ -125,24 +127,42 @@ class PokemonListProvider extends BaseProvider {
       _hasError = false;
 
       try {
-        final response = await _pokemonService.getPokemonList(offset: _offset);
+        // Periksa apakah data tersedia di penyimpanan lokal
+        final localData = await _localService.getPokemonList();
 
-        // Update pagination state
-        _hasMoreData = response.hasMore;
-        _offset = response.nextOffset ?? _offset;
+        if (localData.isNotEmpty) {
+          // Gunakan data dari penyimpanan lokal
+          _pokemonList = localData;
+          _hasMoreData = false; // Semua data sudah diambil
 
-        // Add new Pokemon to the list
-        _pokemonList = [..._pokemonList, ...response.results];
+          // Load detail untuk Pokemon yang ada di daftar
+          _loadPokemonDetailsFromLocalStorage();
 
-        // Load details for new Pokemon
-        for (var pokemon in response.results) {
-          if (!_pokemonDetails.containsKey(pokemon.id)) {
-            try {
-              final details =
-                  await _pokemonService.getPokemonDetail(pokemon.id.toString());
-              _pokemonDetails[pokemon.id] = details;
-            } catch (e) {
-              logger.e('Error loading details for Pokemon ${pokemon.id}: $e');
+          _isLoading = false;
+        } else {
+          // Fallback ke API jika data lokal tidak ada
+          final response =
+              await _pokemonService.getPokemonList(offset: _offset);
+
+          // Update pagination state
+          _hasMoreData = response.hasMore;
+          _offset = response.nextOffset ?? _offset;
+
+          // Add new Pokemon to the list
+          _pokemonList = [..._pokemonList, ...response.results];
+
+          // Load details for new Pokemon
+          for (var pokemon in response.results) {
+            if (!_pokemonDetails.containsKey(pokemon.id)) {
+              try {
+                final details = await _pokemonService
+                    .getPokemonDetail(pokemon.id.toString());
+                if (details != null) {
+                  _pokemonDetails[pokemon.id] = details;
+                }
+              } catch (e) {
+                logger.e('Error loading details for Pokemon ${pokemon.id}: $e');
+              }
             }
           }
         }
@@ -167,6 +187,62 @@ class PokemonListProvider extends BaseProvider {
     });
   }
 
+  /// Load Pokemon details from local storage
+  Future<void> _loadPokemonDetailsFromLocalStorage() async {
+    try {
+      int processedCount = 0;
+      int successCount = 0;
+      bool needsNotify = false;
+
+      for (var pokemon in _pokemonList) {
+        if (!_pokemonDetails.containsKey(pokemon.id)) {
+          final detail = await _localService.getPokemonDetail(pokemon.id);
+          processedCount++;
+          needsNotify = true;
+
+          if (detail != null) {
+            _pokemonDetails[pokemon.id] = detail;
+            successCount++;
+
+            // Notify listeners periodically to update UI as we load details
+            if (processedCount % 10 == 0) {
+              notifyListeners();
+              needsNotify = false;
+            }
+          }
+        }
+      }
+
+      // Final notification if needed
+      if (needsNotify) {
+        notifyListeners();
+      }
+    } catch (e) {
+      logger.e('Error loading Pokemon details from local storage: $e');
+    }
+  }
+
+  // Load daftar tipe Pokemon
+  Future<void> loadPokemonTypes() async {
+    await runAsync('loadPokemonTypes', () async {
+      try {
+        // Periksa apakah data tipe tersedia di penyimpanan lokal
+        final localTypes = await _localService.getPokemonTypes();
+
+        if (localTypes.isNotEmpty) {
+          _pokemonTypes = localTypes;
+        } else {
+          // Fallback ke API
+          final response = await _pokemonService.getPokemonTypes();
+          _pokemonTypes = response.results;
+        }
+      } catch (e) {
+        logger.e('Error loading Pokemon types: $e');
+        // Don't set hasError to true as this is not a critical failure
+      }
+    });
+  }
+
   // Load lebih banyak Pokemon (infinite scroll)
   Future<void> loadMorePokemon() async {
     if (_isLoading || !_hasMoreData || _activeTypeFilter != null) {
@@ -174,19 +250,6 @@ class PokemonListProvider extends BaseProvider {
     }
 
     await loadPokemonList();
-  }
-
-  // Load daftar tipe Pokemon
-  Future<void> loadPokemonTypes() async {
-    await runAsync('loadPokemonTypes', () async {
-      try {
-        final response = await _pokemonService.getPokemonTypes();
-        _pokemonTypes = response.results;
-      } catch (e) {
-        logger.e('Error loading Pokemon types: $e');
-        // Don't set hasError to true as this is not a critical failure
-      }
-    });
   }
 
   // Filter Pokemon berdasarkan tipe

@@ -23,11 +23,24 @@ class PokemonGridItem extends StatelessWidget {
     // Get Pokemon details from provider
     final provider = context.watch<PokemonListProvider>();
     final pokemonDetails = provider.getPokemonDetails(pokemonId);
+    final activeTypeFilter = provider.activeTypeFilter;
 
     // Get primary type color
-    final Color typeColor = pokemonDetails?.types?.isNotEmpty == true
-        ? PokemonTypeUtils.getTypeColor(pokemonDetails!.types!.first.type.name)
-        : AppColors.pokemonRed;
+    Color typeColor;
+
+    // If there's an active type filter, use its color first
+    if (activeTypeFilter != null) {
+      typeColor = PokemonTypeUtils.getTypeColor(activeTypeFilter);
+    }
+    // Otherwise use the Pokemon's first type if available
+    else if (pokemonDetails?.types?.isNotEmpty == true) {
+      typeColor =
+          PokemonTypeUtils.getTypeColor(pokemonDetails!.types!.first.type.name);
+    }
+    // Default fallback color
+    else {
+      typeColor = AppColors.pokemonRed;
+    }
 
     // Image URL for the Pokemon
     final imageUrl =

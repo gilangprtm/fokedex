@@ -98,7 +98,8 @@ class MoveListProvider extends BaseProvider {
       _hasError = false;
 
       try {
-        final response = await _moveService.getMoveList(offset: _offset);
+        final response =
+            await _moveService.getMoveList(offset: _offset, limit: 1000);
 
         // Update pagination state
         _hasMoreData = response.hasMore;

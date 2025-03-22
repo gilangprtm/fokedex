@@ -4,6 +4,7 @@ import '../../../../core/base/provider_widget.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/mahas/widget/mahas_card.dart';
+import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
@@ -122,64 +123,31 @@ class MoveDetailPage extends StatelessWidget {
       slivers: [
         // Custom app bar with Move basic info
         _buildSliverAppBar(context, provider, appBarColor),
-
-        // Move Description
-        SliverToBoxAdapter(
-          child: MahasCustomizableCard(
-            margin: AppTheme.spacing16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Description',
-                  style: AppTypography.headline6,
-                ),
-                const Divider(),
-                Text(
-                  provider.getMoveDescription(),
-                  style: AppTypography.bodyText1,
-                ),
-              ],
-            ),
-          ),
+        // Add padding at the bottom
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 16),
         ),
-
-        // Move Stats
+        // Tab Bar with content
         SliverToBoxAdapter(
-          child: MahasCustomizableCard(
-            margin: AppTheme.spacing16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Stats',
-                  style: AppTypography.headline6,
-                ),
-                const Divider(),
-                _buildStatRow('Power', provider.getMovePower()),
-                _buildStatRow('Accuracy', provider.getMoveAccuracy()),
-                _buildStatRow('PP', provider.getMovePP()),
-                _buildStatRow('Damage Class',
-                    _capitalizeFirstLetter(provider.getMoveDamageClass())),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height -
+                200, // Subtract app bar height
+            child: MahasPillTabBar(
+              tabLabels: const ['Overview', 'Stats', 'Pokémon'],
+              tabViews: [
+                // Overview Tab
+                _buildOverviewTab(provider),
+                // Stats Tab
+                _buildStatsTab(provider),
+                // Pokémon Tab
+                _buildPokemonTab(context, provider),
               ],
-            ),
-          ),
-        ),
-
-        // Pokemon that can learn this move
-        SliverToBoxAdapter(
-          child: MahasCustomizableCard(
-            margin: AppTheme.spacing16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Pokémon that can learn this move',
-                  style: AppTypography.headline6,
-                ),
-                const Divider(),
-                _buildPokemonList(context, provider),
-              ],
+              activeColor: appBarColor,
+              backgroundColor: Colors.grey[200]!,
+              activeTextColor: Colors.white,
+              inactiveTextColor: Colors.black87,
+              height: 45,
+              borderRadius: 15,
             ),
           ),
         ),
@@ -242,6 +210,91 @@ class MoveDetailPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildOverviewTab(MoveDetailProvider provider) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MahasCustomizableCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Description',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  provider.getMoveDescription(),
+                  style: AppTypography.bodyText1,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsTab(MoveDetailProvider provider) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MahasCustomizableCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Move Stats',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                _buildStatRow('Power', provider.getMovePower()),
+                _buildStatRow('Accuracy', provider.getMoveAccuracy()),
+                _buildStatRow('PP', provider.getMovePP()),
+                _buildStatRow('Damage Class',
+                    _capitalizeFirstLetter(provider.getMoveDamageClass())),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPokemonTab(BuildContext context, MoveDetailProvider provider) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MahasCustomizableCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Pokémon that can learn this move',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                _buildPokemonList(context, provider),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

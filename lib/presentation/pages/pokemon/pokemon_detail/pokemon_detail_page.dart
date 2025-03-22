@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/base/provider_widget.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -183,7 +182,9 @@ class PokemonDetailPage extends StatelessWidget {
                                   'About',
                                   style: AppTypography.headline6,
                                 ),
-                                const Divider(),
+                                const SizedBox(
+                                  height: 10,
+                                ),
                                 _buildAboutInfo(pokemon),
 
                                 const SizedBox(height: 16),
@@ -408,9 +409,9 @@ class PokemonDetailPage extends StatelessWidget {
               child: Hero(
                 tag: 'pokemon-${pokemon.id}',
                 child: ImageCacheUtils.buildPokemonImage(
-                  imageUrl: pokemon.sprites?.frontDefault ??
-                      (pokemon.sprites?.other?.officialArtwork?.frontDefault ??
-                          ''),
+                  imageUrl:
+                      pokemon.sprites?.other?.officialArtwork?.frontDefault ??
+                          (pokemon.sprites?.frontDefault ?? ''),
                   height: 200,
                   width: 200,
                   progressColor: Colors.white,

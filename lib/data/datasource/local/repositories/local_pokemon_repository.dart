@@ -1,6 +1,6 @@
 import 'dart:convert';
-import '../../datasource/models/api_response_model.dart';
-import '../../datasource/models/pokemon_model.dart';
+import '../../models/api_response_model.dart';
+import '../../models/pokemon_model.dart';
 import '../db/db_local.dart';
 
 /// Konstanta untuk key di tabel settings

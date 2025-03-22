@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../datasource/models/api_response_model.dart';
-import '../../datasource/models/pokemon_model.dart';
-import '../../datasource/network/service/pokemon_service.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/mahas/services/logger_service.dart';
+import '../../models/api_response_model.dart';
+import '../../models/pokemon_model.dart';
+import '../../network/service/pokemon_service.dart';
 import '../repositories/local_pokemon_repository.dart';
-import '../../../core/mahas/services/logger_service.dart';
-import '../../../core/di/service_locator.dart';
 
 /// Service untuk mengelola operasi data Pokemon lokal
 class LocalPokemonService {

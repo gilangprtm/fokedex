@@ -1,4 +1,4 @@
-import '../../../data/local/services/local_pokemon_service.dart';
+import '../../../data/datasource/local/services/local_pokemon_service.dart';
 import '../../di/service_locator.dart';
 import 'logger_service.dart';
 import '../../../presentation/routes/app_routes.dart';

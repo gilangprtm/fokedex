@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../mahas_type.dart';
 import '../../theme/app_color.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_typografi.dart';

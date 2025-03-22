@@ -7,11 +7,7 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../core/utils/mahas.dart';
-import '../../../../core/utils/image_cache_utils.dart';
 import '../../../providers/ability_detail_provider.dart';
-import '../../../routes/app_routes.dart';
-import '../../../../core/mahas/widget/mahas_grid.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
 class AbilityDetailPage extends StatelessWidget {

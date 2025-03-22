@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/base/base_provider.dart';
+import '../../data/datasource/local/services/local_pokemon_service.dart';
 import '../../data/datasource/models/api_response_model.dart';
 import '../../data/datasource/models/pokemon_model.dart';
 import '../../data/datasource/network/service/pokemon_service.dart';
-import '../../data/local/services/local_pokemon_service.dart';
 
 class PokemonListProvider extends BaseProvider {
   // Service dan repository

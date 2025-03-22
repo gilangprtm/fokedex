@@ -1,37 +1,38 @@
 import 'package:flutter/material.dart';
 import '../../../../core/base/provider_widget.dart';
+import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
-import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../core/utils/pokemon_type_utils.dart';
-import '../../../providers/move_detail_provider.dart';
-import '../../../pages/pokemon/pokemon_detail/widgets/pokemon_type_badge.dart';
+import '../../../../core/utils/mahas.dart';
+import '../../../../core/utils/image_cache_utils.dart';
+import '../../../providers/ability_detail_provider.dart';
+import '../../../routes/app_routes.dart';
+import '../../../../core/mahas/widget/mahas_grid.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
-class MoveDetailPage extends StatelessWidget {
-  const MoveDetailPage({
-    super.key,
-  });
+class AbilityDetailPage extends StatelessWidget {
+  const AbilityDetailPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ProviderPage<MoveDetailProvider>(
-      createProvider: () => MoveDetailProvider(),
+    return ProviderPage<AbilityDetailProvider>(
+      createProvider: () => AbilityDetailProvider(),
       builder: (context, provider) => _buildDetailPage(context, provider),
     );
   }
 
-  Widget _buildDetailPage(BuildContext context, MoveDetailProvider provider) {
+  Widget _buildDetailPage(
+      BuildContext context, AbilityDetailProvider provider) {
     // Show loading state
     if (provider.isLoading) {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            _capitalizeFirstLetter(provider.currentMoveName),
+            _capitalizeFirstLetter(provider.currentAbilityName),
             style: AppTypography.headline6.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.pokemonRed,
@@ -46,7 +47,7 @@ class MoveDetailPage extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            _capitalizeFirstLetter(provider.currentMoveName),
+            _capitalizeFirstLetter(provider.currentAbilityName),
             style: AppTypography.headline6.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.pokemonRed,
@@ -60,7 +61,7 @@ class MoveDetailPage extends StatelessWidget {
                   size: 48, color: AppColors.errorColor),
               const SizedBox(height: 16),
               Text(
-                'Error loading move details',
+                'Error loading ability details',
                 style: AppTypography.headline6,
               ),
               const SizedBox(height: 8),
@@ -71,10 +72,10 @@ class MoveDetailPage extends StatelessWidget {
               const SizedBox(height: 16),
               MahasButton(
                 text: 'Try Again',
-                onPressed: () => provider.loadMoveDetail(
-                    provider.currentMoveId.isNotEmpty
-                        ? provider.currentMoveId
-                        : provider.currentMoveName),
+                onPressed: () => provider.loadAbilityDetail(
+                    provider.currentAbilityId.isNotEmpty
+                        ? provider.currentAbilityId
+                        : provider.currentAbilityName),
                 type: ButtonType.primary,
                 color: AppColors.pokemonRed,
               ),
@@ -85,11 +86,11 @@ class MoveDetailPage extends StatelessWidget {
     }
 
     // No data loaded yet
-    if (provider.moveDetail == null) {
+    if (provider.abilityDetail == null) {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            _capitalizeFirstLetter(provider.currentMoveName),
+            _capitalizeFirstLetter(provider.currentAbilityName),
             style: AppTypography.headline6.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.pokemonRed,
@@ -104,21 +105,17 @@ class MoveDetailPage extends StatelessWidget {
       );
     }
 
-    // Show Move details
-    final Color appBarColor =
-        PokemonTypeUtils.getTypeColor(provider.getMoveType());
-
+    // Show Ability details
     return Scaffold(
-      body: _buildBody(context, provider, appBarColor),
+      body: _buildBody(context, provider),
     );
   }
 
-  Widget _buildBody(
-      BuildContext context, MoveDetailProvider provider, Color appBarColor) {
+  Widget _buildBody(BuildContext context, AbilityDetailProvider provider) {
     return CustomScrollView(
       slivers: [
-        // Custom app bar with Move basic info
-        _buildSliverAppBar(context, provider, appBarColor),
+        // Custom app bar with Ability basic info
+        _buildSliverAppBar(context, provider),
         // Add padding at the bottom
         const SliverToBoxAdapter(
           child: SizedBox(height: 16),
@@ -127,18 +124,16 @@ class MoveDetailPage extends StatelessWidget {
         SliverToBoxAdapter(
           child: SizedBox(
             height: MediaQuery.of(context).size.height -
-                220, // Subtract app bar height
+                100, // Subtract app bar height
             child: MahasPillTabBar(
-              tabLabels: const ['Overview', 'Stats', 'Pokémon'],
+              tabLabels: const ['Overview', 'Pokémon'],
               tabViews: [
                 // Overview Tab
                 _buildOverviewTab(provider),
-                // Stats Tab
-                _buildStatsTab(provider),
                 // Pokémon Tab
                 _buildPokemonTab(context, provider),
               ],
-              activeColor: appBarColor,
+              activeColor: AppColors.pokemonRed,
               backgroundColor: Colors.grey[200]!,
               activeTextColor: Colors.white,
               inactiveTextColor: Colors.black87,
@@ -147,7 +142,6 @@ class MoveDetailPage extends StatelessWidget {
             ),
           ),
         ),
-
         // Add padding at the bottom
         const SliverToBoxAdapter(
           child: SizedBox(height: 32),
@@ -157,20 +151,18 @@ class MoveDetailPage extends StatelessWidget {
   }
 
   Widget _buildSliverAppBar(
-      BuildContext context, MoveDetailProvider provider, Color appBarColor) {
-    final moveType = provider.getMoveType();
-
+      BuildContext context, AbilityDetailProvider provider) {
     return SliverAppBar(
       expandedHeight: 200.0,
       floating: false,
       pinned: true,
-      backgroundColor: appBarColor,
+      backgroundColor: AppColors.pokemonRed,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           children: [
             // Background color
             Container(
-              color: appBarColor,
+              color: AppColors.pokemonRed,
             ),
 
             // Decorative Poké Ball pattern in the background
@@ -184,7 +176,7 @@ class MoveDetailPage extends StatelessWidget {
               ),
             ),
 
-            // Move name and type
+            // Ability name
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -192,15 +184,13 @@ class MoveDetailPage extends StatelessWidget {
                   const SizedBox(height: 32),
                   Text(
                     _capitalizeFirstLetter(
-                        provider.currentMoveName.replaceAll('-', ' ')),
+                        provider.currentAbilityName.replaceAll('-', ' ')),
                     style: AppTypography.headline5.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  PokemonTypeBadge(typeName: moveType),
                 ],
               ),
             ),
@@ -210,7 +200,7 @@ class MoveDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOverviewTab(MoveDetailProvider provider) {
+  Widget _buildOverviewTab(AbilityDetailProvider provider) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -224,11 +214,9 @@ class MoveDetailPage extends StatelessWidget {
                   'Description',
                   style: AppTypography.headline6,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Text(
-                  provider.getMoveDescription(),
+                  provider.getAbilityDescription(),
                   style: AppTypography.bodyText1,
                 ),
               ],
@@ -239,73 +227,19 @@ class MoveDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsTab(MoveDetailProvider provider) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MahasCustomizableCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Move Stats',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                _buildStatRow('Power', provider.getMovePower()),
-                _buildStatRow('Accuracy', provider.getMoveAccuracy()),
-                _buildStatRow('PP', provider.getMovePP()),
-                _buildStatRow('Damage Class',
-                    _capitalizeFirstLetter(provider.getMoveDamageClass())),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPokemonTab(BuildContext context, MoveDetailProvider provider) {
-    final pokemonList = provider.getPokemonWithMove();
+  Widget _buildPokemonTab(
+      BuildContext context, AbilityDetailProvider provider) {
+    final pokemonList = provider.getPokemonWithAbility();
     final gridItems = pokemonList
-        .map((pokemon) => PokemonGridItem.fromUrl(pokemon.name, pokemon.url))
+        .map((pokemon) =>
+            PokemonGridItem.fromUrl(pokemon.pokemon.name, pokemon.pokemon.url))
         .toList();
 
     return PokemonGridTab(
-      title: 'Pokémon that can learn this move',
+      title: 'Pokémon with this ability',
       pokemons: gridItems,
       isLoading: provider.isLoading,
       errorMessage: provider.hasError ? provider.errorMessage : null,
-    );
-  }
-
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: AppTypography.bodyText1.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: AppTypography.bodyText1,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

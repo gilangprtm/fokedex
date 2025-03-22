@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
       navigatorKey: Mahas.navigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
     );
   }
 }

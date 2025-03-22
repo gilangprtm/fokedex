@@ -5,6 +5,7 @@ class MahasGrid extends StatelessWidget {
   final int crossAxisCount;
   final double childAspectRatio;
   final Axis scrollDirection;
+  final EdgeInsets padding;
 
   const MahasGrid({
     super.key,
@@ -12,11 +13,13 @@ class MahasGrid extends StatelessWidget {
     this.crossAxisCount = 2,
     this.childAspectRatio = 1.0,
     this.scrollDirection = Axis.vertical,
+    this.padding = const EdgeInsets.all(0),
   });
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      padding: padding,
       scrollDirection: scrollDirection,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,

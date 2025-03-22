@@ -1,34 +1,35 @@
 import 'package:flutter/material.dart';
 import '../../../../core/base/provider_widget.dart';
+import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
-import '../../../../core/mahas/mahas_type.dart';
-import '../../../../core/utils/mahas.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/theme/app_color.dart';
-import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/move_list_provider.dart';
-import '../../../routes/app_routes.dart';
 import '../../../../core/mahas/widget/mahas_tile.dart';
+import '../../../../core/theme/app_color.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/app_typografi.dart';
+import '../../../../core/utils/mahas.dart';
+import '../../../../data/datasource/models/api_response_model.dart';
+import '../../../providers/ability_list_provider.dart';
+import '../../../routes/app_routes.dart';
 
-class MoveListPage extends StatelessWidget {
-  const MoveListPage({super.key});
+class AbilityListPage extends StatelessWidget {
+  const AbilityListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ProviderPage<MoveListProvider>(
-      createProvider: () => MoveListProvider(),
-      builder: (context, provider) => _buildMoveListPage(context, provider),
+    return ProviderPage<AbilityListProvider>(
+      createProvider: () => AbilityListProvider(),
+      builder: (context, provider) => _buildAbilityListPage(context, provider),
     );
   }
 
-  Widget _buildMoveListPage(BuildContext context, MoveListProvider provider) {
+  Widget _buildAbilityListPage(
+      BuildContext context, AbilityListProvider provider) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Pokémon Moves',
+          'Pokémon Abilities',
           style: AppTypography.headline6.copyWith(color: Colors.white),
         ),
         elevation: 0,
@@ -40,21 +41,21 @@ class MoveListPage extends StatelessWidget {
           // Search bar
           MahasSearchBar(
             controller: provider.searchController,
-            hintText: 'Search Moves',
+            hintText: 'Search Abilities',
             onChanged: provider.onSearchChanged,
             onClear: provider.clearSearch,
           ),
 
-          // Move list
+          // Ability list
           Expanded(
-            child: _buildMoveList(context, provider),
+            child: _buildAbilityList(context, provider),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMoveList(BuildContext context, MoveListProvider provider) {
+  Widget _buildAbilityList(BuildContext context, AbilityListProvider provider) {
     if (provider.hasError) {
       return Center(
         child: Column(
@@ -64,7 +65,7 @@ class MoveListPage extends StatelessWidget {
                 size: 48, color: AppColors.errorColor),
             const SizedBox(height: 16),
             Text(
-              'Error loading Moves',
+              'Error loading Abilities',
               style: AppTypography.headline6,
             ),
             const SizedBox(height: 8),
@@ -75,7 +76,7 @@ class MoveListPage extends StatelessWidget {
             const SizedBox(height: 16),
             MahasButton(
               text: 'Retry',
-              onPressed: () => provider.loadMoveList(refresh: true),
+              onPressed: () => provider.loadAbilities(refresh: true),
               type: ButtonType.primary,
               color: AppColors.pokemonRed,
             ),
@@ -84,20 +85,20 @@ class MoveListPage extends StatelessWidget {
       );
     }
 
-    if (provider.isLoading && provider.filteredMoveList.isEmpty) {
+    if (provider.isLoading && provider.filteredAbilities.isEmpty) {
       return const MahasLoader(isLoading: true);
     }
 
-    if (provider.filteredMoveList.isEmpty) {
+    if (provider.filteredAbilities.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.model_training,
+            const Icon(Icons.auto_awesome,
                 size: 48, color: AppColors.pokemonGray),
             const SizedBox(height: 16),
             Text(
-              'No Moves Found',
+              'No Abilities Found',
               style: AppTypography.headline6,
             ),
             const SizedBox(height: 8),
@@ -123,11 +124,11 @@ class MoveListPage extends StatelessWidget {
         controller: provider.scrollController,
         padding: const EdgeInsets.all(AppTheme.spacing16),
         itemCount:
-            provider.filteredMoveList.length + (provider.hasMoreData ? 1 : 0),
+            provider.filteredAbilities.length + (provider.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index < provider.filteredMoveList.length) {
-            final move = provider.filteredMoveList[index];
-            return _buildMoveItem(context, move);
+          if (index < provider.filteredAbilities.length) {
+            final ability = provider.filteredAbilities[index];
+            return _buildAbilityItem(context, ability);
           } else {
             return Container(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -142,17 +143,11 @@ class MoveListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMoveItem(BuildContext context, ResourceListItem move) {
-    // Extract the move ID from the URL to potentially customize the tile
-    final url = move.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final moveId = int.parse(pathSegments[pathSegments.length - 2]);
-
+  Widget _buildAbilityItem(BuildContext context, ResourceListItem ability) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: MahasTile(
-        onTap: () => _navigateToMoveDetail(context, move),
+        onTap: () => _navigateToAbilityDetail(context, ability),
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
         backgroundColor: Colors.white,
         leading: Container(
@@ -164,7 +159,7 @@ class MoveListPage extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              '#${moveId.toString().padLeft(3, '0')}',
+              '#${ability.id.toString().padLeft(3, '0')}',
               style: const TextStyle(
                 color: AppColors.pokemonRed,
                 fontWeight: FontWeight.bold,
@@ -174,7 +169,7 @@ class MoveListPage extends StatelessWidget {
           ),
         ),
         title: Text(
-          _formatMoveName(move.name),
+          _formatAbilityName(ability.name),
           style: AppTypography.subtitle1.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -184,25 +179,18 @@ class MoveListPage extends StatelessWidget {
     );
   }
 
-  void _navigateToMoveDetail(BuildContext context, ResourceListItem move) {
-    // Extract the move ID from the URL
-    final url = move.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final moveId = pathSegments[pathSegments.length - 2];
-
-    // Navigate to move detail page
+  void _navigateToAbilityDetail(
+      BuildContext context, ResourceListItem ability) {
     Mahas.routeTo(
-      AppRoutes.moveDetail,
+      AppRoutes.abilityDetail,
       arguments: {
-        'id': moveId,
-        'name': move.name,
+        'name': ability.name,
       },
     );
   }
 
-  String _formatMoveName(String name) {
-    // Format nama move (contoh: "thunder-punch" menjadi "Thunder Punch")
+  String _formatAbilityName(String name) {
+    // Format nama ability (contoh: "overgrow" menjadi "Overgrow")
     return name
         .split('-')
         .map((word) =>

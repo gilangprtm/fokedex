@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/base/provider_widget.dart';
+import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/mahas/mahas_type.dart';
@@ -47,46 +48,11 @@ class PokemonListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          Padding(
-            padding: const EdgeInsets.all(AppTheme.spacing16),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-              ),
-              elevation: 2,
-              child: TextField(
-                controller: provider.searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search Pokémon',
-                  hintStyle: AppTypography.bodyText2,
-                  prefixIcon:
-                      const Icon(Icons.search, color: AppColors.pokemonGray),
-                  suffixIcon: provider.searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear,
-                              color: AppColors.pokemonGray),
-                          onPressed: () => provider.clearSearch(),
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                    borderSide:
-                        const BorderSide(color: AppColors.lightBorderColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                    borderSide:
-                        const BorderSide(color: AppColors.lightBorderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                    borderSide:
-                        const BorderSide(color: AppColors.pokemonRed, width: 2),
-                  ),
-                ),
-                onChanged: provider.onSearchChanged,
-              ),
-            ),
+          MahasSearchBar(
+            controller: provider.searchController,
+            hintText: 'Search Pokémon',
+            onChanged: provider.onSearchChanged,
+            onClear: provider.clearSearch,
           ),
 
           // Type filter

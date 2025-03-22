@@ -3,6 +3,8 @@ import '../pages/pokemon/pokemon_list/pokemon_list_page.dart';
 import '../pages/pokemon/pokemon_detail/pokemon_detail_page.dart';
 import '../pages/move/move_list/move_list_page.dart';
 import '../pages/move/move_detail/move_detail_page.dart';
+import '../pages/ability/ability_list/ability_list_page.dart';
+import '../pages/ability/ability_detail/ability_detail_page.dart';
 import '../pages/welcome/welcome_page.dart';
 
 import 'package:flutter/material.dart';
@@ -20,6 +22,8 @@ class AppRoutesProvider {
       AppRoutes.pokemonDetail: (context) => const PokemonDetailPage(),
       AppRoutes.moveList: (context) => const MoveListPage(),
       AppRoutes.moveDetail: (context) => const MoveDetailPage(),
+      AppRoutes.abilityList: (context) => const AbilityListPage(),
+      AppRoutes.abilityDetail: (context) => const AbilityDetailPage(),
     };
   }
 }

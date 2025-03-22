@@ -124,9 +124,7 @@ class HomePage extends StatelessWidget {
                   context,
                   'Abilities',
                   Colors.blueAccent,
-                  () {
-                    // Navigate to abilities page
-                  },
+                  () => Mahas.routeTo(AppRoutes.abilityList),
                 ),
               ),
               const SizedBox(width: 16),

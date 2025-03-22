@@ -154,6 +154,8 @@ class PokemonDetailPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 16),
+
             // Tabbed content using MahasPillTabBar
             Expanded(
               child: MahasPillTabBar(

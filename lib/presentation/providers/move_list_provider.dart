@@ -22,7 +22,6 @@ class MoveListProvider extends BaseProvider {
 
   // Pagination state
   int _offset = 0;
-  final int _limit = 20;
   bool _hasMoreData = true;
   bool get hasMoreData => _hasMoreData;
 

@@ -144,7 +144,7 @@ class PokemonListPage extends StatelessWidget {
               label: const Text('All'),
               onSelected: (_) => provider.filterByType(null),
               backgroundColor: AppColors.lightSecondaryColor,
-              selectedColor: AppColors.pokemonRed.withOpacity(0.2),
+              selectedColor: AppColors.pokemonRed.withValues(alpha: 0.2),
               labelStyle: provider.activeTypeFilter == null
                   ? AppTypography.button.copyWith(color: AppColors.pokemonRed)
                   : AppTypography.button,

@@ -11,8 +11,6 @@ class AppTheme {
   static const double _elevation = 2.0;
   static const double borderRadius = _borderRadius;
   static const double elevation = _elevation;
-  static const Duration _animationDuration = Duration(milliseconds: 200);
-  static const Curve _animationCurve = Curves.easeInOut;
 
   // Spacing constants
   static const double spacing4 = 4.0;
@@ -60,14 +58,14 @@ class AppTheme {
       color: AppColors.lightCardColor,
       shape: _cardShape,
       elevation: _elevation,
-      shadowColor: AppColors.pokemonGray.withOpacity(0.2),
+      shadowColor: AppColors.pokemonGray.withValues(alpha: 0.2),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.pokemonRed,
       foregroundColor: Colors.white,
       titleTextStyle: AppTypography.headline6.copyWith(color: Colors.white),
       elevation: 0,
-      shadowColor: AppColors.pokemonBlack.withOpacity(0.3),
+      shadowColor: AppColors.pokemonBlack.withValues(alpha: 0.3),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.pokemonWhite,
@@ -117,7 +115,7 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(
             horizontal: spacing16, vertical: spacing8),
         elevation: 2,
-        shadowColor: AppColors.pokemonRed.withOpacity(0.4),
+        shadowColor: AppColors.pokemonRed.withValues(alpha: 0.4),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -205,8 +203,8 @@ class AppTheme {
       ),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
           return AppColors.pokemonRed;
         }
         return AppColors.lightTextSecondaryColor;
@@ -220,7 +218,7 @@ class AppTheme {
       unselectedLabelColor: AppColors.pokemonGray,
       labelStyle: AppTypography.button,
       unselectedLabelStyle: AppTypography.button,
-      indicator: BoxDecoration(
+      indicator: const BoxDecoration(
         border: Border(
           bottom: BorderSide(
             color: AppColors.pokemonRed,

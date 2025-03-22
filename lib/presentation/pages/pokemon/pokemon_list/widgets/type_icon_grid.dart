@@ -23,7 +23,7 @@ class TypeIconGrid extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: color, width: 1),
           ),

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import '../../datasource/models/api_response_model.dart';
 import '../../datasource/models/pokemon_model.dart';
 import '../db/db_local.dart';
@@ -392,69 +391,71 @@ String _getDefaultTypeFromName(String pokemonName) {
   if (nameLower.contains('stellar') ||
       nameLower.contains('psychic') ||
       nameLower.contains('mew') ||
-      nameLower.contains('celebi'))
+      nameLower.contains('celebi')) {
     return 'psychic';
-  else if (nameLower.contains('fire') ||
+  } else if (nameLower.contains('fire') ||
       nameLower.contains('flame') ||
       nameLower.contains('char') ||
-      nameLower.contains('cinder'))
+      nameLower.contains('cinder')) {
     return 'fire';
-  else if (nameLower.contains('water') ||
+  } else if (nameLower.contains('water') ||
       nameLower.contains('squirt') ||
       nameLower.contains('blastoise') ||
-      nameLower.contains('keldeo'))
+      nameLower.contains('keldeo')) {
     return 'water';
-  else if (nameLower.contains('electric') ||
+  } else if (nameLower.contains('electric') ||
       nameLower.contains('thunder') ||
       nameLower.contains('pika') ||
-      nameLower.contains('volt'))
+      nameLower.contains('volt')) {
     return 'electric';
-  else if (nameLower.contains('grass') ||
+  } else if (nameLower.contains('grass') ||
       nameLower.contains('leaf') ||
       nameLower.contains('bulb') ||
-      nameLower.contains('ivy'))
+      nameLower.contains('ivy')) {
     return 'grass';
-  else if (nameLower.contains('ice') ||
+  } else if (nameLower.contains('ice') ||
       nameLower.contains('snow') ||
       nameLower.contains('frost') ||
-      nameLower.contains('freez'))
+      nameLower.contains('freez')) {
     return 'ice';
-  else if (nameLower.contains('fighting') ||
+  } else if (nameLower.contains('fighting') ||
       nameLower.contains('combat') ||
       nameLower.contains('hit') ||
-      nameLower.contains('teras-combat'))
+      nameLower.contains('teras-combat')) {
     return 'fighting';
-  else if (nameLower.contains('poison') || nameLower.contains('toxic'))
+  } else if (nameLower.contains('poison') || nameLower.contains('toxic')) {
     return 'poison';
-  else if (nameLower.contains('ground') ||
+  } else if (nameLower.contains('ground') ||
       nameLower.contains('earth') ||
-      nameLower.contains('terra'))
+      nameLower.contains('terra')) {
     return 'ground';
-  else if (nameLower.contains('flying') ||
+  } else if (nameLower.contains('flying') ||
       nameLower.contains('wing') ||
-      nameLower.contains('bird'))
+      nameLower.contains('bird')) {
     return 'flying';
-  else if (nameLower.contains('bug') || nameLower.contains('insect'))
+  } else if (nameLower.contains('bug') || nameLower.contains('insect')) {
     return 'bug';
-  else if (nameLower.contains('rock') || nameLower.contains('stone'))
+  } else if (nameLower.contains('rock') || nameLower.contains('stone')) {
     return 'rock';
-  else if (nameLower.contains('ghost') ||
+  } else if (nameLower.contains('ghost') ||
       nameLower.contains('spirit') ||
-      nameLower.contains('specter'))
+      nameLower.contains('specter')) {
     return 'ghost';
-  else if (nameLower.contains('dragon') || nameLower.contains('draconic'))
+  } else if (nameLower.contains('dragon') || nameLower.contains('draconic')) {
     return 'dragon';
-  else if (nameLower.contains('dark') ||
+  } else if (nameLower.contains('dark') ||
       nameLower.contains('evil') ||
-      nameLower.contains('wicked'))
+      nameLower.contains('wicked')) {
     return 'dark';
-  else if (nameLower.contains('steel') ||
+  } else if (nameLower.contains('steel') ||
       nameLower.contains('metal') ||
-      nameLower.contains('iron'))
+      nameLower.contains('iron')) {
     return 'steel';
-  else if (nameLower.contains('fairy') ||
+  } else if (nameLower.contains('fairy') ||
       nameLower.contains('fae') ||
-      nameLower.contains('pixie')) return 'fairy';
+      nameLower.contains('pixie')) {
+    return 'fairy';
+  }
 
   // Default to normal
   return 'normal';

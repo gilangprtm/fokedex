@@ -43,7 +43,7 @@ class TypeFilterChip extends StatelessWidget {
       ),
       selected: isSelected,
       onSelected: (_) => onSelected(),
-      backgroundColor: typeColor.withOpacity(0.2),
+      backgroundColor: typeColor.withValues(alpha: 0.2),
       selectedColor: typeColor,
       checkmarkColor: Colors.white,
     );

@@ -193,13 +193,13 @@ class MoveListPage extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.pokemonRed.withOpacity(0.1),
+            color: AppColors.pokemonRed.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Center(
             child: Text(
               '#${moveId.toString().padLeft(3, '0')}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.pokemonRed,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,

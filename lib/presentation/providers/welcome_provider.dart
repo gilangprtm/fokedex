@@ -5,10 +5,7 @@ import 'dart:math';
 import '../../core/base/base_provider.dart';
 import '../../core/utils/mahas.dart';
 import '../../data/datasource/models/api_response_model.dart';
-import '../../data/datasource/models/pokemon_model.dart';
-import '../../data/datasource/network/service/pokemon_service.dart';
 import '../../data/local/services/local_pokemon_service.dart';
-import '../../data/local/repositories/local_pokemon_repository.dart';
 import '../routes/app_routes.dart';
 
 // Konstanta untuk key penyimpanan
@@ -27,7 +24,6 @@ enum LoadingStatus {
 /// Provider untuk mengelola state Welcome Page dan preloading data Pokemon
 class WelcomeProvider extends BaseProvider {
   // Service dan repository
-  final PokemonService _pokemonService = PokemonService();
   final LocalPokemonService _localService = LocalPokemonService();
 
   // State untuk loading
@@ -60,7 +56,6 @@ class WelcomeProvider extends BaseProvider {
 
   // Total stages for loading
   final int _totalLoadingStages = 5;
-  int _currentLoadingStage = 0;
 
   LoadingStatus _loadingStatus = LoadingStatus.initial;
   LoadingStatus get loadingStatus => _loadingStatus;
@@ -103,7 +98,6 @@ class WelcomeProvider extends BaseProvider {
 
     await runAsync('startLoadingPokemonData', () async {
       _isDataLoading = true;
-      _currentLoadingStage = 0;
       _loadingProgress = 0.0;
 
       try {
@@ -120,7 +114,7 @@ class WelcomeProvider extends BaseProvider {
         // Pastikan perubahan tahap 1 selesai
         _loadingProgress = 1 / _totalLoadingStages;
         notifyListeners();
-        await Future.delayed(Duration(milliseconds: 200));
+        await Future.delayed(const Duration(milliseconds: 200));
 
         // Tahap 2: Mengambil daftar Pokemon langsung dari API
         _updateLoadingState(
@@ -153,7 +147,7 @@ class WelcomeProvider extends BaseProvider {
         // Pastikan perubahan tahap 2 selesai
         _loadingProgress = 2 / _totalLoadingStages;
         notifyListeners();
-        await Future.delayed(Duration(milliseconds: 200));
+        await Future.delayed(const Duration(milliseconds: 200));
 
         // Tahap 3: Mengambil daftar tipe Pokemon dari API
         _updateLoadingState(
@@ -181,11 +175,10 @@ class WelcomeProvider extends BaseProvider {
         // Pastikan perubahan tahap 3 selesai
         _loadingProgress = 3 / _totalLoadingStages;
         notifyListeners();
-        await Future.delayed(Duration(milliseconds: 200));
+        await Future.delayed(const Duration(milliseconds: 200));
 
         // Tahap 4: Mengambil detail Pokemon (semua data)
 
-        List<Pokemon> pokemonDetails = [];
         try {
           // Ambil semua Pokemon dan download detailnya
           // Batasi jumlah yang diunduh sesuai kebutuhan aplikasi (misal: 300 Pokemon pertama)
@@ -232,7 +225,7 @@ class WelcomeProvider extends BaseProvider {
             notifyListeners();
 
             // Berikan sedikit waktu untuk UI refresh
-            await Future.delayed(Duration(milliseconds: 50));
+            await Future.delayed(const Duration(milliseconds: 50));
           }
         } catch (e) {
           _updateLoadingState(
@@ -246,7 +239,7 @@ class WelcomeProvider extends BaseProvider {
         // Pastikan perubahan tahap 4 selesai
         _loadingProgress = 4 / _totalLoadingStages;
         notifyListeners();
-        await Future.delayed(Duration(milliseconds: 200));
+        await Future.delayed(const Duration(milliseconds: 200));
 
         // Tahap 5: Pastikan semua data sudah tersimpan
         _updateLoadingState(
@@ -257,9 +250,9 @@ class WelcomeProvider extends BaseProvider {
 
         try {
           // Verifikasi data tersimpan
-          final pokemonCount = await _localService.getPokemonCount();
-          final typeList = await _localService.getPokemonTypes();
-          final detailCount = await _localService.getPokemonDetailCount();
+          await _localService.getPokemonCount();
+          await _localService.getPokemonTypes();
+          await _localService.getPokemonDetailCount();
         } catch (e) {
           _updateLoadingState(
             stage: 5,
@@ -285,13 +278,13 @@ class WelcomeProvider extends BaseProvider {
 
         // Navigate to home page after data is loaded
         Mahas.routeToAndRemove(AppRoutes.home);
-      } on TimeoutException catch (e) {
+      } on TimeoutException {
         _isDataLoading = false;
         _loadingStatusText = 'Koneksi timeout';
         _loadingDetailText =
             'Server tidak merespon. Cek koneksi internet Anda dan coba lagi.';
         notifyListeners();
-      } catch (e, stack) {
+      } catch (e) {
         _isDataLoading = false;
         _loadingStatusText = 'Terjadi kesalahan saat mengunduh data';
 
@@ -317,18 +310,10 @@ class WelcomeProvider extends BaseProvider {
     required String statusText,
     required String detailText,
   }) {
-    _currentLoadingStage = stage;
     _loadingProgress = stage / _totalLoadingStages;
     _loadingStatusText = statusText;
     _loadingDetailText = detailText;
 
     notifyListeners();
-  }
-
-  /// Extract ID from Pokemon URL
-  int _extractIdFromUrl(String url) {
-    final regex = RegExp(r'pokemon/(\d+)/?$');
-    final match = regex.firstMatch(url);
-    return match != null ? int.parse(match.group(1)!) : 1;
   }
 }

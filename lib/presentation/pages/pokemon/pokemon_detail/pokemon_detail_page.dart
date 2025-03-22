@@ -111,7 +111,7 @@ class PokemonDetailPage extends StatelessWidget {
 
     // Show Pokemon details
     final pokemon = provider.pokemon!;
-    final Color appBarColor = _getAppBarColor(provider);
+    _getAppBarColor(provider);
 
     return _buildPokemonDetails(context, provider, pokemon);
   }
@@ -365,7 +365,7 @@ class PokemonDetailPage extends StatelessWidget {
               child: Icon(
                 Icons.catching_pokemon,
                 size: 200,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ),
 
@@ -376,7 +376,7 @@ class PokemonDetailPage extends StatelessWidget {
               right: 0,
               child: Container(
                 padding: const EdgeInsets.all(16.0),
-                color: appBarColor.withOpacity(0.7),
+                color: appBarColor.withValues(alpha: 0.7),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -384,7 +384,7 @@ class PokemonDetailPage extends StatelessWidget {
                     Text(
                       '#${pokemon.id.toString().padLeft(3, '0')}',
                       style: AppTypography.pokemonId.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     // Pokemon Name
@@ -418,7 +418,7 @@ class PokemonDetailPage extends StatelessWidget {
                   errorWidget: (context, url, error) {
                     return Container(
                       height: 200,
-                      color: appBarColor.withOpacity(0.5),
+                      color: appBarColor.withValues(alpha: 0.5),
                       child: const Icon(
                         Icons.catching_pokemon,
                         size: 100,

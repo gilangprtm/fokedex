@@ -101,7 +101,6 @@ class LocalPokemonService {
   Future<bool> downloadAndSavePokemonDetail(int id) async {
     try {
       final response = await _pokemonService.getPokemonDetail(id.toString());
-      if (response == null) return false;
 
       // Log success (only for the first few Pokémon to avoid excessive logging)
       if (id < 10) {
@@ -139,106 +138,6 @@ class LocalPokemonService {
       _logger.e('Error downloading Pokemon detail for ID $id: $e');
       return false;
     }
-  }
-
-  // Helper method to add default types for well-known Pokémon when the API data is missing
-  Future<void> _addDefaultTypesIfMissing(Pokemon pokemon) async {
-    // Define default types for some common Pokémon that might have issues
-    final defaultTypes = <int, List<String>>{
-      // Gen 1 starters
-      1: ['grass', 'poison'], // Bulbasaur
-      4: ['fire'], // Charmander
-      7: ['water'], // Squirtle
-
-      // Some legendaries that often have issues
-      150: ['psychic'], // Mewtwo
-      249: ['psychic', 'flying'], // Lugia
-      250: ['fire', 'flying'], // Ho-Oh
-
-      // Random sampling of other Pokémon reported with issues
-      248: ['rock', 'dark'], // Tyranitar
-      480: ['psychic'], // Uxie
-      500: ['fire', 'fighting'], // Emboar
-      520: ['normal', 'flying'], // Tranquill
-      540: ['bug', 'grass'], // Sewaddle
-      560: ['dark', 'fighting'], // Scrafty
-      580: ['water', 'flying'], // Ducklett
-      600: ['steel'], // Klang
-      620: ['fighting'], // Mienshao
-      640: ['grass', 'fighting'], // Virizion
-      660: ['normal', 'ground'], // Diggersby
-      680: ['steel', 'ghost'], // Doublade
-      700: ['fairy'], // Sylveon
-      720: ['psychic', 'ghost'], // Hoopa
-      740: ['fighting', 'ice'], // Crabominable
-      760: ['normal', 'fighting'], // Bewear
-      780: ['normal', 'dragon'], // Drampa
-    };
-
-    if (defaultTypes.containsKey(pokemon.id)) {
-      final types = defaultTypes[pokemon.id]!;
-      final typesList = <PokemonType>[];
-
-      for (int i = 0; i < types.length; i++) {
-        typesList.add(
-          PokemonType(
-            slot: i + 1,
-            type: TypeInfo(
-              name: types[i],
-              url: 'https://pokeapi.co/api/v2/type/${_getTypeId(types[i])}/',
-            ),
-          ),
-        );
-      }
-
-      // Use reflection to modify the types field
-      // Since the types field is final, we need to create a new Pokemon object
-      final updatedPokemon = Pokemon(
-        id: pokemon.id,
-        name: pokemon.name,
-        url: pokemon.url,
-        height: pokemon.height,
-        weight: pokemon.weight,
-        types: typesList,
-        abilities: pokemon.abilities,
-        stats: pokemon.stats,
-        moves: pokemon.moves,
-        sprites: pokemon.sprites,
-        species: pokemon.species,
-      );
-
-      // Replace the original Pokemon with the updated one
-      pokemon = updatedPokemon;
-
-      debugPrint(
-          'Added default types for Pokemon ${pokemon.name} (ID: ${pokemon.id}): ${types.join(', ')}');
-    }
-  }
-
-  // Helper method to get type ID from name
-  int _getTypeId(String typeName) {
-    final typeMap = {
-      'normal': 1,
-      'fighting': 2,
-      'flying': 3,
-      'poison': 4,
-      'ground': 5,
-      'rock': 6,
-      'bug': 7,
-      'ghost': 8,
-      'steel': 9,
-      'fire': 10,
-      'water': 11,
-      'grass': 12,
-      'electric': 13,
-      'psychic': 14,
-      'ice': 15,
-      'dragon': 16,
-      'dark': 17,
-      'fairy': 18,
-    };
-
-    return typeMap[typeName] ?? 1; // Default to normal type if not found
   }
 
   /// Akses lokal ke daftar Pokemon

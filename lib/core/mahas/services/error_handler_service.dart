@@ -23,18 +23,13 @@ class ErrorHandlerService {
   /// Function untuk pelaporan error (akan diset sesuai layanan error reporting yang digunakan)
   ErrorReportCallback? _errorReportFunction;
 
-  /// Function untuk menampilkan UI error
-  ErrorUICallback? _errorUIFunction;
-
   /// Konfigurasikan service error reporting
   void setErrorReportFunction(ErrorReportCallback reportFunction) {
     _errorReportFunction = reportFunction;
   }
 
   /// Konfigurasikan UI error handling
-  void setErrorUIFunction(ErrorUICallback uiFunction) {
-    _errorUIFunction = uiFunction;
-  }
+  void setErrorUIFunction(ErrorUICallback uiFunction) {}
 
   /// Inisialisasi global error handling
   void init() {
@@ -109,50 +104,6 @@ class ErrorHandlerService {
         );
       }
     }
-  }
-
-  /// Internal method untuk menampilkan UI error
-  Future<void> _showErrorUI(
-      BuildContext context, Object error, StackTrace stackTrace) async {
-    if (_errorUIFunction != null) {
-      try {
-        await _errorUIFunction!(context, error, stackTrace);
-      } catch (e) {
-        _logger.e(
-          'Error UI handling failed',
-          error: e,
-          tag: 'ERROR_HANDLER',
-        );
-
-        // Fallback ke snackbar sederhana
-        _showErrorSnackBar(context, error);
-      }
-    } else {
-      // Default error UI
-      _showErrorSnackBar(context, error);
-    }
-  }
-
-  /// Membuat snackbar error sederhana
-  void _showErrorSnackBar(BuildContext context, Object error) {
-    final messenger = ScaffoldMessenger.of(context);
-
-    messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Error: ${error.toString().split('\n').first}'),
-        backgroundColor: Colors.red.shade700,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'Dismiss',
-          textColor: Colors.white,
-          onPressed: () {
-            messenger.hideCurrentSnackBar();
-          },
-        ),
-      ),
-    );
   }
 
   /// Function wrapper untuk menangani error pada fungsi async

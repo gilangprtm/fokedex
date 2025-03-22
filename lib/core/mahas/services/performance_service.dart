@@ -11,7 +11,6 @@ class PerformanceService {
   static PerformanceService get instance => _instance;
 
   final LoggerService _logger = LoggerService.instance;
-  final AppEnvironment _env = AppEnvironment.instance;
 
   // Data untuk performance tracking
   final Map<String, _PerformanceMetric> _metrics = {};

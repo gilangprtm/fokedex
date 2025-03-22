@@ -5,7 +5,6 @@ import '../../../core/theme/app_typografi.dart';
 import '../../../core/utils/mahas.dart';
 import '../../../presentation/routes/app_routes.dart';
 import '../../providers/welcome_provider.dart';
-import 'package:flutter/foundation.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -93,13 +92,13 @@ class WelcomePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(100),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Icon(
+          child: const Icon(
             Icons.catching_pokemon,
             size: 60,
             color: AppColors.pokemonRed,
@@ -123,7 +122,7 @@ class WelcomePage extends StatelessWidget {
         Text(
           'Ensiklopedia Pokemon Lengkap',
           style: AppTypography.subtitle1.copyWith(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
           ),
         ),
       ],
@@ -143,7 +142,7 @@ class WelcomePage extends StatelessWidget {
               width: 120,
               child: CircularProgressIndicator(
                 value: provider.loadingProgress,
-                backgroundColor: Colors.white.withOpacity(0.3),
+                backgroundColor: Colors.white.withValues(alpha: 0.3),
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 strokeWidth: 8.0,
               ),
@@ -177,7 +176,7 @@ class WelcomePage extends StatelessWidget {
         Text(
           provider.loadingDetailText,
           style: AppTypography.caption.copyWith(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
           textAlign: TextAlign.center,
         ),
@@ -232,7 +231,7 @@ class WelcomePage extends StatelessWidget {
           Text(
             'Terakhir diperbarui: ${provider.lastUpdatedText}',
             style: AppTypography.caption.copyWith(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],

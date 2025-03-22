@@ -119,14 +119,9 @@ class LoggerService {
 
     final String logTag = tag ?? 'APP';
     final DateTime now = DateTime.now();
-    final String formattedTime =
-        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}.${now.millisecond.toString().padLeft(3, '0')}";
 
     // Emoji untuk masing-masing level
-    final String emoji = _getEmojiForLevel(level);
-
-    // Format pesan
-    String logMessage = "$emoji [$formattedTime] [$logTag] $message";
+    _getEmojiForLevel(level);
 
     // Tambahkan data jika ada dan detailed logs diaktifkan
     String? dataString;
@@ -139,17 +134,13 @@ class LoggerService {
         } else {
           dataString = data.toString();
         }
-
-        logMessage += "\nData: $dataString";
       } catch (e) {
-        logMessage += "\nData: $data (couldn't format)";
+        dataString = data.toString();
       }
     }
 
     // Tambahkan stack trace jika tersedia dan dalam mode development
-    if (stackTrace != null && _enableDetailedLogs) {
-      logMessage += "\nStackTrace: $stackTrace";
-    }
+    if (stackTrace != null && _enableDetailedLogs) {}
 
     // Log ke console dalam mode debug
     if (kDebugMode) {
@@ -199,8 +190,6 @@ class LoggerService {
         return '❌';
       case LogLevel.fatal:
         return '💥';
-      default:
-        return '📝';
     }
   }
 

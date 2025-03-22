@@ -43,7 +43,6 @@ class PokemonListProvider extends BaseProvider {
 
   // Pagination state
   int _offset = 0;
-  final int _limit = 20;
   bool _hasMoreData = true;
   bool get hasMoreData => _hasMoreData;
 
@@ -157,9 +156,7 @@ class PokemonListProvider extends BaseProvider {
               try {
                 final details = await _pokemonService
                     .getPokemonDetail(pokemon.id.toString());
-                if (details != null) {
-                  _pokemonDetails[pokemon.id] = details;
-                }
+                _pokemonDetails[pokemon.id] = details;
               } catch (e) {
                 logger.e('Error loading details for Pokemon ${pokemon.id}: $e');
               }

@@ -35,13 +35,13 @@ class AppColors {
 
   // Status Colors with Opacity
   static Color errorColorWithOpacity(double opacity) =>
-      errorColor.withOpacity(opacity);
+      errorColor.withValues(alpha: opacity);
   static Color successColorWithOpacity(double opacity) =>
-      successColor.withOpacity(opacity);
+      successColor.withValues(alpha: opacity);
   static Color warningColorWithOpacity(double opacity) =>
-      warningColor.withOpacity(opacity);
+      warningColor.withValues(alpha: opacity);
   static Color infoColorWithOpacity(double opacity) =>
-      infoColor.withOpacity(opacity);
+      infoColor.withValues(alpha: opacity);
 
   // Utility Colors
   static const Color transparent = Colors.transparent;
@@ -103,7 +103,7 @@ class AppColors {
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
           colors: [
-            pokemonRed.withOpacity(0.8),
+            pokemonRed.withValues(alpha: 0.8),
             pokemonDarkRed,
           ],
         ),
@@ -114,12 +114,12 @@ class AppColors {
         color: pokemonWhite,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: pokemonGray.withOpacity(0.2), width: 1),
+        border: Border.all(color: pokemonGray.withValues(alpha: 0.2), width: 1),
         borderRadius: BorderRadius.circular(12),
       );
 }

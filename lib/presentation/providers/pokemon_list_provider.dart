@@ -314,7 +314,7 @@ class PokemonListProvider extends BaseProvider {
 
     _filteredPokemonList = sourceList
         .where((pokemon) =>
-            pokemon.name.toLowerCase().contains(query.toLowerCase()))
+            pokemon.normalizedName.toLowerCase().contains(query.toLowerCase()))
         .toList();
   }
 

@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import '../../core/base/base_provider.dart';
 import '../../data/datasource/models/api_response_model.dart';
-import '../../data/datasource/network/service/move_service.dart';
+import '../../data/datasource/network/service/item_service.dart';
 
-class MoveListProvider extends BaseProvider {
+class ItemListProvider extends BaseProvider {
   // Service
-  final MoveService _moveService = MoveService();
+  final ItemService _service = ItemService();
 
   // Controllers
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
 
   // Data state
-  List<ResourceListItem> _moveList = [];
-  List<ResourceListItem> get moveList => _moveList;
+  List<ResourceListItem> _items = [];
+  List<ResourceListItem> get items => _items;
 
   // Filtered list
-  List<ResourceListItem> _filteredMoveList = [];
-  List<ResourceListItem> get filteredMoveList =>
-      _filteredMoveList.isEmpty ? _moveList : _filteredMoveList;
+  List<ResourceListItem> _filteredItems = [];
+  List<ResourceListItem> get filteredItems =>
+      _filteredItems.isEmpty ? _items : _filteredItems;
 
   // Pagination state
   int _offset = 0;
-  bool _hasMoreData = true;
-  bool get hasMoreData => _hasMoreData;
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
 
   // Loading state
   bool _isLoading = false;
@@ -53,59 +53,59 @@ class MoveListProvider extends BaseProvider {
       // Check if we're near the bottom of the list
       if (scrollController.position.pixels >=
           scrollController.position.maxScrollExtent - 200) {
-        // Load more moves
-        loadMoreMoves();
+        // Load more items
+        loadMoreItems();
       }
     });
   }
 
   // Handle search text changes
   void onSearchChanged(String value) {
-    searchMoves(value);
+    searchItems(value);
   }
 
   // Clear search
   void clearSearch() {
     searchController.clear();
-    searchMoves('');
+    searchItems('');
   }
 
   // Load initial data
   Future<void> loadInitialData() async {
     await runAsync('loadInitialData', () async {
-      await loadMoveList();
+      await loadItems();
     });
   }
 
-  // Load daftar Move dengan pagination
-  Future<void> loadMoveList({bool refresh = false}) async {
+  // Load daftar Item dengan pagination
+  Future<void> loadItems({bool refresh = false}) async {
     if (refresh) {
       _offset = 0;
-      _moveList = [];
-      _hasMoreData = true;
-      _filteredMoveList = [];
+      _items = [];
+      _hasMore = true;
+      _filteredItems = [];
       notifyListeners();
     }
 
     // Jangan load lagi jika sudah tidak ada data lagi atau sedang loading
-    if (!_hasMoreData || (_isLoading && !refresh)) {
+    if (!_hasMore || (_isLoading && !refresh)) {
       return;
     }
 
-    await runAsync('loadMoveList', () async {
+    await runAsync('loadItems', () async {
       _isLoading = true;
       _hasError = false;
 
       try {
         final response =
-            await _moveService.getMoveList(offset: _offset, limit: 1000);
+            await _service.getItemList(offset: _offset, limit: 2200);
 
         // Update pagination state
-        _hasMoreData = response.hasMore;
+        _hasMore = response.hasMore;
         _offset = response.nextOffset ?? _offset;
 
-        // Add new Moves to the list
-        _moveList = [..._moveList, ...response.results];
+        // Add new Items to the list
+        _items = [..._items, ...response.results];
 
         // Apply search if query exists
         if (_searchQuery.isNotEmpty) {
@@ -117,22 +117,22 @@ class MoveListProvider extends BaseProvider {
         _isLoading = false;
         _hasError = true;
         _errorMessage = e.toString();
-        logger.e('Error loading Move list: $e');
+        logger.e('Error loading Item list: $e');
       }
     });
   }
 
-  // Load lebih banyak Move (infinite scroll)
-  Future<void> loadMoreMoves() async {
-    if (_isLoading || !_hasMoreData) {
+  // Load lebih banyak Item (infinite scroll)
+  Future<void> loadMoreItems() async {
+    if (_isLoading || !_hasMore) {
       return;
     }
 
-    await loadMoveList();
+    await loadItems();
   }
 
-  // Filter Move berdasarkan pencarian nama
-  void searchMoves(String query) {
+  // Filter Item berdasarkan pencarian nama
+  void searchItems(String query) {
     _searchQuery = query.toLowerCase();
     _filterBySearch(_searchQuery);
     notifyListeners();
@@ -141,18 +141,18 @@ class MoveListProvider extends BaseProvider {
   // Helper method untuk filter berdasarkan pencarian
   void _filterBySearch(String query) {
     if (query.isEmpty) {
-      _filteredMoveList = [];
+      _filteredItems = [];
       return;
     }
 
-    _filteredMoveList = _moveList
-        .where((move) => move.normalizedName.toLowerCase().contains(query))
+    _filteredItems = _items
+        .where((item) => item.normalizedName.toLowerCase().contains(query))
         .toList();
   }
 
   // Refresh data
   Future<void> refresh() async {
-    await loadMoveList(refresh: true);
+    await loadItems(refresh: true);
   }
 
   @override

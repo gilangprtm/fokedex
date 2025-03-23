@@ -68,4 +68,8 @@ class ResourceListItem {
     // The ID is typically the last path segment before the trailing slash
     return int.parse(pathSegments[pathSegments.length - 2]);
   }
+
+  String get normalizedName {
+    return name.replaceAll('-', ' ');
+  }
 }

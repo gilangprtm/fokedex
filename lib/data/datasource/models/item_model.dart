@@ -9,7 +9,7 @@ class Item {
   final List<ItemEffectEntry>? effectEntries;
   final List<ItemFlavorText>? flavorTextEntries;
   final List<ItemName>? names;
-  final List<ItemSprite>? sprites;
+  final ItemSprite? sprites;
   final List<ItemHolderPokemon>? heldByPokemon;
 
   Item({
@@ -56,10 +56,9 @@ class Item {
           .toList();
     }
 
-    List<ItemSprite>? sprites;
+    ItemSprite? sprites;
     if (json['sprites'] != null) {
-      // Convert sprites object to list
-      sprites = [ItemSprite.fromJson(json['sprites'])];
+      sprites = ItemSprite.fromJson(json['sprites']);
     }
 
     List<ItemHolderPokemon>? heldByPokemon;
@@ -111,8 +110,8 @@ class Item {
     if (names != null) {
       data['names'] = names!.map((item) => item.toJson()).toList();
     }
-    if (sprites != null && sprites!.isNotEmpty) {
-      data['sprites'] = sprites![0].toJson();
+    if (sprites != null) {
+      data['sprites'] = sprites!.toJson();
     }
     if (heldByPokemon != null) {
       data['held_by_pokemon'] =
@@ -248,28 +247,28 @@ class Language {
 
 class ItemFlavorText {
   final String text;
+  final VersionGroup versionGroup;
   final Language language;
-  final Version version;
 
   ItemFlavorText({
     required this.text,
+    required this.versionGroup,
     required this.language,
-    required this.version,
   });
 
   factory ItemFlavorText.fromJson(Map<String, dynamic> json) {
     return ItemFlavorText(
       text: json['text'],
+      versionGroup: VersionGroup.fromJson(json['version_group']),
       language: Language.fromJson(json['language']),
-      version: Version.fromJson(json['version']),
     );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['text'] = text;
+    data['version_group'] = versionGroup.toJson();
     data['language'] = language.toJson();
-    data['version'] = version.toJson();
     return data;
   }
 }
@@ -343,8 +342,8 @@ class ItemSprite {
 }
 
 class ItemHolderPokemon {
-  final PokemonSpecies pokemon;
-  final List<VersionDetail> versionDetails;
+  final Pokemon pokemon;
+  final List<ItemHolderPokemonVersionDetail> versionDetails;
 
   ItemHolderPokemon({
     required this.pokemon,
@@ -353,9 +352,9 @@ class ItemHolderPokemon {
 
   factory ItemHolderPokemon.fromJson(Map<String, dynamic> json) {
     return ItemHolderPokemon(
-      pokemon: PokemonSpecies.fromJson(json['pokemon']),
+      pokemon: Pokemon.fromJson(json['pokemon']),
       versionDetails: (json['version_details'] as List)
-          .map((detail) => VersionDetail.fromJson(detail))
+          .map((detail) => ItemHolderPokemonVersionDetail.fromJson(detail))
           .toList(),
     );
   }
@@ -369,17 +368,17 @@ class ItemHolderPokemon {
   }
 }
 
-class PokemonSpecies {
+class Pokemon {
   final String name;
   final String url;
 
-  PokemonSpecies({
+  Pokemon({
     required this.name,
     required this.url,
   });
 
-  factory PokemonSpecies.fromJson(Map<String, dynamic> json) {
-    return PokemonSpecies(
+  factory Pokemon.fromJson(Map<String, dynamic> json) {
+    return Pokemon(
       name: json['name'],
       url: json['url'],
     );
@@ -393,19 +392,19 @@ class PokemonSpecies {
   }
 }
 
-class VersionDetail {
+class ItemHolderPokemonVersionDetail {
   final int rarity;
-  final Version version;
+  final VersionGroup version;
 
-  VersionDetail({
+  ItemHolderPokemonVersionDetail({
     required this.rarity,
     required this.version,
   });
 
-  factory VersionDetail.fromJson(Map<String, dynamic> json) {
-    return VersionDetail(
+  factory ItemHolderPokemonVersionDetail.fromJson(Map<String, dynamic> json) {
+    return ItemHolderPokemonVersionDetail(
       rarity: json['rarity'],
-      version: Version.fromJson(json['version']),
+      version: VersionGroup.fromJson(json['version']),
     );
   }
 
@@ -413,6 +412,30 @@ class VersionDetail {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['rarity'] = rarity;
     data['version'] = version.toJson();
+    return data;
+  }
+}
+
+class VersionGroup {
+  final String name;
+  final String url;
+
+  VersionGroup({
+    required this.name,
+    required this.url,
+  });
+
+  factory VersionGroup.fromJson(Map<String, dynamic> json) {
+    return VersionGroup(
+      name: json['name'],
+      url: json['url'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['url'] = url;
     return data;
   }
 }

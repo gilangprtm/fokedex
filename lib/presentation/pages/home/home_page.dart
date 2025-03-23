@@ -80,7 +80,8 @@ class HomePage extends StatelessWidget {
               ),
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
-                  Mahas.routeTo('/pokemon', arguments: {'search': value});
+                  Mahas.routeTo(AppRoutes.pokemonList,
+                      arguments: {'search': value});
                 }
               },
             ),
@@ -133,9 +134,7 @@ class HomePage extends StatelessWidget {
                   context,
                   'Items',
                   Colors.amberAccent,
-                  () {
-                    // Navigate to items page
-                  },
+                  () => Mahas.routeTo(AppRoutes.itemList),
                 ),
               ),
             ],

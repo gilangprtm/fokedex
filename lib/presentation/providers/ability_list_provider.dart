@@ -146,7 +146,8 @@ class AbilityListProvider extends BaseProvider {
     }
 
     _filteredAbilities = _abilities
-        .where((ability) => ability.name.toLowerCase().contains(query))
+        .where(
+            (ability) => ability.normalizedName.toLowerCase().contains(query))
         .toList();
   }
 

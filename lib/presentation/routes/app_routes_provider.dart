@@ -1,4 +1,6 @@
 import '../pages/home/home_page.dart';
+import '../pages/item/item_detail/item_detail_page.dart';
+import '../pages/item/item_list/item_list_page.dart';
 import '../pages/pokemon/pokemon_list/pokemon_list_page.dart';
 import '../pages/pokemon/pokemon_detail/pokemon_detail_page.dart';
 import '../pages/move/move_list/move_list_page.dart';
@@ -24,6 +26,8 @@ class AppRoutesProvider {
       AppRoutes.moveDetail: (context) => const MoveDetailPage(),
       AppRoutes.abilityList: (context) => const AbilityListPage(),
       AppRoutes.abilityDetail: (context) => const AbilityDetailPage(),
+      AppRoutes.itemList: (context) => const ItemListPage(),
+      AppRoutes.itemDetail: (context) => const ItemDetailPage(),
     };
   }
 }

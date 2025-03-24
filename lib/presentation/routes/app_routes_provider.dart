@@ -10,6 +10,7 @@ import '../pages/move/move_list/move_list_page.dart';
 import '../pages/move/move_detail/move_detail_page.dart';
 import '../pages/ability/ability_list/ability_list_page.dart';
 import '../pages/ability/ability_detail/ability_detail_page.dart';
+import '../pages/type/type_chart/type_chart_page.dart';
 import '../pages/welcome/welcome_page.dart';
 
 import 'package:flutter/material.dart';
@@ -34,6 +35,7 @@ class AppRoutesProvider {
       AppRoutes.locationList: (context) => const LocationListPage(),
       AppRoutes.locationDetail: (context) => const LocationDetailPage(),
       AppRoutes.locationAreaDetail: (context) => const LocationAreaDetailPage(),
+      AppRoutes.typeChart: (context) => const TypeChartPage(),
     };
   }
 }

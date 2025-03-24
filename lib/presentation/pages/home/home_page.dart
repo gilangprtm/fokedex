@@ -157,7 +157,7 @@ class HomePage extends StatelessWidget {
                   'Type Charts',
                   Colors.brown,
                   () {
-                    // Navigate to type charts page
+                    Mahas.routeTo(AppRoutes.typeChart);
                   },
                 ),
               ),

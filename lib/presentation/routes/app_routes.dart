@@ -25,4 +25,7 @@ class AppRoutes {
   static const String locationList = '/location';
   static const String locationDetail = '/location/detail';
   static const String locationAreaDetail = '/location/area/detail';
+
+  // Type routes
+  static const String typeChart = '/types/chart';
 }

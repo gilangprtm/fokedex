@@ -20,4 +20,9 @@ class AppRoutes {
   // Item routes
   static const String itemList = '/item';
   static const String itemDetail = '/item/detail';
+
+  // Location routes
+  static const String locationList = '/location';
+  static const String locationDetail = '/location/detail';
+  static const String locationAreaDetail = '/location/area/detail';
 }

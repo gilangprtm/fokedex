@@ -147,9 +147,7 @@ class HomePage extends StatelessWidget {
                   context,
                   'Locations',
                   Colors.purpleAccent,
-                  () {
-                    // Navigate to locations page
-                  },
+                  () => Mahas.routeTo(AppRoutes.locationList),
                 ),
               ),
               const SizedBox(width: 16),

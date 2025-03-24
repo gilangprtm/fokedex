@@ -10,176 +10,289 @@ Also update the progress of the task in the Scratchpad when you finish a subtask
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
 The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
 
-# Tools
+# Development Guidelines
 
-Note all the tools are in python. So in the case you need to do batch processing, you can always consult the python files and write your own script.
+## Project Structure Analysis
 
-## Screenshot Verification
+Before making any changes or adding new features, always follow these steps:
 
-The screenshot verification workflow allows you to capture screenshots of web pages and verify their appearance using LLMs. The following tools are available:
+1. Project Structure Analysis
 
-1. Screenshot Capture:
+   ```bash
+   # Use list_dir to understand folder structure
+   list_dir <path>
 
-```bash
-venv/bin/python tools/screenshot_utils.py URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
-```
+   # Use grep_search to find relevant files
+   grep_search <pattern>
 
-2. LLM Verification with Images:
+   # Use read_file to read relevant files
+   read_file <path>
+   ```
 
-```bash
-venv/bin/python tools/llm_api.py --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
-```
+2. Find Similar Implementations
 
-Example workflow:
+   - Look for files with similar patterns
+   - Understand how similar features are implemented
+   - Follow the same patterns for consistency
 
-```python
-from screenshot_utils import take_screenshot_sync
-from llm_api import query_llm
+3. Understand Patterns Used
 
-# Take a screenshot
+   - Note file and folder structure
+   - Note file and class naming
+   - Note state management implementation
+   - Note routing implementation
 
-screenshot_path = take_screenshot_sync('https://example.com', 'screenshot.png')
+4. Follow Same Structure
+   - Place files in appropriate folders
+   - Use consistent naming
+   - Follow existing implementation patterns
+   - Don't create new structures unless absolutely necessary
 
-# Verify with LLM
+## Development Workflow
 
-response = query_llm(
-    "What is the background color and title of this webpage?",
-    provider="openai",  # or "anthropic"
-    image_path=screenshot_path
-)
-print(response)
-```
+### 1. Task Planning
 
-## LLM
+Before starting any task:
 
-You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
+1. Review the task requirements
+2. Check the Scratchpad for any existing related tasks
+3. Clear old tasks if necessary
+4. Document the task in the Scratchpad:
 
-```
-venv/bin/python ./tools/llm_api.py --prompt "What is the capital of France?" --provider "anthropic"
-```
+   ```
+   ## Current Task
 
-The LLM API supports multiple providers:
+   ### Task Description
+   [Describe the task]
 
-- OpenAI (default, model: gpt-4o)
-- Azure OpenAI (model: configured via AZURE_OPENAI_MODEL_DEPLOYMENT in .env file, defaults to gpt-4o-ms)
-- DeepSeek (model: deepseek-chat)
-- Anthropic (model: claude-3-sonnet-20240229)
-- Gemini (model: gemini-pro)
-- Local LLM (model: Qwen/Qwen2.5-32B-Instruct-AWQ)
+   ### Project Structure Analysis
+   [Document findings from structure analysis]
 
-But usually it's a better idea to check the content of the file and use the APIs in the `tools/llm_api.py` file to invoke the LLM if needed.
+   ### Similar Implementations
+   [List similar implementations found]
 
-## Web browser
+   ### Implementation Plan
+   [ ] Step 1
+   [ ] Step 2
+   [ ] Step 3
 
-You could use the `tools/web_scraper.py` file to scrape the web.
+   ### Progress Tracking
+   [ ] Step 1 completed
+   [ ] Step 2 completed
+   [ ] Step 3 completed
+   ```
 
-```
-venv/bin/python ./tools/web_scraper.py --max-concurrent 3 URL1 URL2 URL3
-```
+### 2. Implementation Steps
 
-This will output the content of the web pages.
+For each feature or change:
 
-## Search engine
+1. Create necessary models
+2. Implement repository layer
+3. Implement service layer
+4. Create provider
+5. Build UI components
+6. Add routing
+7. Test the implementation
 
-You could use the `tools/search_engine.py` file to search the web.
+### 3. Code Review Checklist
 
-```
-venv/bin/python ./tools/search_engine.py "your search keywords"
-```
+Before submitting changes:
 
-This will output the search results in the following format:
+- [ ] Followed project structure
+- [ ] Used consistent naming
+- [ ] Followed existing patterns
+- [ ] Added proper error handling
+- [ ] Added loading states
+- [ ] Added proper documentation
+- [ ] Tested the implementation
 
-```
-URL: https://example.com
-Title: This is the title of the search result
-Snippet: This is a snippet of the search result
-```
+## File Structure Guidelines
 
-If needed, you can further use the `web_scraper.py` file to scrape the web page content.
+### 1. Models
 
-# Lessons
+- Place in `lib/data/datasource/models/`
+- Follow naming: `*_model.dart`
+- Include fromJson and toJson methods
+- Add proper documentation
 
-## User Specified Lessons
+### 2. Repositories
 
-- You have a python venv in ./venv. Use it.
-- Include info useful for debugging in the program output.
-- Read the file before you try to edit it.
-- Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
+- Place in `lib/data/datasource/network/repository/`
+- Follow naming: `*_repository.dart`
+- Extend BaseRepository
+- Handle API calls and data conversion
 
-## Cursor learned
+### 3. Services
 
-- For search results, ensure proper handling of different character encodings (UTF-8) for international queries
-- Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
-- When using seaborn styles in matplotlib, use 'seaborn-v0_8' instead of 'seaborn' as the style name due to recent seaborn version changes
-- Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
-- When developing Flutter applications, make sure to properly handle assets by including them in the pubspec.yaml file
-- For Pokemon type colors in Flutter, use predefined color constants based on official Pokemon type colors
-- When generating image assets programmatically, use PIL (Pillow) for better cross-platform compatibility
+- Place in `lib/data/datasource/network/service/`
+- Follow naming: `*_service.dart`
+- Extend BaseService
+- Handle business logic
 
-# Scratchpad
+### 4. Providers
 
-## Flutter Pokedex App Development
+- Place in `lib/presentation/providers/`
+- Follow naming: `*_provider.dart`
+- Extend BaseProvider
+- Handle state management
+
+### 5. Pages
+
+- Place in `lib/presentation/pages/*/`
+- Follow naming: `*_page.dart`
+- Use ProviderPage for state management
+- Follow existing UI patterns
+
+### 6. Widgets
+
+- Place in `lib/presentation/widgets/`
+- Follow naming: `*_widget.dart`
+- Make reusable components
+- Follow existing widget patterns
+
+## UI Guidelines
+
+### 1. Colors
+
+- Use AppColors for all colors
+- Follow existing color patterns
+- Use proper opacity values
+
+### 2. Typography
+
+- Use AppTypography for all text styles
+- Follow existing typography patterns
+- Use appropriate font sizes
+
+### 3. Spacing
+
+- Use AppTheme.spacing\* for all spacing
+- Follow existing spacing patterns
+- Maintain consistent padding and margins
+
+### 4. Components
+
+- Use Mahas widgets when available
+- Follow existing component patterns
+- Maintain consistent styling
+
+## State Management Guidelines
+
+### 1. Providers
+
+- Use ProviderPage for state management
+- Follow existing provider patterns
+- Handle loading and error states
+- Implement proper data refresh
+
+### 2. Data Flow
+
+- Repository -> Service -> Provider -> UI
+- Handle errors at each layer
+- Implement proper loading states
+- Cache data when appropriate
+
+## Routing Guidelines
+
+### 1. Routes
+
+- Define in AppRoutes
+- Follow existing route patterns
+- Use proper route names
+- Handle deep linking
+
+### 2. Navigation
+
+- Use Mahas.routeTo for navigation
+- Pass proper arguments
+- Handle navigation errors
+- Implement proper back navigation
+
+## Error Handling Guidelines
+
+### 1. API Errors
+
+- Handle network errors
+- Handle API response errors
+- Show proper error messages
+- Implement retry mechanism
+
+### 2. UI Errors
+
+- Handle validation errors
+- Show proper error messages
+- Implement proper error recovery
+- Maintain user state
+
+## Testing Guidelines
+
+### 1. Unit Tests
+
+- Test models
+- Test repositories
+- Test services
+- Test providers
+
+### 2. Widget Tests
+
+- Test UI components
+- Test user interactions
+- Test error states
+- Test loading states
+
+## Documentation Guidelines
+
+### 1. Code Documentation
+
+- Document public methods
+- Document complex logic
+- Document error handling
+- Document state management
+
+### 2. API Documentation
+
+- Document API endpoints
+- Document request/response
+- Document error codes
+- Document rate limits
+
+## Lessons Learned
+
+1. Saat mengimplementasikan model dari API, perhatikan perbedaan antara referensi objek dan objek lengkap.
+   Misalnya pada kasus `LocationAreaDetail`, field `location` dalam API hanya berisi referensi (name & url), bukan objek Location lengkap.
+   Solusinya: buat class terpisah seperti `LocationReference` untuk menampung referensi ke objek.
+
+## Scratchpad
+
+## Current Task
 
 ### Task Description
 
-Build a Pokedex app using Flutter with Provider state management and PokeAPI.
+Memperbaiki fitur location dengan menggunakan ability sebagai referensi untuk memastikan konsistensi implementasi.
 
-### Project Setup Status
+### Project Structure Analysis
 
-The project already has a well-structured framework with:
+[X] Analisis struktur folder ability
+[X] Analisis struktur folder location
+[X] Identifikasi perbedaan implementasi
 
-- Clean architecture pattern (core, data, presentation layers)
-- Provider state management
-- Network handling (BaseRepository, BaseService)
-- Environment configuration
-- Routing system
-- Service initialization
+### Similar Implementations
 
-### Current Progress
+[X] Cari implementasi ability
+[X] Bandingkan dengan implementasi location
+[X] Catat pola yang perlu disesuaikan
 
-[X] Project structure analysis
-[X] Setup PokeAPI integration
-[X] Create Pokemon models
-[X] Implement API service for PokeAPI
-[X] Create repositories for Pokemon data
-[X] Implement state management
-[X] Create Pokemon list provider
-[X] Create Pokemon detail provider
-[X] Implement other required providers
-[X] Build UI components
-[X] Home screen with Pokemon list
-[X] Detail screen for Pokemon information
-[ ] Type screen
-[ ] Evolution screen (implemented as part of detail screen)
-[X] Add UX enhancements
-[X] Implement pagination
-[X] Add search functionality
-[X] Implement theming
-[X] Add assets
-[X] Create Pokemon type icons
+### Implementation Plan
 
-### Next Steps
+[X] Perbaiki LocationDetailProvider
+[X] Perbaiki LocationDetailPage
+[X] Buat LocationAreaDetail (tambahan sesuai permintaan)
+[X] Pastikan konsistensi dengan ability
 
-1. [x] Setup PokeAPI service and models
-2. [x] Create Pokemon list provider and repository
-3. [x] Implement home page UI
-4. [x] Implement detail page UI
-5. [x] Add missing assets
-6. [x] Fix any remaining issues with image loading
-7. [ ] Test the application thoroughly
+### Progress Tracking
 
-### Completed Features
-
-- Pokemon list with infinite scrolling
-- Pokemon filtering by type
-- Pokemon search functionality
-- Detailed Pokemon information display
-- Pokemon evolution chain visualization
-- Pokemon stats visualization
-- Pokemon moves list with search functionality
-- Pokemon type icons for better visual representation
-
-### Remaining Issues to Fix
-
-- Handle deep linking for Pokemon detail page
-- Test the application thoroughly on different devices
+[X] Membaca implementasi ability
+[X] Menganalisis perbedaan dengan location
+[X] Mengimplementasikan perbaikan
+[X] Menambahkan fitur LocationAreaDetail
+[X] Review hasil implementasi

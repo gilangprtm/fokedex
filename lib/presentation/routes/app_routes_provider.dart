@@ -1,6 +1,9 @@
 import '../pages/home/home_page.dart';
 import '../pages/item/item_detail/item_detail_page.dart';
 import '../pages/item/item_list/item_list_page.dart';
+import '../pages/location/location_area_detail/location_area_detail_page.dart';
+import '../pages/location/location_detail/location_detail_page.dart';
+import '../pages/location/location_list/location_list_page.dart';
 import '../pages/pokemon/pokemon_list/pokemon_list_page.dart';
 import '../pages/pokemon/pokemon_detail/pokemon_detail_page.dart';
 import '../pages/move/move_list/move_list_page.dart';
@@ -28,6 +31,9 @@ class AppRoutesProvider {
       AppRoutes.abilityDetail: (context) => const AbilityDetailPage(),
       AppRoutes.itemList: (context) => const ItemListPage(),
       AppRoutes.itemDetail: (context) => const ItemDetailPage(),
+      AppRoutes.locationList: (context) => const LocationListPage(),
+      AppRoutes.locationDetail: (context) => const LocationDetailPage(),
+      AppRoutes.locationAreaDetail: (context) => const LocationAreaDetailPage(),
     };
   }
 }

@@ -215,7 +215,7 @@ class LocationAreaDetail {
   final String name;
   final int gameIndex;
   final List<EncounterMethodRate>? encounterMethodRates;
-  final Location location;
+  final LocationReference location;
   final List<LocationAreaName>? names;
   final List<PokemonEncounter>? pokemonEncounters;
 
@@ -256,7 +256,7 @@ class LocationAreaDetail {
       name: json['name'],
       gameIndex: json['game_index'],
       encounterMethodRates: encounterMethodRates,
-      location: Location.fromJson(json['location']),
+      location: LocationReference.fromJson(json['location']),
       names: names,
       pokemonEncounters: pokemonEncounters,
     );
@@ -545,6 +545,31 @@ class ConditionValue {
 
   factory ConditionValue.fromJson(Map<String, dynamic> json) {
     return ConditionValue(
+      name: json['name'],
+      url: json['url'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['url'] = url;
+    return data;
+  }
+}
+
+// Tambahkan class baru untuk location reference
+class LocationReference {
+  final String name;
+  final String url;
+
+  LocationReference({
+    required this.name,
+    required this.url,
+  });
+
+  factory LocationReference.fromJson(Map<String, dynamic> json) {
+    return LocationReference(
       name: json['name'],
       url: json['url'],
     );

@@ -39,7 +39,7 @@ class LocationAreaDetailProvider extends BaseProvider {
   }
 
   void getArgs() {
-    _currentAreaId = Mahas.argument<String>('id') ?? '';
+    _currentAreaId = Mahas.argument<int>('id')?.toString() ?? '';
     _currentAreaName = Mahas.argument<String>('name') ?? '';
     _locationName = Mahas.argument<String>('locationName') ?? '';
   }

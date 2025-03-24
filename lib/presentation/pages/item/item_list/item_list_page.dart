@@ -193,7 +193,7 @@ class ItemListPage extends StatelessWidget {
     Mahas.routeTo(
       AppRoutes.itemDetail,
       arguments: {
-        'id': itemId,
+        'id': item.id,
         'name': item.name,
       },
     );

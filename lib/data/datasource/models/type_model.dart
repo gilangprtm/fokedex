@@ -1,4 +1,5 @@
 import 'ability_model.dart';
+import 'api_response_model.dart';
 
 class TypeDetail {
   final int id;
@@ -351,30 +352,6 @@ class GenerationGameIndex {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['game_index'] = gameIndex;
     data['generation'] = generation.toJson();
-    return data;
-  }
-}
-
-class ResourceListItem {
-  final String name;
-  final String url;
-
-  ResourceListItem({
-    required this.name,
-    required this.url,
-  });
-
-  factory ResourceListItem.fromJson(Map<String, dynamic> json) {
-    return ResourceListItem(
-      name: json['name'],
-      url: json['url'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['name'] = name;
-    data['url'] = url;
     return data;
   }
 }

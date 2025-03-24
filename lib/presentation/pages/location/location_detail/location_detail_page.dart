@@ -7,6 +7,7 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
+import '../../../../data/datasource/models/api_response_model.dart';
 import '../../../../data/datasource/models/location_model.dart';
 import '../../../providers/location_detail_provider.dart';
 import '../../../routes/app_routes.dart';
@@ -341,19 +342,13 @@ class LocationDetailPage extends StatelessWidget {
     );
   }
 
-  void _navigateToLocationAreaDetail(BuildContext context, LocationArea area) {
-    // Extract the area ID from the URL
-    final url = area.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final areaId = pathSegments[pathSegments.length - 2];
-
-    // Sementara arahkan kembali ke halaman location detail
+  void _navigateToLocationAreaDetail(
+      BuildContext context, ResourceListItem area) {
     // Sampai halaman location area detail dibuat
     Mahas.routeTo(
       AppRoutes.locationAreaDetail,
       arguments: {
-        'id': areaId,
+        'id': area.id,
         'name': area.name,
         'locationName': _capitalizeFirstLetter(area.name.split('-')[0])
       },

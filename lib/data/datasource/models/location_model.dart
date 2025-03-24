@@ -1,10 +1,12 @@
+import 'api_response_model.dart';
+
 class Location {
   final int id;
   final String name;
   final Region? region;
   final List<LocationName>? names;
   final List<GenerationGameIndex>? gameIndices;
-  final List<LocationArea>? areas;
+  final List<ResourceListItem>? areas;
 
   Location({
     required this.id,
@@ -30,10 +32,10 @@ class Location {
           .toList();
     }
 
-    List<LocationArea>? areas;
+    List<ResourceListItem>? areas;
     if (json['areas'] != null) {
       areas = (json['areas'] as List)
-          .map((area) => LocationArea.fromJson(area))
+          .map((area) => ResourceListItem.fromJson(area))
           .toList();
     }
 
@@ -172,30 +174,6 @@ class Generation {
 
   factory Generation.fromJson(Map<String, dynamic> json) {
     return Generation(
-      name: json['name'],
-      url: json['url'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['name'] = name;
-    data['url'] = url;
-    return data;
-  }
-}
-
-class LocationArea {
-  final String name;
-  final String url;
-
-  LocationArea({
-    required this.name,
-    required this.url,
-  });
-
-  factory LocationArea.fromJson(Map<String, dynamic> json) {
-    return LocationArea(
       name: json['name'],
       url: json['url'],
     );

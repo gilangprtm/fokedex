@@ -61,6 +61,13 @@ class ResourceListItem {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    data['url'] = url;
+    return data;
+  }
+
   // Extract ID from URL
   int get id {
     final uri = Uri.parse(url);

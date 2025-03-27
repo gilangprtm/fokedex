@@ -397,81 +397,107 @@ class PokemonDetailPage extends StatelessWidget {
   Widget _buildSliverAppBar(BuildContext context,
       PokemonDetailProvider provider, Pokemon pokemon, Color appBarColor) {
     return SliverAppBar(
-      expandedHeight: 200.0,
+      expandedHeight: 300.0,
       floating: false,
       pinned: true,
-      stretch: true,
       backgroundColor: appBarColor,
       flexibleSpace: FlexibleSpaceBar(
-        centerTitle: true,
-        title: Text(
-          _capitalizeFirstLetter(pokemon.name),
-          style: AppTypography.headline6.copyWith(color: Colors.white),
-        ),
         background: Stack(
           children: [
-            // Background gradient
+            // Background color
             Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    appBarColor,
-                    appBarColor.withOpacity(0.8),
+              color: appBarColor,
+            ),
+
+            // Decorative Poké Ball pattern in the background
+            Positioned(
+              right: -50,
+              top: -50,
+              child: Icon(
+                Icons.catching_pokemon,
+                size: 200,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+
+            // Pokemon info at the bottom
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                color: appBarColor.withValues(alpha: 0.7),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Pokemon ID
+                    Text(
+                      '#${pokemon.id.toString().padLeft(3, '0')}',
+                      style: AppTypography.pokemonId.copyWith(
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    // Pokemon Name
+                    Text(
+                      _capitalizeFirstLetter(pokemon.name),
+                      style: AppTypography.pokemonName.copyWith(
+                        color: Colors.white,
+                        fontSize: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Pokemon Types
+                    if (pokemon.types != null) _buildPokemonTypes(pokemon),
                   ],
                 ),
               ),
             ),
-            // Pokeball background pattern
-            Positioned(
-              right: -50,
-              top: -50,
-              child: Opacity(
-                opacity: 0.2,
-                child: Image.network(
-                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
-                  width: 200,
-                  height: 200,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            // Pokemon image
+
+            // Pokemon image in the center
             Align(
-              alignment: Alignment.bottomCenter,
+              alignment: Alignment.center,
               child: Hero(
                 tag: 'pokemon-${pokemon.id}',
                 child: ImageCacheUtils.buildPokemonImage(
                   imageUrl:
-                      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png',
-                  height: 180,
-                  width: 180,
-                  progressColor: appBarColor.withOpacity(0.5),
-                  errorWidget: (context, url, error) => const Icon(
-                    Icons.catching_pokemon,
-                    size:
-                        80, // Larger size for the error icon in the app bar image
-                    color: Colors.white54,
-                  ),
-                ),
-              ),
-            ),
-            // ID number
-            Positioned(
-              top: 60,
-              right: 16,
-              child: Text(
-                '#${pokemon.id.toString().padLeft(3, '0')}',
-                style: AppTypography.headline5.copyWith(
-                  color: Colors.white.withOpacity(0.7),
-                  fontWeight: FontWeight.bold,
+                      pokemon.sprites?.other?.officialArtwork?.frontDefault ??
+                          (pokemon.sprites?.frontDefault ?? ''),
+                  height: 200,
+                  width: 200,
+                  progressColor: Colors.white,
+                  errorWidget: (context, url, error) {
+                    return Container(
+                      height: 200,
+                      color: appBarColor.withValues(alpha: 0.5),
+                      child: const Icon(
+                        Icons.catching_pokemon,
+                        size: 100,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
           ],
         ),
       ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Mahas.back(),
+      ),
+    );
+  }
+
+  Widget _buildPokemonTypes(Pokemon pokemon) {
+    return Row(
+      children: pokemon.types!
+          .map((type) => Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: PokemonTypeBadge(typeName: type.type.name),
+              ))
+          .toList(),
     );
   }
 

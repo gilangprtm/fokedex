@@ -3,7 +3,6 @@ import '../../../core/base/base_provider.dart';
 import '../../../data/datasource/local/services/local_pokemon_service.dart';
 import '../../../data/datasource/models/api_response_model.dart';
 import '../../../data/datasource/models/pokemon_list_item_model.dart';
-import '../../../data/datasource/models/pokemon_model.dart';
 import '../../../data/datasource/models/type_model.dart';
 import '../../../data/datasource/network/service/pokemon_service.dart';
 
@@ -311,8 +310,7 @@ class PokemonListProvider extends BaseProvider {
       if (typeData.pokemon != null) {
         // Map to our ResourceListItem format
         _filteredPokemonList = typeData.pokemon!.map((p) {
-          final idMatch = RegExp(r'\/(\d+)\/$').firstMatch(p.pokemon.url);
-          final id = idMatch != null ? int.parse(idMatch.group(1)!) : 0;
+          RegExp(r'\/(\d+)\/$').firstMatch(p.pokemon.url);
 
           return ResourceListItem(
             name: p.pokemon.name,

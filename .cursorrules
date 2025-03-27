@@ -2,14 +2,6 @@
 
 During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again.
 
-You should also use the `.cursorrules` file as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
-[X] Task 1
-[ ] Task 2
-
-Also update the progress of the task in the Scratchpad when you finish a subtask.
-Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
-The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
-
 # Development Guidelines
 
 ## Project Structure Analysis
@@ -18,7 +10,7 @@ Before making any changes or adding new features, always follow these steps:
 
 1. Project Structure Analysis
 
-   ```bash
+```bash
    # Use list_dir to understand folder structure
    list_dir <path>
 
@@ -27,7 +19,7 @@ Before making any changes or adding new features, always follow these steps:
 
    # Use read_file to read relevant files
    read_file <path>
-   ```
+```
 
 2. Find Similar Implementations
 
@@ -47,64 +39,6 @@ Before making any changes or adding new features, always follow these steps:
    - Use consistent naming
    - Follow existing implementation patterns
    - Don't create new structures unless absolutely necessary
-
-## Development Workflow
-
-### 1. Task Planning
-
-Before starting any task:
-
-1. Review the task requirements
-2. Check the Scratchpad for any existing related tasks
-3. Clear old tasks if necessary
-4. Document the task in the Scratchpad:
-
-   ```
-   ## Current Task
-
-   ### Task Description
-   [Describe the task]
-
-   ### Project Structure Analysis
-   [Document findings from structure analysis]
-
-   ### Similar Implementations
-   [List similar implementations found]
-
-   ### Implementation Plan
-   [ ] Step 1
-   [ ] Step 2
-   [ ] Step 3
-
-   ### Progress Tracking
-   [ ] Step 1 completed
-   [ ] Step 2 completed
-   [ ] Step 3 completed
-   ```
-
-### 2. Implementation Steps
-
-For each feature or change:
-
-1. Create necessary models
-2. Implement repository layer
-3. Implement service layer
-4. Create provider
-5. Build UI components
-6. Add routing
-7. Test the implementation
-
-### 3. Code Review Checklist
-
-Before submitting changes:
-
-- [ ] Followed project structure
-- [ ] Used consistent naming
-- [ ] Followed existing patterns
-- [ ] Added proper error handling
-- [ ] Added loading states
-- [ ] Added proper documentation
-- [ ] Tested the implementation
 
 ## File Structure Guidelines
 
@@ -176,123 +110,100 @@ Before submitting changes:
 - Follow existing component patterns
 - Maintain consistent styling
 
-## State Management Guidelines
+# Software Development Principles
 
-### 1. Providers
+Here are the software development principles that should be followed:
 
-- Use ProviderPage for state management
-- Follow existing provider patterns
-- Handle loading and error states
-- Implement proper data refresh
+## 1. KISS (Keep It Simple, Stupid)
 
-### 2. Data Flow
+- Always choose the simplest solution
+- Avoid unnecessary complexity
+- If there are two equally effective solutions, choose the simpler one
+- Find direct solutions that address the root of the problem
 
-- Repository -> Service -> Provider -> UI
-- Handle errors at each layer
-- Implement proper loading states
-- Cache data when appropriate
+## 2. DRY (Don't Repeat Yourself)
 
-## Routing Guidelines
+- Avoid code duplication
+- Extract recurring code into separate functions/components
+- Use inheritance, composition, or abstraction to avoid duplication
+- Implement single source of truth: define each concept only once
 
-### 1. Routes
+## 3. YAGNI (You Aren't Gonna Need It)
 
-- Define in AppRoutes
-- Follow existing route patterns
-- Use proper route names
-- Handle deep linking
+- Don't implement features just because "they might be needed later"
+- Focus on current needs, not on future speculation
+- Add complexity only when truly needed
+- Avoid over-engineering
 
-### 2. Navigation
+## 4. SOLID Principles
 
-- Use Mahas.routeTo for navigation
-- Pass proper arguments
-- Handle navigation errors
-- Implement proper back navigation
+### Single Responsibility Principle
 
-## Error Handling Guidelines
+- A class/module should have only one reason to change
+- Each class should have a single, well-defined responsibility
+- Separate code that changes for different reasons
 
-### 1. API Errors
+### Open/Closed Principle
 
-- Handle network errors
-- Handle API response errors
-- Show proper error messages
-- Implement retry mechanism
+- Code should be open for extension but closed for modification
+- Use abstraction and inheritance to extend functionality
+- Avoid changing existing, stable code
 
-### 2. UI Errors
+### Liskov Substitution Principle
 
-- Handle validation errors
-- Show proper error messages
-- Implement proper error recovery
-- Maintain user state
+- Subclasses should be able to replace their parent classes without changing behavior
+- Don't alter contracts in inheritance
+- Ensure subclasses comply with all requirements of the parent class
 
-## Testing Guidelines
+### Interface Segregation Principle
 
-### 1. Unit Tests
+- Create small, specific interfaces rather than large, general ones
+- Classes shouldn't be forced to implement methods they don't need
+- Break large interfaces into smaller, more specific ones
 
-- Test models
-- Test repositories
-- Test services
-- Test providers
+### Dependency Inversion Principle
 
-### 2. Widget Tests
+- Depend on abstractions, not concrete implementations
+- High-level modules shouldn't depend on low-level modules
+- Use dependency injection to separate dependencies
 
-- Test UI components
-- Test user interactions
-- Test error states
-- Test loading states
+## 5. Separation of Concerns
 
-## Documentation Guidelines
+- Separate the application into parts that handle distinct aspects
+- Use layer architecture (UI, business logic, data)
+- Don't mix UI code with business logic
 
-### 1. Code Documentation
+## 6. Fail Fast
 
-- Document public methods
-- Document complex logic
-- Document error handling
-- Document state management
+- Detect errors as early as possible in the development process
+- Validate input at the beginning of the process
+- Fail clearly rather than continuing with corrupted data
+- Use assertions and defensive programming
 
-### 2. API Documentation
+## 7. Boy Scout Rule
 
-- Document API endpoints
-- Document request/response
-- Document error codes
-- Document rate limits
+- "Always leave the code better than you found it"
+- Refactor bad code when you see it
+- Fix technical debt bit by bit
+- Improve test coverage in areas you modify
 
-## Lessons Learned
+## 8. Composition Over Inheritance
 
-1. Saat mengimplementasikan model dari API, perhatikan perbedaan antara referensi objek dan objek lengkap.
-   Misalnya pada kasus `LocationAreaDetail`, field `location` dalam API hanya berisi referensi (name & url), bukan objek Location lengkap.
-   Solusinya: buat class terpisah seperti `LocationReference` untuk menampung referensi ke objek.
+- It's better to compose objects than use inheritance hierarchies
+- Use interfaces and dependency injection
+- Avoid deep and complex class hierarchies
+- It's easier to replace components than replace hierarchies
 
-## Scratchpad
+## 9. "Make it work, make it right, make it fast"
 
-## Current Task
+- First, make code that works
+- Second, make code that's clean and correct
+- Finally, make code that's fast and efficient
+- Don't optimize prematurely
 
-### Task Description
+## 10. Single Source of Truth
 
-Memperbaiki fitur location dengan menggunakan ability sebagai referensi untuk memastikan konsistensi implementasi.
-
-### Project Structure Analysis
-
-[X] Analisis struktur folder ability
-[X] Analisis struktur folder location
-[X] Identifikasi perbedaan implementasi
-
-### Similar Implementations
-
-[X] Cari implementasi ability
-[X] Bandingkan dengan implementasi location
-[X] Catat pola yang perlu disesuaikan
-
-### Implementation Plan
-
-[X] Perbaiki LocationDetailProvider
-[X] Perbaiki LocationDetailPage
-[X] Buat LocationAreaDetail (tambahan sesuai permintaan)
-[X] Pastikan konsistensi dengan ability
-
-### Progress Tracking
-
-[X] Membaca implementasi ability
-[X] Menganalisis perbedaan dengan location
-[X] Mengimplementasikan perbaikan
-[X] Menambahkan fitur LocationAreaDetail
-[X] Review hasil implementasi
+- Data should be defined and stored in only one place
+- Avoid state duplication that can become out of sync
+- Derive data from the source of truth to components that need it
+- All changes should happen at the single source of truth

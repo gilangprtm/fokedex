@@ -29,22 +29,54 @@ class ItemListProvider extends BaseProvider {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   // Search query
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
+
+  void _setSearchQuery(String value) {
+    if (_searchQuery != value) {
+      _searchQuery = value;
+      notifyPropertyListeners('searchQuery');
+    }
+  }
 
   // Lifecycle methods
   @override
   void onInit() {
     super.onInit();
     _setupScrollListener();
-    loadInitialData();
+
+    // Use microtask to delay loading until after build phase
+    Future.microtask(() {
+      loadInitialData();
+    });
   }
 
   // Setup scroll controller listener
@@ -70,11 +102,15 @@ class ItemListProvider extends BaseProvider {
     searchItems('');
   }
 
+  // Notify about item list changes
+  void _notifyItemListChange() {
+    notifyPropertyListeners('items');
+    notifyPropertyListeners('filteredItems');
+  }
+
   // Load initial data
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
-      await loadItems();
-    });
+    await loadItems();
   }
 
   // Load daftar Item dengan pagination
@@ -84,7 +120,7 @@ class ItemListProvider extends BaseProvider {
       _items = [];
       _hasMore = true;
       _filteredItems = [];
-      notifyListeners();
+      _notifyItemListChange();
     }
 
     // Jangan load lagi jika sudah tidak ada data lagi atau sedang loading
@@ -92,34 +128,32 @@ class ItemListProvider extends BaseProvider {
       return;
     }
 
-    await runAsync('loadItems', () async {
-      _isLoading = true;
-      _hasError = false;
+    _setLoading(true);
+    _setHasError(false);
 
-      try {
-        final response =
-            await _service.getItemList(offset: _offset, limit: 2200);
+    try {
+      final response = await _service.getItemList(offset: _offset, limit: 2200);
 
-        // Update pagination state
-        _hasMore = response.hasMore;
-        _offset = response.nextOffset ?? _offset;
+      // Update pagination state
+      _hasMore = response.hasMore;
+      _offset = response.nextOffset ?? _offset;
 
-        // Add new Items to the list
-        _items = [..._items, ...response.results];
+      // Add new Items to the list
+      _items = [..._items, ...response.results];
 
-        // Apply search if query exists
-        if (_searchQuery.isNotEmpty) {
-          _filterBySearch(_searchQuery);
-        }
-
-        _isLoading = false;
-      } catch (e) {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = e.toString();
-        logger.e('Error loading Item list: $e');
+      // Apply search if query exists
+      if (_searchQuery.isNotEmpty) {
+        _filterBySearch(_searchQuery);
       }
-    });
+
+      _notifyItemListChange();
+      _setLoading(false);
+    } catch (e) {
+      _setLoading(false);
+      _setHasError(true);
+      _setErrorMessage(e.toString());
+      logger.e('Error loading Item list: $e');
+    }
   }
 
   // Load lebih banyak Item (infinite scroll)
@@ -133,21 +167,23 @@ class ItemListProvider extends BaseProvider {
 
   // Filter Item berdasarkan pencarian nama
   void searchItems(String query) {
-    _searchQuery = query.toLowerCase();
+    _setLoading(true);
+    _setSearchQuery(query.toLowerCase());
     _filterBySearch(_searchQuery);
-    notifyListeners();
+    _setLoading(false);
   }
 
   // Helper method untuk filter berdasarkan pencarian
   void _filterBySearch(String query) {
     if (query.isEmpty) {
       _filteredItems = [];
-      return;
+    } else {
+      _filteredItems = _items
+          .where((item) => item.normalizedName.toLowerCase().contains(query))
+          .toList();
     }
 
-    _filteredItems = _items
-        .where((item) => item.normalizedName.toLowerCase().contains(query))
-        .toList();
+    _notifyItemListChange();
   }
 
   // Refresh data

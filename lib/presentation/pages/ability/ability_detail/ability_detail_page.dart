@@ -24,87 +24,107 @@ class AbilityDetailPage extends StatelessWidget {
 
   Widget _buildDetailPage(
       BuildContext context, AbilityDetailProvider provider) {
-    // Show loading state
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentAbilityName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: const MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<AbilityDetailProvider, Map<String, dynamic>>(
+      property: 'abilityDetail',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'abilityDetail': provider.abilityDetail,
+        'currentAbilityName': provider.currentAbilityName,
+        'currentAbilityId': provider.currentAbilityId,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final abilityDetail = data['abilityDetail'];
+        final currentAbilityName = data['currentAbilityName'] as String;
+        final currentAbilityId = data['currentAbilityId'] as String;
 
-    // Show error state
-    if (provider.hasError) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentAbilityName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorColor),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading ability details',
-                style: AppTypography.headline6,
+        // Show loading state
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentAbilityName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 8),
-              Text(
-                provider.errorMessage,
-                style: AppTypography.bodyText2,
-              ),
-              const SizedBox(height: 16),
-              MahasButton(
-                text: 'Try Again',
-                onPressed: () => provider.loadAbilityDetail(
-                    provider.currentAbilityId.isNotEmpty
-                        ? provider.currentAbilityId
-                        : provider.currentAbilityName),
-                type: ButtonType.primary,
-                color: AppColors.pokemonRed,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: const MahasLoader(isLoading: true),
+          );
+        }
 
-    // No data loaded yet
-    if (provider.abilityDetail == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentAbilityName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Text(
-            'No data available',
-            style: AppTypography.bodyText1,
-          ),
-        ),
-      );
-    }
+        // Show error state
+        if (hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentAbilityName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppColors.errorColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading ability details',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    style: AppTypography.bodyText2,
+                  ),
+                  const SizedBox(height: 16),
+                  MahasButton(
+                    text: 'Try Again',
+                    onPressed: () => provider.loadAbilityDetail(
+                        currentAbilityId.isNotEmpty
+                            ? currentAbilityId
+                            : currentAbilityName),
+                    type: ButtonType.primary,
+                    color: AppColors.pokemonRed,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-    // Show Ability details
-    return Scaffold(
-      body: _buildBody(context, provider),
+        // No data loaded yet
+        if (abilityDetail == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentAbilityName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Text(
+                'No data available',
+                style: AppTypography.bodyText1,
+              ),
+            ),
+          );
+        }
+
+        // Show Ability details
+        return Scaffold(
+          body: _buildBody(context, provider),
+        );
+      },
     );
   }
 

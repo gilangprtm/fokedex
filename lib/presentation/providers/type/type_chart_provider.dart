@@ -3,6 +3,7 @@ import '../../../core/utils/mahas.dart';
 import '../../../data/datasource/models/api_response_model.dart';
 import '../../../data/datasource/models/type_model.dart' hide ResourceListItem;
 import '../../../data/datasource/network/service/type_service.dart';
+import 'package:flutter/widgets.dart';
 
 class TypeChartProvider extends BaseProvider {
   final TypeService _typeService = TypeService();
@@ -11,71 +12,104 @@ class TypeChartProvider extends BaseProvider {
   List<ResourceListItem> _typesList = [];
   List<ResourceListItem> get typesList => _typesList;
 
+  void _setTypesList(List<ResourceListItem> value) {
+    if (_typesList != value) {
+      _typesList = value;
+      notifyPropertyListeners('typesList');
+    }
+  }
+
   Map<String, TypeDetail> _typeDetails = {};
   Map<String, TypeDetail> get typeDetails => _typeDetails;
+
+  void _setTypeDetails(Map<String, TypeDetail> value) {
+    if (_typeDetails != value) {
+      _typeDetails = value;
+      notifyPropertyListeners('typeDetails');
+    }
+  }
 
   // UI state
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
-    loadInitialData();
+    // Use post-frame callback to avoid changing state during build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadInitialData();
+    });
   }
 
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
-      await loadTypesList();
-    });
+    await loadTypesList();
   }
 
   Future<void> loadTypesList() async {
-    await runAsync('loadTypesList', () async {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = '';
+    _setLoading(true);
+    _setHasError(false);
+    _setErrorMessage('');
 
-      try {
-        final response = await _typeService.getTypeList();
-        _typesList = response.results ?? [];
+    try {
+      final response = await _typeService.getTypeList();
+      _setTypesList(response.results ?? []);
 
-        // Load detail for each type
-        if (_typesList.isNotEmpty) {
-          await loadTypeDetails();
-        }
-      } catch (e, stackTrace) {
-        logger.e('Error loading types list: $e', stackTrace: stackTrace);
-        _hasError = true;
-        _errorMessage = 'Failed to load types list';
-      } finally {
-        _isLoading = false;
+      // Load detail for each type
+      if (_typesList.isNotEmpty) {
+        await loadTypeDetails();
       }
-    });
+    } catch (e, stackTrace) {
+      logger.e('Error loading types list: $e', stackTrace: stackTrace);
+      _setHasError(true);
+      _setErrorMessage('Failed to load types list');
+    } finally {
+      _setLoading(false);
+    }
   }
 
   Future<void> loadTypeDetails() async {
-    await runAsync('loadTypeDetails', () async {
-      _isLoading = true;
+    _setLoading(true);
 
-      try {
-        // Load details for each type in parallel
-        final futures =
-            _typesList.map((type) => _loadSingleTypeDetail(type.name));
-        await Future.wait(futures);
-      } catch (e, stackTrace) {
-        logger.e('Error loading type details: $e', stackTrace: stackTrace);
-        // We'll continue even if some types fail to load
-      } finally {
-        _isLoading = false;
-      }
-    });
+    try {
+      // Load details for each type in parallel
+      final futures =
+          _typesList.map((type) => _loadSingleTypeDetail(type.name));
+      await Future.wait(futures);
+      notifyPropertyListeners('typeDetails');
+    } catch (e, stackTrace) {
+      logger.e('Error loading type details: $e', stackTrace: stackTrace);
+      // We'll continue even if some types fail to load
+    } finally {
+      _setLoading(false);
+    }
   }
 
   Future<void> _loadSingleTypeDetail(String typeName) async {
@@ -90,6 +124,7 @@ class TypeChartProvider extends BaseProvider {
 
   Future<void> refresh() async {
     _typeDetails.clear();
+    notifyPropertyListeners('typeDetails');
     await loadTypesList();
   }
 

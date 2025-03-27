@@ -12,42 +12,96 @@ class LocationDetailProvider extends BaseProvider {
   Location? _location;
   Location? get location => _location;
 
+  void _setLocation(Location? value) {
+    if (_location != value) {
+      _location = value;
+      notifyPropertyListeners('location');
+    }
+  }
+
   // Loading state
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   String _currentLocationId = '';
   String get currentLocationId => _currentLocationId;
 
+  void _setCurrentLocationId(String value) {
+    if (_currentLocationId != value) {
+      _currentLocationId = value;
+      notifyPropertyListeners('currentLocationId');
+    }
+  }
+
   String _currentLocationName = '';
   String get currentLocationName => _currentLocationName;
+
+  void _setCurrentLocationName(String value) {
+    if (_currentLocationName != value) {
+      _currentLocationName = value;
+      notifyPropertyListeners('currentLocationName');
+    }
+  }
 
   // Lifecycle methods
   @override
   void onInit() {
     super.onInit();
-    getArgs();
-    loadInitialData();
+
+    // Get args without notification during build phase
+    // Handle possible integer ID
+    var idArg = Mahas.argument('id');
+    _currentLocationId = idArg != null ? idArg.toString() : '';
+    _currentLocationName = Mahas.argument<String>('name') ?? '';
+
+    // Use microtask to delay loading until after build phase
+    Future.microtask(() {
+      // Now it's safe to notify
+      notifyPropertyListeners('currentLocationId');
+      notifyPropertyListeners('currentLocationName');
+
+      // Load data
+      loadInitialData();
+    });
   }
 
   void getArgs() {
-    _currentLocationId = Mahas.argument<String>('id') ?? '';
-    _currentLocationName = Mahas.argument<String>('name') ?? '';
+    _setCurrentLocationId(Mahas.argument<String>('id') ?? '');
+    _setCurrentLocationName(Mahas.argument<String>('name') ?? '');
   }
 
   // Load initial data
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
-      await loadLocationDetail(_currentLocationId.isNotEmpty
-          ? _currentLocationId
-          : _currentLocationName);
-    });
+    await loadLocationDetail(_currentLocationId.isNotEmpty
+        ? _currentLocationId
+        : _currentLocationName);
   }
 
   // Load detail Location
@@ -59,27 +113,26 @@ class LocationDetailProvider extends BaseProvider {
       return;
     }
 
-    await runAsync('loadLocationDetail', () async {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = '';
+    _setLoading(true);
+    _setHasError(false);
+    _setErrorMessage('');
 
-      try {
-        if (identifier.isEmpty) {
-          throw Exception('Location ID or name is required');
-        }
-
-        _location = await _service.getLocationDetail(identifier);
-        _currentLocationId = _location?.id.toString() ?? '';
-        _currentLocationName = _location?.name ?? '';
-      } catch (e, stackTrace) {
-        logger.e('Error loading location detail: $e', stackTrace: stackTrace);
-        _hasError = true;
-        _errorMessage = 'Failed to load location details';
-      } finally {
-        _isLoading = false;
+    try {
+      if (identifier.isEmpty) {
+        throw Exception('Location ID or name is required');
       }
-    });
+
+      final locationData = await _service.getLocationDetail(identifier);
+      _setLocation(locationData);
+      _setCurrentLocationId(locationData.id.toString());
+      _setCurrentLocationName(locationData.name);
+    } catch (e, stackTrace) {
+      logger.e('Error loading location detail: $e', stackTrace: stackTrace);
+      _setHasError(true);
+      _setErrorMessage('Failed to load location details');
+    } finally {
+      _setLoading(false);
+    }
   }
 
   // Refresh data

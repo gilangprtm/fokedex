@@ -29,22 +29,54 @@ class AbilityListProvider extends BaseProvider {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   // Search query
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
+
+  void _setSearchQuery(String value) {
+    if (_searchQuery != value) {
+      _searchQuery = value;
+      notifyPropertyListeners('searchQuery');
+    }
+  }
 
   // Lifecycle methods
   @override
   void onInit() {
     super.onInit();
     _setupScrollListener();
-    loadInitialData();
+
+    // Use microtask to delay loading until after build phase
+    Future.microtask(() {
+      loadInitialData();
+    });
   }
 
   // Setup scroll controller listener
@@ -70,11 +102,15 @@ class AbilityListProvider extends BaseProvider {
     searchAbilities('');
   }
 
+  // Notify about ability list changes
+  void _notifyAbilityListChange() {
+    notifyPropertyListeners('abilities');
+    notifyPropertyListeners('filteredAbilities');
+  }
+
   // Load initial data
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
-      await loadAbilities();
-    });
+    await loadAbilities();
   }
 
   // Load daftar Ability dengan pagination
@@ -84,7 +120,7 @@ class AbilityListProvider extends BaseProvider {
       _abilities = [];
       _hasMore = true;
       _filteredAbilities = [];
-      notifyListeners();
+      _notifyAbilityListChange();
     }
 
     // Jangan load lagi jika sudah tidak ada data lagi atau sedang loading
@@ -92,34 +128,33 @@ class AbilityListProvider extends BaseProvider {
       return;
     }
 
-    await runAsync('loadAbilities', () async {
-      _isLoading = true;
-      _hasError = false;
+    _setLoading(true);
+    _setHasError(false);
 
-      try {
-        final response =
-            await _service.getAbilityList(offset: _offset, limit: 500);
+    try {
+      final response =
+          await _service.getAbilityList(offset: _offset, limit: 500);
 
-        // Update pagination state
-        _hasMore = response.hasMore;
-        _offset = response.nextOffset ?? _offset;
+      // Update pagination state
+      _hasMore = response.hasMore;
+      _offset = response.nextOffset ?? _offset;
 
-        // Add new Abilities to the list
-        _abilities = [..._abilities, ...response.results];
+      // Add new Abilities to the list
+      _abilities = [..._abilities, ...response.results];
 
-        // Apply search if query exists
-        if (_searchQuery.isNotEmpty) {
-          _filterBySearch(_searchQuery);
-        }
-
-        _isLoading = false;
-      } catch (e) {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = e.toString();
-        logger.e('Error loading Ability list: $e');
+      // Apply search if query exists
+      if (_searchQuery.isNotEmpty) {
+        _filterBySearch(_searchQuery);
       }
-    });
+
+      _notifyAbilityListChange();
+      _setLoading(false);
+    } catch (e) {
+      _setLoading(false);
+      _setHasError(true);
+      _setErrorMessage(e.toString());
+      logger.e('Error loading Ability list: $e');
+    }
   }
 
   // Load lebih banyak Ability (infinite scroll)
@@ -133,22 +168,24 @@ class AbilityListProvider extends BaseProvider {
 
   // Filter Ability berdasarkan pencarian nama
   void searchAbilities(String query) {
-    _searchQuery = query.toLowerCase();
+    _setLoading(true);
+    _setSearchQuery(query.toLowerCase());
     _filterBySearch(_searchQuery);
-    notifyListeners();
+    _setLoading(false);
   }
 
   // Helper method untuk filter berdasarkan pencarian
   void _filterBySearch(String query) {
     if (query.isEmpty) {
       _filteredAbilities = [];
-      return;
+    } else {
+      _filteredAbilities = _abilities
+          .where(
+              (ability) => ability.normalizedName.toLowerCase().contains(query))
+          .toList();
     }
 
-    _filteredAbilities = _abilities
-        .where(
-            (ability) => ability.normalizedName.toLowerCase().contains(query))
-        .toList();
+    _notifyAbilityListChange();
   }
 
   // Refresh data

@@ -39,11 +39,17 @@ class AbilityListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          MahasSearchBar(
-            controller: provider.searchController,
-            hintText: 'Search Abilities',
-            onChanged: provider.onSearchChanged,
-            onClear: provider.clearSearch,
+          PropertySelector<AbilityListProvider, String>(
+            property: 'searchQuery',
+            selector: (provider) => provider.searchQuery,
+            builder: (context, searchQuery) {
+              return MahasSearchBar(
+                controller: provider.searchController,
+                hintText: 'Search Abilities',
+                onChanged: provider.onSearchChanged,
+                onClear: provider.clearSearch,
+              );
+            },
           ),
 
           // Ability list
@@ -56,90 +62,109 @@ class AbilityListPage extends StatelessWidget {
   }
 
   Widget _buildAbilityList(BuildContext context, AbilityListProvider provider) {
-    if (provider.hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.errorColor),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading Abilities',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.errorMessage,
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Retry',
-              onPressed: () => provider.loadAbilities(refresh: true),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+    return PropertySelector<AbilityListProvider, Map<String, dynamic>>(
+      property: 'filteredAbilities',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'filteredAbilities': provider.filteredAbilities,
+        'hasMore': provider.hasMore,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final filteredAbilities =
+            data['filteredAbilities'] as List<ResourceListItem>;
+        final hasMore = data['hasMore'] as bool;
 
-    if (provider.isLoading && provider.filteredAbilities.isEmpty) {
-      return const MahasLoader(isLoading: true);
-    }
+        if (hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline,
+                    size: 48, color: AppColors.errorColor),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading Abilities',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage,
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Retry',
+                  onPressed: () => provider.loadAbilities(refresh: true),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
 
-    if (provider.filteredAbilities.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.auto_awesome,
-                size: 48, color: AppColors.pokemonGray),
-            const SizedBox(height: 16),
-            Text(
-              'No Abilities Found',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try changing your search criteria',
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Clear Search',
-              onPressed: () => provider.clearSearch(),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+        if (isLoading && filteredAbilities.isEmpty) {
+          return const MahasLoader(isLoading: true);
+        }
 
-    return RefreshIndicator(
-      onRefresh: () => provider.refresh(),
-      child: ListView.builder(
-        controller: provider.scrollController,
-        padding: const EdgeInsets.all(AppTheme.spacing16),
-        itemCount:
-            provider.filteredAbilities.length + (provider.hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index < provider.filteredAbilities.length) {
-            final ability = provider.filteredAbilities[index];
-            return _buildAbilityItem(context, ability);
-          } else {
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              alignment: Alignment.center,
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
-              ),
-            );
-          }
-        },
-      ),
+        if (filteredAbilities.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.auto_awesome,
+                    size: 48, color: AppColors.pokemonGray),
+                const SizedBox(height: 16),
+                Text(
+                  'No Abilities Found',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try changing your search criteria',
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Clear Search',
+                  onPressed: () => provider.clearSearch(),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => provider.refresh(),
+          child: ListView.builder(
+            controller: provider.scrollController,
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            itemCount: filteredAbilities.length + (hasMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < filteredAbilities.length) {
+                final ability = filteredAbilities[index];
+                return _buildAbilityItem(context, ability);
+              } else {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

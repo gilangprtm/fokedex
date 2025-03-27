@@ -11,45 +11,108 @@ class LocationAreaDetailProvider extends BaseProvider {
   LocationAreaDetail? _areaDetail;
   LocationAreaDetail? get areaDetail => _areaDetail;
 
+  void _setAreaDetail(LocationAreaDetail? value) {
+    if (_areaDetail != value) {
+      _areaDetail = value;
+      notifyPropertyListeners('areaDetail');
+    }
+  }
+
   // Loading state
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   String _currentAreaId = '';
   String get currentAreaId => _currentAreaId;
+
+  void _setCurrentAreaId(String value) {
+    if (_currentAreaId != value) {
+      _currentAreaId = value;
+      notifyPropertyListeners('currentAreaId');
+    }
+  }
 
   String _currentAreaName = '';
   String get currentAreaName => _currentAreaName;
 
+  void _setCurrentAreaName(String value) {
+    if (_currentAreaName != value) {
+      _currentAreaName = value;
+      notifyPropertyListeners('currentAreaName');
+    }
+  }
+
   String _locationName = '';
   String get locationName => _locationName;
+
+  void _setLocationName(String value) {
+    if (_locationName != value) {
+      _locationName = value;
+      notifyPropertyListeners('locationName');
+    }
+  }
 
   // Lifecycle methods
   @override
   void onInit() {
     super.onInit();
-    getArgs();
-    loadInitialData();
+
+    // Get args without notification during build phase
+    var idArg = Mahas.argument('id');
+    _currentAreaId = idArg != null ? idArg.toString() : '';
+    _currentAreaName = Mahas.argument<String>('name') ?? '';
+    _locationName = Mahas.argument<String>('locationName') ?? '';
+
+    // Use microtask to delay loading until after build phase
+    Future.microtask(() {
+      // Now it's safe to notify
+      notifyPropertyListeners('currentAreaId');
+      notifyPropertyListeners('currentAreaName');
+      notifyPropertyListeners('locationName');
+
+      // Load data
+      loadInitialData();
+    });
   }
 
   void getArgs() {
-    _currentAreaId = Mahas.argument<int>('id')?.toString() ?? '';
-    _currentAreaName = Mahas.argument<String>('name') ?? '';
-    _locationName = Mahas.argument<String>('locationName') ?? '';
+    var idArg = Mahas.argument('id');
+    _setCurrentAreaId(idArg != null ? idArg.toString() : '');
+    _setCurrentAreaName(Mahas.argument<String>('name') ?? '');
+    _setLocationName(Mahas.argument<String>('locationName') ?? '');
   }
 
   // Load initial data
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
-      await loadAreaDetail(
-          _currentAreaId.isNotEmpty ? _currentAreaId : _currentAreaName);
-    });
+    await loadAreaDetail(
+        _currentAreaId.isNotEmpty ? _currentAreaId : _currentAreaName);
   }
 
   // Load detail Location Area
@@ -60,33 +123,32 @@ class LocationAreaDetailProvider extends BaseProvider {
       return;
     }
 
-    await runAsync('loadAreaDetail', () async {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = '';
-      _currentAreaName = identifier;
+    _setLoading(true);
+    _setHasError(false);
+    _setErrorMessage('');
+    _setCurrentAreaName(identifier);
 
-      try {
-        if (identifier.isEmpty) {
-          throw Exception('Location Area ID or name is required');
-        }
-
-        _areaDetail = await _service.getLocationAreaDetail(identifier);
-        _currentAreaId = _areaDetail?.id.toString() ?? '';
-
-        // Update location name if it's empty and we have areaDetail
-        if (_locationName.isEmpty && _areaDetail != null) {
-          _locationName = _capitalizeFirstLetter(_areaDetail!.location.name);
-        }
-      } catch (e, stackTrace) {
-        logger.e('Error loading location area detail: $e',
-            stackTrace: stackTrace);
-        _hasError = true;
-        _errorMessage = 'Failed to load location area details';
-      } finally {
-        _isLoading = false;
+    try {
+      if (identifier.isEmpty) {
+        throw Exception('Location Area ID or name is required');
       }
-    });
+
+      final areaData = await _service.getLocationAreaDetail(identifier);
+      _setAreaDetail(areaData);
+      _setCurrentAreaId(areaData.id.toString());
+
+      // Update location name if it's empty and we have areaDetail
+      if (_locationName.isEmpty) {
+        _setLocationName(_capitalizeFirstLetter(areaData.location.name));
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error loading location area detail: $e',
+          stackTrace: stackTrace);
+      _setHasError(true);
+      _setErrorMessage('Failed to load location area details');
+    } finally {
+      _setLoading(false);
+    }
   }
 
   // Refresh data

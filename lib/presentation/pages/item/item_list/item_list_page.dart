@@ -38,11 +38,17 @@ class ItemListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          MahasSearchBar(
-            controller: provider.searchController,
-            hintText: 'Search Items',
-            onChanged: provider.onSearchChanged,
-            onClear: provider.clearSearch,
+          PropertySelector<ItemListProvider, String>(
+            property: 'searchQuery',
+            selector: (provider) => provider.searchQuery,
+            builder: (context, searchQuery) {
+              return MahasSearchBar(
+                controller: provider.searchController,
+                hintText: 'Search Items',
+                onChanged: provider.onSearchChanged,
+                onClear: provider.clearSearch,
+              );
+            },
           ),
 
           // Item list
@@ -55,88 +61,108 @@ class ItemListPage extends StatelessWidget {
   }
 
   Widget _buildItemList(BuildContext context, ItemListProvider provider) {
-    if (provider.hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.errorColor),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading Items',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.errorMessage,
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Retry',
-              onPressed: () => provider.loadItems(refresh: true),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+    return PropertySelector<ItemListProvider, Map<String, dynamic>>(
+      property: 'filteredItems',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'filteredItems': provider.filteredItems,
+        'hasMore': provider.hasMore,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final filteredItems = data['filteredItems'] as List<ResourceListItem>;
+        final hasMore = data['hasMore'] as bool;
 
-    if (provider.isLoading && provider.filteredItems.isEmpty) {
-      return const MahasLoader(isLoading: true);
-    }
+        if (hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline,
+                    size: 48, color: AppColors.errorColor),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading Items',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage,
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Retry',
+                  onPressed: () => provider.loadItems(refresh: true),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
 
-    if (provider.filteredItems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.backpack, size: 48, color: AppColors.pokemonGray),
-            const SizedBox(height: 16),
-            Text(
-              'No Items Found',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try changing your search criteria',
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Clear Search',
-              onPressed: () => provider.clearSearch(),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+        if (isLoading && filteredItems.isEmpty) {
+          return const MahasLoader(isLoading: true);
+        }
 
-    return RefreshIndicator(
-      onRefresh: () => provider.refresh(),
-      child: ListView.builder(
-        controller: provider.scrollController,
-        padding: const EdgeInsets.all(AppTheme.spacing16),
-        itemCount: provider.filteredItems.length + (provider.hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index < provider.filteredItems.length) {
-            final item = provider.filteredItems[index];
-            return _buildItemItem(context, item);
-          } else {
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              alignment: Alignment.center,
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
-              ),
-            );
-          }
-        },
-      ),
+        if (filteredItems.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.backpack,
+                    size: 48, color: AppColors.pokemonGray),
+                const SizedBox(height: 16),
+                Text(
+                  'No Items Found',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try changing your search criteria',
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Clear Search',
+                  onPressed: () => provider.clearSearch(),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => provider.refresh(),
+          child: ListView.builder(
+            controller: provider.scrollController,
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            itemCount: filteredItems.length + (hasMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < filteredItems.length) {
+                final item = filteredItems[index];
+                return _buildItemItem(context, item);
+              } else {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

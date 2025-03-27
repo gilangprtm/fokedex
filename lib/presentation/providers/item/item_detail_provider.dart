@@ -9,38 +9,92 @@ class ItemDetailProvider extends BaseProvider {
   Item? _itemDetail;
   Item? get itemDetail => _itemDetail;
 
+  void _setItemDetail(Item? value) {
+    if (_itemDetail != value) {
+      _itemDetail = value;
+      notifyPropertyListeners('itemDetail');
+    }
+  }
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _currentItemName = '';
   String get currentItemName => _currentItemName;
 
+  void _setCurrentItemName(String value) {
+    if (_currentItemName != value) {
+      _currentItemName = value;
+      notifyPropertyListeners('currentItemName');
+    }
+  }
+
   String _currentItemId = '';
   String get currentItemId => _currentItemId;
+
+  void _setCurrentItemId(String value) {
+    if (_currentItemId != value) {
+      _currentItemId = value;
+      notifyPropertyListeners('currentItemId');
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
-    getArgs();
-    loadInitialData();
+
+    // Get args without notification during build phase
+    // Convert id to string since it might be an integer
+    var idArg = Mahas.argument('id');
+    _currentItemId = idArg != null ? idArg.toString() : '';
+    _currentItemName = Mahas.argument<String>('name') ?? '';
+
+    // Use microtask to delay loading until after build phase
+    Future.microtask(() {
+      // Now it's safe to notify
+      notifyPropertyListeners('currentItemId');
+      notifyPropertyListeners('currentItemName');
+
+      // Load data
+      loadInitialData();
+    });
   }
 
   void getArgs() {
-    _currentItemId = Mahas.argument<String>('id') ?? '';
-    _currentItemName = Mahas.argument<String>('name') ?? '';
+    _setCurrentItemId(Mahas.argument<String>('id') ?? '');
+    _setCurrentItemName(Mahas.argument<String>('name') ?? '');
   }
 
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
-      await loadItemDetail(
-          _currentItemId.isNotEmpty ? _currentItemId : _currentItemName);
-    });
+    await loadItemDetail(
+        _currentItemId.isNotEmpty ? _currentItemId : _currentItemName);
   }
 
   Future<void> loadItemDetail(String identifier) async {
@@ -50,23 +104,22 @@ class ItemDetailProvider extends BaseProvider {
       return;
     }
 
-    await runAsync('loadItemDetail', () async {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = '';
+    _setLoading(true);
+    _setHasError(false);
+    _setErrorMessage('');
 
-      try {
-        _itemDetail = await _service.getItemDetail(identifier);
-        _currentItemId = _itemDetail?.id.toString() ?? '';
-        _currentItemName = _itemDetail?.name ?? '';
-      } catch (e, stackTrace) {
-        logger.e('Error loading item detail: $e', stackTrace: stackTrace);
-        _hasError = true;
-        _errorMessage = 'Failed to load item details';
-      } finally {
-        _isLoading = false;
-      }
-    });
+    try {
+      final item = await _service.getItemDetail(identifier);
+      _setItemDetail(item);
+      _setCurrentItemId(item.id.toString());
+      _setCurrentItemName(item.name);
+    } catch (e, stackTrace) {
+      logger.e('Error loading item detail: $e', stackTrace: stackTrace);
+      _setHasError(true);
+      _setErrorMessage('Failed to load item details');
+    } finally {
+      _setLoading(false);
+    }
   }
 
   String getItemDescription() {

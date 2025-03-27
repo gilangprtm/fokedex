@@ -5,6 +5,7 @@ import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
+import '../../../../data/datasource/models/api_response_model.dart';
 import '../../../providers/type/type_chart_provider.dart';
 
 class TypeChartPage extends StatelessWidget {
@@ -19,112 +20,183 @@ class TypeChartPage extends StatelessWidget {
   }
 
   Widget _buildPage(BuildContext context, TypeChartProvider provider) {
-    // Loading state
-    if (provider.isLoading && provider.typesList.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Type Chart'),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: const MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<TypeChartProvider, Map<String, dynamic>>(
+      property: 'typesList',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'typesList': provider.typesList,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final typesList = data['typesList'] as List<dynamic>;
 
-    // Error state
-    if (provider.hasError && provider.typesList.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Type Chart'),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorColor),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading type data',
-                style: AppTypography.headline6,
+        // Loading state
+        if (isLoading && typesList.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Type Chart'),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: const MahasLoader(isLoading: true),
+          );
+        }
+
+        // Error state
+        if (hasError && typesList.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Type Chart'),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppColors.errorColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading type data',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    style: AppTypography.bodyText2,
+                  ),
+                  const SizedBox(height: 16),
+                  MahasButton(
+                    text: 'Try Again',
+                    onPressed: () => provider.refresh(),
+                    type: ButtonType.primary,
+                    color: AppColors.pokemonRed,
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                provider.errorMessage,
-                style: AppTypography.bodyText2,
-              ),
-              const SizedBox(height: 16),
-              MahasButton(
-                text: 'Try Again',
-                onPressed: () => provider.refresh(),
-                type: ButtonType.primary,
-                color: AppColors.pokemonRed,
-              ),
+            ),
+          );
+        }
+
+        // Main content
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Type Chart'),
+            backgroundColor: AppColors.pokemonRed,
+            elevation: 0,
+            actions: [
+              if (!isLoading)
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () => provider.refresh(),
+                  tooltip: 'Refresh',
+                ),
             ],
           ),
-        ),
-      );
-    }
-
-    // Main content
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Type Chart'),
-        backgroundColor: AppColors.pokemonRed,
-        elevation: 0,
-      ),
-      body: _buildContent(context, provider),
+          body: _buildContent(context, provider),
+        );
+      },
     );
   }
 
   Widget _buildContent(BuildContext context, TypeChartProvider provider) {
-    if (provider.typesList.isEmpty || provider.typeDetails.isEmpty) {
-      return const Center(
-        child: MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<TypeChartProvider, Map<String, dynamic>>(
+      property: 'typeDetails',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'typesList': provider.typesList,
+        'typeDetails': provider.typeDetails,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final typesList = data['typesList'] as List<dynamic>;
+        final typeDetails = data['typeDetails'] as Map<String, dynamic>;
 
-    // Sort types for consistency
-    final sortedTypes = provider.typesList.toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
+        if (typesList.isEmpty) {
+          return const Center(
+            child: MahasLoader(isLoading: true),
+          );
+        }
 
-    return Column(
-      children: [
-        // Title
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Pokémon Type Effectiveness Chart',
-            style: AppTypography.headline6,
-            textAlign: TextAlign.center,
+        // Sort types for consistency
+        final sortedTypes = typesList.toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
+
+        return RefreshIndicator(
+          onRefresh: () => provider.refresh(),
+          color: AppColors.pokemonRed,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height -
+                  100, // Subtract app bar height
+              child: Column(
+                children: [
+                  // Title
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Pokémon Type Effectiveness Chart',
+                      style: AppTypography.headline6,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  // Legend
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildLegendItem(
+                            '2×', Colors.green[700]!, 'Super Effective'),
+                        _buildLegendItem('1×', Colors.grey[400]!, 'Normal'),
+                        _buildLegendItem(
+                            '½', Colors.red[300]!, 'Not Very Effective'),
+                        _buildLegendItem('0×', Colors.black45, 'No Effect'),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Show loading if we have types list but still loading details
+                  if (isLoading && typeDetails.isEmpty)
+                    const Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.pokemonRed),
+                            ),
+                            SizedBox(height: 16),
+                            Text("Loading type details...")
+                          ],
+                        ),
+                      ),
+                    )
+                  // Type chart
+                  else
+                    Expanded(
+                      child: typeDetails.isEmpty
+                          ? const Center(
+                              child: Text("No type details available"),
+                            )
+                          : _buildTypeChart(sortedTypes, provider),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-
-        // Legend
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildLegendItem('2x', Colors.green[700]!, 'Super Effective'),
-              _buildLegendItem('1x', Colors.grey[400]!, 'Normal'),
-              _buildLegendItem('0.5x', Colors.red[300]!, 'Not Very Effective'),
-              _buildLegendItem('0x', Colors.black45, 'No Effect'),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Type chart
-        Expanded(
-          child: provider.isLoading
-              ? const MahasLoader(isLoading: true)
-              : _buildTypeChart(sortedTypes, provider),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -249,31 +321,25 @@ class TypeChartPage extends StatelessWidget {
     Color cellColor;
     String text;
 
-    if (effectiveness == 0) {
-      cellColor = Colors.black45;
-      text = '0';
+    if (effectiveness == 2.0) {
+      cellColor = Colors.green[700]!;
+      text = '2×';
     } else if (effectiveness == 0.5) {
       cellColor = Colors.red[300]!;
       text = '½';
-    } else if (effectiveness == 1) {
-      cellColor = Colors.grey[400]!;
-      text = '1';
-    } else if (effectiveness == 2) {
-      cellColor = Colors.green[700]!;
-      text = '2';
+    } else if (effectiveness == 0.0) {
+      cellColor = Colors.black45;
+      text = '0';
     } else {
       cellColor = Colors.grey[400]!;
-      text = effectiveness.toString();
+      text = '1';
     }
 
     return Container(
       width: 60,
       height: 40,
-      decoration: BoxDecoration(
-        color: cellColor,
-        border: Border.all(color: Colors.white, width: 0.5),
-      ),
       alignment: Alignment.center,
+      color: cellColor,
       child: Text(
         text,
         style: AppTypography.bodyText2.copyWith(

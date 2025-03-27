@@ -27,90 +27,110 @@ class MoveDetailPage extends StatelessWidget {
   }
 
   Widget _buildDetailPage(BuildContext context, MoveDetailProvider provider) {
-    // Show loading state
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentMoveName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: const MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<MoveDetailProvider, Map<String, dynamic>>(
+      property: 'moveDetail',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'moveDetail': provider.moveDetail,
+        'currentMoveName': provider.currentMoveName,
+        'currentMoveId': provider.currentMoveId,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final moveDetail = data['moveDetail'];
+        final currentMoveName = data['currentMoveName'] as String;
+        final currentMoveId = data['currentMoveId'] as String;
 
-    // Show error state
-    if (provider.hasError) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentMoveName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorColor),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading move details',
-                style: AppTypography.headline6,
+        // Show loading state
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentMoveName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 8),
-              Text(
-                provider.errorMessage,
-                style: AppTypography.bodyText2,
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: const MahasLoader(isLoading: true),
+          );
+        }
+
+        // Show error state
+        if (hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentMoveName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 16),
-              MahasButton(
-                text: 'Try Again',
-                onPressed: () => provider.loadMoveDetail(
-                    provider.currentMoveId.isNotEmpty
-                        ? provider.currentMoveId
-                        : provider.currentMoveName),
-                type: ButtonType.primary,
-                color: AppColors.pokemonRed,
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppColors.errorColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading move details',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    style: AppTypography.bodyText2,
+                  ),
+                  const SizedBox(height: 16),
+                  MahasButton(
+                    text: 'Try Again',
+                    onPressed: () => provider.loadMoveDetail(
+                        currentMoveId.isNotEmpty
+                            ? currentMoveId
+                            : currentMoveName),
+                    type: ButtonType.primary,
+                    color: AppColors.pokemonRed,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
-    }
+            ),
+          );
+        }
 
-    // No data loaded yet
-    if (provider.moveDetail == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentMoveName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Text(
-            'No data available',
-            style: AppTypography.bodyText1,
-          ),
-        ),
-      );
-    }
+        // No data loaded yet
+        if (moveDetail == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentMoveName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Text(
+                'No data available',
+                style: AppTypography.bodyText1,
+              ),
+            ),
+          );
+        }
 
-    // Show Move details
-    final Color appBarColor =
-        PokemonTypeUtils.getTypeColor(provider.getMoveType());
+        // Show Move details
+        final Color appBarColor =
+            PokemonTypeUtils.getTypeColor(provider.getMoveType());
 
-    return Scaffold(
-      body: _buildBody(context, provider, appBarColor),
+        return Scaffold(
+          body: _buildBody(context, provider, appBarColor),
+        );
+      },
     );
   }
 

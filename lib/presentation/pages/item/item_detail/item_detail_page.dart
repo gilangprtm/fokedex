@@ -23,87 +23,107 @@ class ItemDetailPage extends StatelessWidget {
   }
 
   Widget _buildDetailPage(BuildContext context, ItemDetailProvider provider) {
-    // Show loading state
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _formatItemName(provider.currentItemName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: const MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<ItemDetailProvider, Map<String, dynamic>>(
+      property: 'itemDetail',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'itemDetail': provider.itemDetail,
+        'currentItemName': provider.currentItemName,
+        'currentItemId': provider.currentItemId,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final itemDetail = data['itemDetail'];
+        final currentItemName = data['currentItemName'] as String;
+        final currentItemId = data['currentItemId'] as String;
 
-    // Show error state
-    if (provider.hasError) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _formatItemName(provider.currentItemName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorColor),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading item details',
-                style: AppTypography.headline6,
+        // Show loading state
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _formatItemName(currentItemName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 8),
-              Text(
-                provider.errorMessage,
-                style: AppTypography.bodyText2,
-              ),
-              const SizedBox(height: 16),
-              MahasButton(
-                text: 'Try Again',
-                onPressed: () => provider.loadItemDetail(
-                    provider.currentItemId.isNotEmpty
-                        ? provider.currentItemId
-                        : provider.currentItemName),
-                type: ButtonType.primary,
-                color: AppColors.pokemonRed,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: const MahasLoader(isLoading: true),
+          );
+        }
 
-    // No data loaded yet
-    if (provider.itemDetail == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _formatItemName(provider.currentItemName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Text(
-            'No data available',
-            style: AppTypography.bodyText1,
-          ),
-        ),
-      );
-    }
+        // Show error state
+        if (hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _formatItemName(currentItemName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppColors.errorColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading item details',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    style: AppTypography.bodyText2,
+                  ),
+                  const SizedBox(height: 16),
+                  MahasButton(
+                    text: 'Try Again',
+                    onPressed: () => provider.loadItemDetail(
+                        currentItemId.isNotEmpty
+                            ? currentItemId
+                            : currentItemName),
+                    type: ButtonType.primary,
+                    color: AppColors.pokemonRed,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-    // Show Item details
-    return Scaffold(
-      body: _buildBody(context, provider),
+        // No data loaded yet
+        if (itemDetail == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _formatItemName(currentItemName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Text(
+                'No data available',
+                style: AppTypography.bodyText1,
+              ),
+            ),
+          );
+        }
+
+        // Show Item details
+        return Scaffold(
+          body: _buildBody(context, provider),
+        );
+      },
     );
   }
 
@@ -248,32 +268,6 @@ class ItemDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: AppTypography.bodyText1.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: AppTypography.bodyText1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPokemonTab(BuildContext context, ItemDetailProvider provider) {
     final pokemonList = provider.getPokemonWithItem();
     final gridItems = pokemonList
@@ -282,17 +276,47 @@ class ItemDetailPage extends StatelessWidget {
         .toList();
 
     return PokemonGridTab(
-      title: 'Pokémon that can hold this item',
+      title: 'Pokémon with this item',
       pokemons: gridItems,
     );
   }
 
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: AppTypography.bodyText2.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: AppTypography.bodyText2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatItemName(String name) {
-    // Format nama item (contoh: "master-ball" menjadi "Master Ball")
-    return name
-        .split('-')
-        .map((word) =>
-            word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}')
-        .join(' ');
+    if (name.isEmpty) return '';
+
+    // Split by dash or space and capitalize each word
+    final words = name.split(RegExp(r'[-\s]'));
+    final capitalizedWords = words.map((word) {
+      if (word.isEmpty) return '';
+      return word[0].toUpperCase() + word.substring(1);
+    });
+
+    return capitalizedWords.join(' ');
   }
 }

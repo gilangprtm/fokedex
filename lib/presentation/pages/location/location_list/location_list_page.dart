@@ -57,90 +57,109 @@ class LocationListPage extends StatelessWidget {
 
   Widget _buildLocationList(
       BuildContext context, LocationListProvider provider) {
-    if (provider.hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.errorColor),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading Locations',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.errorMessage,
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Retry',
-              onPressed: () => provider.refresh(),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+    return PropertySelector<LocationListProvider, Map<String, dynamic>>(
+      property: 'filteredLocations',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'filteredLocations': provider.filteredLocations,
+        'hasMore': provider.hasMore,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final filteredLocations =
+            data['filteredLocations'] as List<ResourceListItem>;
+        final hasMore = data['hasMore'] as bool;
 
-    if (provider.isLoading && provider.filteredLocations.isEmpty) {
-      return const MahasLoader(isLoading: true);
-    }
+        if (hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline,
+                    size: 48, color: AppColors.errorColor),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading Locations',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage,
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Retry',
+                  onPressed: () => provider.refresh(),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
 
-    if (provider.filteredLocations.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.location_off,
-                size: 48, color: AppColors.pokemonGray),
-            const SizedBox(height: 16),
-            Text(
-              'No Locations Found',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try changing your search criteria',
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Clear Search',
-              onPressed: () => provider.clearSearch(),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+        if (isLoading && filteredLocations.isEmpty) {
+          return const MahasLoader(isLoading: true);
+        }
 
-    return RefreshIndicator(
-      onRefresh: () => provider.refresh(),
-      child: ListView.builder(
-        controller: provider.scrollController,
-        padding: const EdgeInsets.all(AppTheme.spacing16),
-        itemCount:
-            provider.filteredLocations.length + (provider.hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index < provider.filteredLocations.length) {
-            final location = provider.filteredLocations[index];
-            return _buildLocationItem(context, location);
-          } else {
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              alignment: Alignment.center,
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
-              ),
-            );
-          }
-        },
-      ),
+        if (filteredLocations.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.location_off,
+                    size: 48, color: AppColors.pokemonGray),
+                const SizedBox(height: 16),
+                Text(
+                  'No Locations Found',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try changing your search criteria',
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Clear Search',
+                  onPressed: () => provider.clearSearch(),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => provider.refresh(),
+          child: ListView.builder(
+            controller: provider.scrollController,
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            itemCount: filteredLocations.length + (hasMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < filteredLocations.length) {
+                final location = filteredLocations[index];
+                return _buildLocationItem(context, location);
+              } else {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

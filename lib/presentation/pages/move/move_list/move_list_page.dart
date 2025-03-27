@@ -38,11 +38,17 @@ class MoveListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          MahasSearchBar(
-            controller: provider.searchController,
-            hintText: 'Search Moves',
-            onChanged: provider.onSearchChanged,
-            onClear: provider.clearSearch,
+          PropertySelector<MoveListProvider, String>(
+            property: 'searchQuery',
+            selector: (provider) => provider.searchQuery,
+            builder: (context, searchQuery) {
+              return MahasSearchBar(
+                controller: provider.searchController,
+                hintText: 'Search Moves',
+                onChanged: provider.onSearchChanged,
+                onClear: provider.clearSearch,
+              );
+            },
           ),
 
           // Move list
@@ -55,90 +61,109 @@ class MoveListPage extends StatelessWidget {
   }
 
   Widget _buildMoveList(BuildContext context, MoveListProvider provider) {
-    if (provider.hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.errorColor),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading Moves',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.errorMessage,
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Retry',
-              onPressed: () => provider.loadMoveList(refresh: true),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+    return PropertySelector<MoveListProvider, Map<String, dynamic>>(
+      property: 'filteredMoveList',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'filteredMoveList': provider.filteredMoveList,
+        'hasMoreData': provider.hasMoreData,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final filteredMoveList =
+            data['filteredMoveList'] as List<ResourceListItem>;
+        final hasMoreData = data['hasMoreData'] as bool;
 
-    if (provider.isLoading && provider.filteredMoveList.isEmpty) {
-      return const MahasLoader(isLoading: true);
-    }
+        if (hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline,
+                    size: 48, color: AppColors.errorColor),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading Moves',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage,
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Retry',
+                  onPressed: () => provider.loadMoveList(refresh: true),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
 
-    if (provider.filteredMoveList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.model_training,
-                size: 48, color: AppColors.pokemonGray),
-            const SizedBox(height: 16),
-            Text(
-              'No Moves Found',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try changing your search criteria',
-              style: AppTypography.bodyText2,
-            ),
-            const SizedBox(height: 16),
-            MahasButton(
-              text: 'Clear Search',
-              onPressed: () => provider.clearSearch(),
-              type: ButtonType.primary,
-              color: AppColors.pokemonRed,
-            ),
-          ],
-        ),
-      );
-    }
+        if (isLoading && filteredMoveList.isEmpty) {
+          return const MahasLoader(isLoading: true);
+        }
 
-    return RefreshIndicator(
-      onRefresh: () => provider.refresh(),
-      child: ListView.builder(
-        controller: provider.scrollController,
-        padding: const EdgeInsets.all(AppTheme.spacing16),
-        itemCount:
-            provider.filteredMoveList.length + (provider.hasMoreData ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index < provider.filteredMoveList.length) {
-            final move = provider.filteredMoveList[index];
-            return _buildMoveItem(context, move);
-          } else {
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              alignment: Alignment.center,
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
-              ),
-            );
-          }
-        },
-      ),
+        if (filteredMoveList.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.model_training,
+                    size: 48, color: AppColors.pokemonGray),
+                const SizedBox(height: 16),
+                Text(
+                  'No Moves Found',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try changing your search criteria',
+                  style: AppTypography.bodyText2,
+                ),
+                const SizedBox(height: 16),
+                MahasButton(
+                  text: 'Clear Search',
+                  onPressed: () => provider.clearSearch(),
+                  type: ButtonType.primary,
+                  color: AppColors.pokemonRed,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => provider.refresh(),
+          child: ListView.builder(
+            controller: provider.scrollController,
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            itemCount: filteredMoveList.length + (hasMoreData ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < filteredMoveList.length) {
+                final move = filteredMoveList[index];
+                return _buildMoveItem(context, move);
+              } else {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.pokemonRed),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

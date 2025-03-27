@@ -25,320 +25,425 @@ class LocationDetailPage extends StatelessWidget {
 
   Widget _buildDetailPage(
       BuildContext context, LocationDetailProvider provider) {
-    // Show loading state
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentLocationName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: const MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<LocationDetailProvider, Map<String, dynamic>>(
+      property: 'location',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'location': provider.location,
+        'currentLocationName': provider.currentLocationName,
+        'currentLocationId': provider.currentLocationId,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final location = data['location'];
+        final currentLocationName = data['currentLocationName'] as String;
+        final currentLocationId = data['currentLocationId'] as String;
 
-    // Show error state
-    if (provider.hasError) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentLocationName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorColor),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading location details',
-                style: AppTypography.headline6,
+        // Show loading state
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentLocationName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 8),
-              Text(
-                provider.errorMessage,
-                style: AppTypography.bodyText2,
-              ),
-              const SizedBox(height: 16),
-              MahasButton(
-                text: 'Try Again',
-                onPressed: () => provider.loadLocationDetail(
-                    provider.currentLocationId.isNotEmpty
-                        ? provider.currentLocationId
-                        : provider.currentLocationName),
-                type: ButtonType.primary,
-                color: AppColors.pokemonRed,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: const MahasLoader(isLoading: true),
+          );
+        }
 
-    // No data loaded yet
-    if (provider.location == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentLocationName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Text(
-            'No data available',
-            style: AppTypography.bodyText1,
-          ),
-        ),
-      );
-    }
+        // Show error state
+        if (hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentLocationName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppColors.errorColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading location details',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    style: AppTypography.bodyText2,
+                  ),
+                  const SizedBox(height: 16),
+                  MahasButton(
+                    text: 'Try Again',
+                    onPressed: () => provider.loadLocationDetail(
+                        currentLocationId.isNotEmpty
+                            ? currentLocationId
+                            : currentLocationName),
+                    type: ButtonType.primary,
+                    color: AppColors.pokemonRed,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-    // Show Location details
-    return Scaffold(
-      body: _buildBody(context, provider),
+        // No data loaded yet
+        if (location == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentLocationName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Text(
+                'No data available',
+                style: AppTypography.bodyText1,
+              ),
+            ),
+          );
+        }
+
+        // Show Location details
+        return Scaffold(
+          body: _buildBody(context, provider),
+        );
+      },
     );
   }
 
   Widget _buildBody(BuildContext context, LocationDetailProvider provider) {
-    return CustomScrollView(
-      slivers: [
-        // Custom app bar with Location basic info
-        _buildSliverAppBar(context, provider),
-        // Add padding at the bottom
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 16),
-        ),
-        // Tab Bar with content
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height -
-                100, // Subtract app bar height
-            child: MahasPillTabBar(
-              tabLabels: const ['Overview', 'Areas'],
-              tabViews: [
-                // Overview Tab
-                _buildOverviewTab(provider),
-                // Areas Tab
-                _buildAreasTab(provider),
-              ],
-              activeColor: AppColors.pokemonRed,
-              backgroundColor: Colors.grey[200]!,
-              activeTextColor: Colors.white,
-              inactiveTextColor: Colors.black87,
-              height: 45,
-              borderRadius: 15,
+    return PropertySelector<LocationDetailProvider, dynamic>(
+      property: 'location',
+      selector: (provider) => provider.location,
+      builder: (context, location) {
+        return CustomScrollView(
+          slivers: [
+            // Custom app bar with Location basic info
+            _buildSliverAppBar(context, provider),
+            // Add padding at the bottom
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16),
             ),
-          ),
-        ),
-        // Add padding at the bottom
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 32),
-        ),
-      ],
+            // Tab Bar with content
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height -
+                    100, // Subtract app bar height
+                child: MahasPillTabBar(
+                  tabLabels: const ['Overview', 'Areas'],
+                  tabViews: [
+                    // Overview Tab
+                    _buildOverviewTab(provider),
+                    // Areas Tab
+                    _buildAreasTab(provider),
+                  ],
+                  activeColor: AppColors.pokemonRed,
+                  backgroundColor: Colors.grey[200]!,
+                  activeTextColor: Colors.white,
+                  inactiveTextColor: Colors.black87,
+                  height: 45,
+                  borderRadius: 15,
+                ),
+              ),
+            ),
+            // Add padding at the bottom
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 32),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildSliverAppBar(
       BuildContext context, LocationDetailProvider provider) {
-    return SliverAppBar(
-      expandedHeight: 200.0,
-      floating: false,
-      pinned: true,
-      backgroundColor: AppColors.pokemonRed,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            // Background color
-            Container(
-              color: AppColors.pokemonRed,
-            ),
+    return PropertySelector<LocationDetailProvider, String>(
+      property: 'currentLocationName',
+      selector: (provider) => provider.currentLocationName,
+      builder: (context, currentLocationName) {
+        return SliverAppBar(
+          expandedHeight: 200.0,
+          floating: false,
+          pinned: true,
+          backgroundColor: AppColors.pokemonRed,
+          flexibleSpace: FlexibleSpaceBar(
+            background: Stack(
+              children: [
+                // Background color
+                Container(
+                  color: AppColors.pokemonRed,
+                ),
 
-            // Decorative Poké Ball pattern in the background
-            Positioned(
-              right: -50,
-              top: -50,
-              child: Icon(
-                Icons.catching_pokemon,
-                size: 200,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-
-            // Location name
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 32),
-                  Text(
-                    _capitalizeFirstLetter(
-                        provider.currentLocationName.replaceAll('-', ' ')),
-                    style: AppTypography.headline5.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                // Decorative Poké Ball pattern in the background
+                Positioned(
+                  right: -50,
+                  top: -50,
+                  child: Icon(
+                    Icons.catching_pokemon,
+                    size: 200,
+                    color: Colors.white.withValues(alpha: 0.2),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+                ),
 
-  Widget _buildOverviewTab(LocationDetailProvider provider) {
-    final location = provider.location!;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Region
-          if (location.region != null) ...[
-            MahasCustomizableCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Region',
-                    style: AppTypography.headline6,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    _capitalizeFirstLetter(location.region!.name),
-                    style: AppTypography.bodyText1,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Game Indices
-          if (location.gameIndices?.isNotEmpty == true) ...[
-            MahasCustomizableCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Game Appearances',
-                    style: AppTypography.headline6,
-                  ),
-                  const SizedBox(height: 10),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: location.gameIndices?.length ?? 0,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final gameIndex = location.gameIndices?[index];
-                      if (gameIndex == null) return const SizedBox.shrink();
-                      return Text(
-                        '${_capitalizeFirstLetter(gameIndex.generation.name)} (Game Index: ${gameIndex.gameIndex})',
-                        style: AppTypography.bodyText1,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAreasTab(LocationDetailProvider provider) {
-    final location = provider.location!;
-
-    if (location.areas == null || location.areas!.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.location_off,
-                size: 48, color: AppColors.pokemonGray),
-            const SizedBox(height: 16),
-            Text(
-              'No Areas Found',
-              style: AppTypography.headline6,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This location does not have any specific areas.',
-              style: AppTypography.bodyText2,
-            ),
-          ],
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: location.areas?.length ?? 0,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final area = location.areas?[index];
-              if (area == null) return const SizedBox.shrink();
-
-              return MahasCustomizableCard(
-                child: InkWell(
-                  onTap: () => _navigateToLocationAreaDetail(context, area),
+                // Location name
+                Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      const SizedBox(height: 32),
                       Text(
-                        _capitalizeFirstLetter(area.name),
-                        style: AppTypography.subtitle1.copyWith(
+                        _capitalizeFirstLetter(
+                            currentLocationName.replaceAll('-', ' ')),
+                        style: AppTypography.headline5.copyWith(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            'See details',
-                            style: AppTypography.bodyText2.copyWith(
-                              color: AppColors.pokemonRed,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 14,
-                            color: AppColors.pokemonRed,
-                          ),
-                        ],
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
+  }
+
+  Widget _buildOverviewTab(LocationDetailProvider provider) {
+    return PropertySelector<LocationDetailProvider, dynamic>(
+      property: 'location',
+      selector: (provider) => provider.location,
+      builder: (context, location) {
+        if (location == null) {
+          return const Center(child: Text('No overview data available'));
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Region
+              if (location.region != null) ...[
+                MahasCustomizableCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Region',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _capitalizeFirstLetter(location.region!.name),
+                        style: AppTypography.bodyText1,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Game Indices
+              if (location.gameIndices?.isNotEmpty == true) ...[
+                MahasCustomizableCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Game Appearances',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(height: 10),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: location.gameIndices?.length ?? 0,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final gameIndex = location.gameIndices?[index];
+                          if (gameIndex == null) return const SizedBox.shrink();
+                          return Text(
+                            '${_capitalizeFirstLetter(gameIndex.generation.name)} (Game Index: ${gameIndex.gameIndex})',
+                            style: AppTypography.bodyText1,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Names in different languages
+              if (location.names?.isNotEmpty == true) ...[
+                MahasCustomizableCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Names in Other Languages',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(height: 10),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: location.names?.length ?? 0,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final name = location.names?[index];
+                          if (name == null) return const SizedBox.shrink();
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.pokemonRed
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  _capitalizeFirstLetter(name.language.name),
+                                  style: AppTypography.caption.copyWith(
+                                    color: AppColors.pokemonRed,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  name.name,
+                                  style: AppTypography.bodyText2,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAreasTab(LocationDetailProvider provider) {
+    return PropertySelector<LocationDetailProvider, dynamic>(
+      property: 'location',
+      selector: (provider) => provider.location,
+      builder: (context, location) {
+        if (location == null) {
+          return const Center(child: Text('No areas data available'));
+        }
+
+        if (location.areas?.isEmpty == true) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.map_outlined, size: 48, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  'No Areas Found',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This location has no specific areas',
+                  style: AppTypography.bodyText2,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: location.areas?.length ?? 0,
+          itemBuilder: (context, index) {
+            final area = location.areas?[index];
+            if (area == null) return const SizedBox.shrink();
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: MahasCustomizableCard(
+                child: InkWell(
+                  onTap: () => _navigateToLocationAreaDetail(context, area),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _capitalizeFirstLetter(
+                                    area.name.replaceAll('-', ' ')),
+                                style: AppTypography.subtitle1.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'ID: ${_extractIdFromUrl(area.url)}',
+                                style: AppTypography.bodyText2.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right,
+                            color: AppColors.pokemonRed),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Helper to extract ID from URL
+  String _extractIdFromUrl(String url) {
+    final uri = Uri.parse(url);
+    final pathSegments = uri.pathSegments;
+    return pathSegments[pathSegments.length - 2];
   }
 
   void _navigateToLocationAreaDetail(

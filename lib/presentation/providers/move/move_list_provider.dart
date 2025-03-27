@@ -29,15 +29,43 @@ class MoveListProvider extends BaseProvider {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyPropertyListeners('isLoading');
+    }
+  }
+
   bool _hasError = false;
   bool get hasError => _hasError;
+
+  void _setHasError(bool value) {
+    if (_hasError != value) {
+      _hasError = value;
+      notifyPropertyListeners('hasError');
+    }
+  }
 
   String _errorMessage = '';
   String get errorMessage => _errorMessage;
 
+  void _setErrorMessage(String value) {
+    if (_errorMessage != value) {
+      _errorMessage = value;
+      notifyPropertyListeners('errorMessage');
+    }
+  }
+
   // Search query
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
+
+  void _setSearchQuery(String value) {
+    if (_searchQuery != value) {
+      _searchQuery = value;
+      notifyPropertyListeners('searchQuery');
+    }
+  }
 
   // Lifecycle methods
   @override
@@ -72,9 +100,16 @@ class MoveListProvider extends BaseProvider {
 
   // Load initial data
   Future<void> loadInitialData() async {
-    await runAsync('loadInitialData', () async {
+    // Use microtask to delay the loading until after the build phase
+    Future.microtask(() async {
       await loadMoveList();
     });
+  }
+
+  // Notify about move list changes
+  void _notifyMoveListChange() {
+    notifyPropertyListeners('moveList');
+    notifyPropertyListeners('filteredMoveList');
   }
 
   // Load daftar Move dengan pagination
@@ -84,7 +119,7 @@ class MoveListProvider extends BaseProvider {
       _moveList = [];
       _hasMoreData = true;
       _filteredMoveList = [];
-      notifyListeners();
+      _notifyMoveListChange();
     }
 
     // Jangan load lagi jika sudah tidak ada data lagi atau sedang loading
@@ -92,34 +127,33 @@ class MoveListProvider extends BaseProvider {
       return;
     }
 
-    await runAsync('loadMoveList', () async {
-      _isLoading = true;
-      _hasError = false;
+    _setLoading(true);
+    _setHasError(false);
 
-      try {
-        final response =
-            await _moveService.getMoveList(offset: _offset, limit: 1000);
+    try {
+      final response =
+          await _moveService.getMoveList(offset: _offset, limit: 1000);
 
-        // Update pagination state
-        _hasMoreData = response.hasMore;
-        _offset = response.nextOffset ?? _offset;
+      // Update pagination state
+      _hasMoreData = response.hasMore;
+      _offset = response.nextOffset ?? _offset;
 
-        // Add new Moves to the list
-        _moveList = [..._moveList, ...response.results];
+      // Add new Moves to the list
+      _moveList = [..._moveList, ...response.results];
 
-        // Apply search if query exists
-        if (_searchQuery.isNotEmpty) {
-          _filterBySearch(_searchQuery);
-        }
-
-        _isLoading = false;
-      } catch (e) {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = e.toString();
-        logger.e('Error loading Move list: $e');
+      // Apply search if query exists
+      if (_searchQuery.isNotEmpty) {
+        _filterBySearch(_searchQuery);
       }
-    });
+
+      _notifyMoveListChange();
+      _setLoading(false);
+    } catch (e) {
+      _setLoading(false);
+      _setHasError(true);
+      _setErrorMessage(e.toString());
+      logger.e('Error loading Move list: $e');
+    }
   }
 
   // Load lebih banyak Move (infinite scroll)
@@ -133,21 +167,23 @@ class MoveListProvider extends BaseProvider {
 
   // Filter Move berdasarkan pencarian nama
   void searchMoves(String query) {
-    _searchQuery = query.toLowerCase();
+    _setLoading(true);
+    _setSearchQuery(query.toLowerCase());
     _filterBySearch(_searchQuery);
-    notifyListeners();
+    _setLoading(false);
   }
 
   // Helper method untuk filter berdasarkan pencarian
   void _filterBySearch(String query) {
     if (query.isEmpty) {
       _filteredMoveList = [];
-      return;
+    } else {
+      _filteredMoveList = _moveList
+          .where((move) => move.normalizedName.toLowerCase().contains(query))
+          .toList();
     }
 
-    _filteredMoveList = _moveList
-        .where((move) => move.normalizedName.toLowerCase().contains(query))
-        .toList();
+    _notifyMoveListChange();
   }
 
   // Refresh data

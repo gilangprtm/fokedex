@@ -7,7 +7,8 @@ import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../providers/item_detail_provider.dart';
+import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../providers/item/item_detail_provider.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
 class ItemDetailPage extends StatelessWidget {
@@ -276,15 +277,13 @@ class ItemDetailPage extends StatelessWidget {
   Widget _buildPokemonTab(BuildContext context, ItemDetailProvider provider) {
     final pokemonList = provider.getPokemonWithItem();
     final gridItems = pokemonList
-        .map((pokemon) =>
-            PokemonGridItem.fromUrl(pokemon.pokemon.name, pokemon.pokemon.url))
+        .map((pokemon) => PokemonReference(
+            name: pokemon.pokemon.name, url: pokemon.pokemon.url))
         .toList();
 
     return PokemonGridTab(
       title: 'Pokémon that can hold this item',
       pokemons: gridItems,
-      isLoading: provider.isLoading,
-      errorMessage: provider.hasError ? provider.errorMessage : null,
     );
   }
 

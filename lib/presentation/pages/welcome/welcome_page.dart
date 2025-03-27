@@ -4,7 +4,7 @@ import '../../../core/theme/app_color.dart';
 import '../../../core/theme/app_typografi.dart';
 import '../../../core/utils/mahas.dart';
 import '../../../presentation/routes/app_routes.dart';
-import '../../providers/welcome_provider.dart';
+import '../../providers/welcome/welcome_provider.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});

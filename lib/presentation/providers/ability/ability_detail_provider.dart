@@ -1,7 +1,7 @@
-import '../../core/base/base_provider.dart';
-import '../../core/utils/mahas.dart';
-import '../../data/datasource/network/service/ability_service.dart';
-import '../../data/datasource/models/ability_model.dart';
+import '../../../core/base/base_provider.dart';
+import '../../../core/utils/mahas.dart';
+import '../../../data/datasource/network/service/ability_service.dart';
+import '../../../data/datasource/models/ability_model.dart';
 
 class AbilityDetailProvider extends BaseProvider {
   final AbilityService _service = AbilityService();

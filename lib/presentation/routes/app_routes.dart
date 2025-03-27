@@ -16,6 +16,7 @@ class AppRoutes {
   // Ability routes
   static const String abilityList = '/abilities';
   static const String abilityDetail = '/abilities/detail';
+  static const String abilityDetailReusable = '/abilities/detail/reusable';
 
   // Item routes
   static const String itemList = '/item';

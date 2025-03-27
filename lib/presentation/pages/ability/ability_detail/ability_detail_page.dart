@@ -7,7 +7,8 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../providers/ability_detail_provider.dart';
+import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../providers/ability/ability_detail_provider.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
 class AbilityDetailPage extends StatelessWidget {
@@ -227,15 +228,13 @@ class AbilityDetailPage extends StatelessWidget {
       BuildContext context, AbilityDetailProvider provider) {
     final pokemonList = provider.getPokemonWithAbility();
     final gridItems = pokemonList
-        .map((pokemon) =>
-            PokemonGridItem.fromUrl(pokemon.pokemon.name, pokemon.pokemon.url))
+        .map((pokemon) => PokemonReference(
+            name: pokemon.pokemon.name, url: pokemon.pokemon.url))
         .toList();
 
     return PokemonGridTab(
       title: 'Pokémon with this ability',
       pokemons: gridItems,
-      isLoading: provider.isLoading,
-      errorMessage: provider.hasError ? provider.errorMessage : null,
     );
   }
 

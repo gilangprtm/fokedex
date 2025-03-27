@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'dart:math';
-import '../../core/base/base_provider.dart';
-import '../../core/utils/mahas.dart';
-import '../../data/datasource/local/services/local_pokemon_service.dart';
-import '../../data/datasource/models/api_response_model.dart';
-import '../routes/app_routes.dart';
+import '../../../core/base/base_provider.dart';
+import '../../../core/utils/mahas.dart';
+import '../../../data/datasource/local/services/local_pokemon_service.dart';
+import '../../../data/datasource/models/api_response_model.dart';
+import '../../routes/app_routes.dart';
 
 // Konstanta untuk key penyimpanan
 const String kPokemonListKey = 'pokemon_list_updated';

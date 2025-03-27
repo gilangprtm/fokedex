@@ -1,8 +1,8 @@
-import '../../core/base/base_provider.dart';
-import '../../core/utils/mahas.dart';
-import '../../data/datasource/models/api_response_model.dart';
-import '../../data/datasource/models/type_model.dart' hide ResourceListItem;
-import '../../data/datasource/network/service/type_service.dart';
+import '../../../core/base/base_provider.dart';
+import '../../../core/utils/mahas.dart';
+import '../../../data/datasource/models/api_response_model.dart';
+import '../../../data/datasource/models/type_model.dart' hide ResourceListItem;
+import '../../../data/datasource/network/service/type_service.dart';
 
 class TypeChartProvider extends BaseProvider {
   final TypeService _typeService = TypeService();

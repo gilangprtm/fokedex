@@ -651,3 +651,37 @@ class OfficialArtwork {
     };
   }
 }
+
+class PokemonReference {
+  final String name;
+  final String url;
+
+  PokemonReference({
+    required this.name,
+    required this.url,
+  });
+
+  factory PokemonReference.fromJson(Map<String, dynamic> json) {
+    return PokemonReference(
+      name: json['name'] as String,
+      url: json['url'] as String,
+    );
+  }
+
+  String get id {
+    final uri = Uri.parse(url);
+    final pathSegments = uri.pathSegments;
+    return pathSegments[pathSegments.length - 2];
+  }
+
+  String get formattedName {
+    return name
+        .split('-')
+        .map((word) => word[0].toUpperCase() + word.substring(1))
+        .join(' ');
+  }
+
+  String get imageUrl {
+    return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png';
+  }
+}

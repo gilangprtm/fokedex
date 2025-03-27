@@ -3,10 +3,9 @@ import '../../../../core/base/provider_widget.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
-import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../providers/type_chart_provider.dart';
+import '../../../providers/type/type_chart_provider.dart';
 
 class TypeChartPage extends StatelessWidget {
   const TypeChartPage({super.key});

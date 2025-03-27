@@ -10,7 +10,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/location_list_provider.dart';
+import '../../../providers/location/location_list_provider.dart';
 import '../../../routes/app_routes.dart';
 
 class LocationListPage extends StatelessWidget {

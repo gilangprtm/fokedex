@@ -7,10 +7,8 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/location_model.dart';
-import '../../../providers/location_area_detail_provider.dart';
-import '../../../routes/app_routes.dart';
-import '../../../../core/utils/mahas.dart';
+import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../providers/location/location_area_detail_provider.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
 class LocationAreaDetailPage extends StatelessWidget {
@@ -319,15 +317,13 @@ class LocationAreaDetailPage extends StatelessWidget {
     }
 
     final gridItems = pokemonEncounters
-        .map((encounter) => PokemonGridItem.fromUrl(
-            encounter.pokemon.name, encounter.pokemon.url))
+        .map((encounter) => PokemonReference(
+            name: encounter.pokemon.name, url: encounter.pokemon.url))
         .toList();
 
     return PokemonGridTab(
       title: 'Pokémon in this area',
       pokemons: gridItems,
-      isLoading: provider.isLoading,
-      errorMessage: provider.hasError ? provider.errorMessage : null,
     );
   }
 

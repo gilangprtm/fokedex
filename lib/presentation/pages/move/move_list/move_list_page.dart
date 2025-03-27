@@ -9,7 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/move_list_provider.dart';
+import '../../../providers/move/move_list_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../../../core/mahas/widget/mahas_tile.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/base/base_provider.dart';
-import '../../data/datasource/models/api_response_model.dart';
-import '../../data/datasource/network/service/ability_service.dart';
+import '../../../core/base/base_provider.dart';
+import '../../../data/datasource/models/api_response_model.dart';
+import '../../../data/datasource/network/service/ability_service.dart';
 
 class AbilityListProvider extends BaseProvider {
   // Service

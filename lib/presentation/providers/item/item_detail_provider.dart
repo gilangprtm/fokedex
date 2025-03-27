@@ -1,7 +1,7 @@
-import '../../core/base/base_provider.dart';
-import '../../core/utils/mahas.dart';
-import '../../data/datasource/models/item_model.dart';
-import '../../data/datasource/network/service/item_service.dart';
+import '../../../core/base/base_provider.dart';
+import '../../../core/utils/mahas.dart';
+import '../../../data/datasource/models/item_model.dart';
+import '../../../data/datasource/network/service/item_service.dart';
 
 class ItemDetailProvider extends BaseProvider {
   final ItemService _service = ItemService();

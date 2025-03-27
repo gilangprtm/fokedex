@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/base/provider_widget.dart';
 import '../../../core/theme/app_typografi.dart';
 import '../../../core/utils/mahas.dart';
-import '../../providers/home_provider.dart';
+import '../../providers/home/home_provider.dart';
 import '../../../core/mahas/mahas_type.dart';
 import '../../routes/app_routes.dart';
 

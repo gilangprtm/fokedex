@@ -8,7 +8,8 @@ import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
-import '../../../providers/move_detail_provider.dart';
+import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../providers/move/move_detail_provider.dart';
 import '../../../pages/pokemon/pokemon_detail/widgets/pokemon_type_badge.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
@@ -272,14 +273,13 @@ class MoveDetailPage extends StatelessWidget {
   Widget _buildPokemonTab(BuildContext context, MoveDetailProvider provider) {
     final pokemonList = provider.getPokemonWithMove();
     final gridItems = pokemonList
-        .map((pokemon) => PokemonGridItem.fromUrl(pokemon.name, pokemon.url))
+        .map(
+            (pokemon) => PokemonReference(name: pokemon.name, url: pokemon.url))
         .toList();
 
     return PokemonGridTab(
       title: 'Pokémon that can learn this move',
       pokemons: gridItems,
-      isLoading: provider.isLoading,
-      errorMessage: provider.hasError ? provider.errorMessage : null,
     );
   }
 

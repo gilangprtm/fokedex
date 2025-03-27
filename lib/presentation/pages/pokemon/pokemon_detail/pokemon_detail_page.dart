@@ -9,10 +9,11 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../data/datasource/models/evolution_stage_model.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../core/utils/image_cache_utils.dart';
-import '../../../providers/pokemon_detail_provider.dart';
+import '../../../providers/pokemon/pokemon_detail_provider.dart';
 import 'widgets/pokemon_stats_widget.dart';
 import 'widgets/pokemon_type_badge.dart';
 import 'widgets/pokemon_evolution_widget.dart';
@@ -33,95 +34,111 @@ class PokemonDetailPage extends StatelessWidget {
 
   Widget _buildDetailPage(
       BuildContext context, PokemonDetailProvider provider) {
-    // Show loading state
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentPokemonName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: const MahasLoader(isLoading: true),
-      );
-    }
+    return PropertySelector<PokemonDetailProvider, Map<String, dynamic>>(
+      property: 'pokemon',
+      selector: (provider) => {
+        'isLoading': provider.isLoading,
+        'hasError': provider.hasError,
+        'errorMessage': provider.errorMessage,
+        'pokemon': provider.pokemon,
+        'currentPokemonName': provider.currentPokemonName,
+        'currentPokemonId': provider.currentPokemonId,
+      },
+      builder: (context, data) {
+        final isLoading = data['isLoading'] as bool;
+        final hasError = data['hasError'] as bool;
+        final errorMessage = data['errorMessage'] as String;
+        final pokemon = data['pokemon'] as Pokemon?;
+        final currentPokemonName = data['currentPokemonName'] as String;
+        final currentPokemonId = data['currentPokemonId'] as String;
 
-    // Show error state
-    if (provider.hasError) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentPokemonName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.errorColor),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading Pokémon details',
-                style: AppTypography.headline6,
+        // Show loading state
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentPokemonName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 8),
-              Text(
-                provider.errorMessage,
-                style: AppTypography.bodyText2,
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: const MahasLoader(isLoading: true),
+          );
+        }
+
+        // Show error state
+        if (hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentPokemonName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
               ),
-              const SizedBox(height: 16),
-              MahasButton(
-                text: 'Try Again',
-                onPressed: () =>
-                    provider.loadPokemonDetail(provider.currentPokemonId),
-                type: ButtonType.primary,
-                color: AppColors.pokemonRed,
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppColors.errorColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading Pokémon details',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    style: AppTypography.bodyText2,
+                  ),
+                  const SizedBox(height: 16),
+                  MahasButton(
+                    text: 'Try Again',
+                    onPressed: () =>
+                        provider.loadPokemonDetail(currentPokemonId),
+                    type: ButtonType.primary,
+                    color: AppColors.pokemonRed,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
-    }
+            ),
+          );
+        }
 
-    // No data loaded yet
-    if (provider.pokemon == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _capitalizeFirstLetter(provider.currentPokemonName),
-            style: AppTypography.headline6.copyWith(color: Colors.white),
-          ),
-          backgroundColor: AppColors.pokemonRed,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Text(
-            'No data available',
-            style: AppTypography.bodyText1,
-          ),
-        ),
-      );
-    }
+        // No data loaded yet
+        if (pokemon == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _capitalizeFirstLetter(currentPokemonName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.pokemonRed,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Text(
+                'No data available',
+                style: AppTypography.bodyText1,
+              ),
+            ),
+          );
+        }
 
-    // Show Pokemon details
-    final pokemon = provider.pokemon!;
-    _getAppBarColor(provider);
-
-    return _buildPokemonDetails(context, provider, pokemon);
+        // Show Pokemon details
+        return _buildPokemonDetails(context, provider, pokemon);
+      },
+    );
   }
 
-  // Determine app bar color based on Pokemon type or species
-  Color _getAppBarColor(PokemonDetailProvider provider) {
+  // Determine app bar color based on Pokemon type
+  Color _getTypeColor(Pokemon pokemon) {
     // Get the primary type color if available
-    if (provider.pokemon?.types != null &&
-        provider.pokemon!.types!.isNotEmpty) {
-      final primaryType = provider.pokemon!.types!.first.type.name;
+    if (pokemon.types != null && pokemon.types!.isNotEmpty) {
+      final primaryType = pokemon.types!.first.type.name;
       return PokemonTypeUtils.getTypeColor(primaryType);
     }
     // Default to red if no type info
@@ -168,90 +185,16 @@ class PokemonDetailPage extends StatelessWidget {
                 borderRadius: 15,
                 tabViews: [
                   // About Tab
-                  SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
-                    child: MahasCustomizableCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'About',
-                                  style: AppTypography.headline6,
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                _buildAboutInfo(pokemon),
-
-                                const SizedBox(height: 16),
-
-                                // Show description
-                                if (provider.speciesData != null &&
-                                    provider.speciesData![
-                                            'flavor_text_entries'] !=
-                                        null &&
-                                    provider.speciesData!['flavor_text_entries']
-                                        .isNotEmpty) ...[
-                                  const Text('Description:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _cleanDescription(
-                                      provider.speciesData![
-                                              'flavor_text_entries'][0]
-                                          ['flavor_text'],
-                                    ),
-                                    style: AppTypography.bodyText2,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _buildAboutTab(context, provider, pokemon),
 
                   // Stats Tab
-                  SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
-                    child: MahasCustomizableCard(
-                      child: pokemon.stats != null
-                          ? PokemonStatsWidget(stats: pokemon.stats!)
-                          : const Center(child: Text('No stats available')),
-                    ),
-                  ),
+                  _buildStatsTab(pokemon),
 
                   // Evolution Tab
-                  SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
-                    child: MahasCustomizableCard(
-                      child: PokemonEvolutionWidget(
-                        pokemonId: provider.currentPokemonId,
-                        evolutionStages: provider.parseEvolutionChain(),
-                      ),
-                    ),
-                  ),
+                  _buildEvolutionTab(provider),
 
                   // Moves Tab
-                  SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
-                    child: MahasCustomizableCard(
-                      child: pokemon.moves != null
-                          ? PokemonMovesWidget(moves: pokemon.moves!)
-                          : const Center(child: Text('No moves available')),
-                    ),
-                  ),
+                  _buildMovesTab(pokemon),
                 ],
               ),
             ),
@@ -261,7 +204,277 @@ class PokemonDetailPage extends StatelessWidget {
     );
   }
 
-  // Helper method to build the About info section
+  // About Tab
+  Widget _buildAboutTab(
+      BuildContext context, PokemonDetailProvider provider, Pokemon pokemon) {
+    return PropertySelector<PokemonDetailProvider, Map<String, dynamic>>(
+      property: 'speciesData',
+      selector: (provider) => {
+        'speciesData': provider.speciesData,
+      },
+      builder: (context, data) {
+        final speciesData = data['speciesData'] as Map<String, dynamic>?;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
+          child: MahasCustomizableCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'About',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      _buildAboutInfo(pokemon),
+
+                      const SizedBox(height: 16),
+
+                      // Show description
+                      if (speciesData != null &&
+                          speciesData['flavor_text_entries'] != null &&
+                          speciesData['flavor_text_entries'].isNotEmpty) ...[
+                        Text(
+                          'Description',
+                          style: AppTypography.subtitle1
+                              .copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          provider.getDescription(),
+                          style: AppTypography.bodyText1,
+                        ),
+                      ],
+
+                      const SizedBox(height: 16),
+
+                      // Type effectiveness
+                      Text(
+                        'Type Effectiveness',
+                        style: AppTypography.subtitle1
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTypeEffectiveness(pokemon),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Stats Tab
+  Widget _buildStatsTab(Pokemon pokemon) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
+      child: MahasCustomizableCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Stats',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 16),
+                  if (pokemon.stats != null && pokemon.stats!.isNotEmpty)
+                    PokemonStatsWidget(stats: pokemon.stats!)
+                  else
+                    const Center(
+                      child: Text('No stats available'),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Evolution Tab
+  Widget _buildEvolutionTab(PokemonDetailProvider provider) {
+    return PropertySelector<PokemonDetailProvider, Map<String, dynamic>>(
+      property: 'evolutionStages',
+      selector: (provider) => {
+        'evolutionStages': provider.evolutionStages,
+        'currentPokemonId': provider.currentPokemonId,
+      },
+      builder: (context, data) {
+        final evolutionStages = data['evolutionStages'] as List<EvolutionStage>;
+        final currentPokemonId = data['currentPokemonId'] as String;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
+          child: MahasCustomizableCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Evolution Chain',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(height: 16),
+                      if (evolutionStages.isNotEmpty)
+                        PokemonEvolutionWidget(
+                          evolutionStages: evolutionStages,
+                          pokemonId: currentPokemonId,
+                        )
+                      else
+                        Center(
+                          child: Text(
+                            'No evolution data available',
+                            style: AppTypography.bodyText1,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Moves Tab
+  Widget _buildMovesTab(Pokemon pokemon) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
+      child: MahasCustomizableCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Moves',
+                    style: AppTypography.headline6,
+                  ),
+                  const SizedBox(height: 16),
+                  if (pokemon.moves != null && pokemon.moves!.isNotEmpty)
+                    PokemonMovesWidget(moves: pokemon.moves!)
+                  else
+                    Center(
+                      child: Text(
+                        'No move data available',
+                        style: AppTypography.bodyText1,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(BuildContext context,
+      PokemonDetailProvider provider, Pokemon pokemon, Color appBarColor) {
+    return SliverAppBar(
+      expandedHeight: 200.0,
+      floating: false,
+      pinned: true,
+      stretch: true,
+      backgroundColor: appBarColor,
+      flexibleSpace: FlexibleSpaceBar(
+        centerTitle: true,
+        title: Text(
+          _capitalizeFirstLetter(pokemon.name),
+          style: AppTypography.headline6.copyWith(color: Colors.white),
+        ),
+        background: Stack(
+          children: [
+            // Background gradient
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    appBarColor,
+                    appBarColor.withOpacity(0.8),
+                  ],
+                ),
+              ),
+            ),
+            // Pokeball background pattern
+            Positioned(
+              right: -50,
+              top: -50,
+              child: Opacity(
+                opacity: 0.2,
+                child: Image.network(
+                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
+                  width: 200,
+                  height: 200,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            // Pokemon image
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Hero(
+                tag: 'pokemon-${pokemon.id}',
+                child: ImageCacheUtils.buildPokemonImage(
+                  imageUrl:
+                      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png',
+                  height: 180,
+                  width: 180,
+                  progressColor: appBarColor.withOpacity(0.5),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.catching_pokemon,
+                    size:
+                        80, // Larger size for the error icon in the app bar image
+                    color: Colors.white54,
+                  ),
+                ),
+              ),
+            ),
+            // ID number
+            Positioned(
+              top: 60,
+              right: 16,
+              child: Text(
+                '#${pokemon.id.toString().padLeft(3, '0')}',
+                style: AppTypography.headline5.copyWith(
+                  color: Colors.white.withOpacity(0.7),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAboutInfo(Pokemon pokemon) {
     final height = pokemon.height != null
         ? pokemon.height! / 10
@@ -287,7 +500,11 @@ class PokemonDetailPage extends StatelessWidget {
 
         // Pokemon types
         if (pokemon.types != null && pokemon.types!.isNotEmpty) ...[
-          const Text('Types:', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            'Types',
+            style:
+                AppTypography.subtitle1.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -301,8 +518,11 @@ class PokemonDetailPage extends StatelessWidget {
 
         // Pokemon abilities
         if (pokemon.abilities != null && pokemon.abilities!.isNotEmpty) ...[
-          const Text('Abilities:',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            'Abilities',
+            style:
+                AppTypography.subtitle1.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -322,14 +542,13 @@ class PokemonDetailPage extends StatelessWidget {
     );
   }
 
-  // Helper method to build info item
   Widget _buildInfoItem(String label, String value) {
     return Column(
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.grey,
+          style: TextStyle(
+            color: Colors.grey.shade600,
             fontSize: 12,
           ),
         ),
@@ -345,111 +564,10 @@ class PokemonDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context,
-      PokemonDetailProvider provider, Pokemon pokemon, Color appBarColor) {
-    return SliverAppBar(
-      expandedHeight: 300.0,
-      floating: false,
-      pinned: true,
-      backgroundColor: appBarColor,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            // Background color
-            Container(
-              color: appBarColor,
-            ),
-
-            // Decorative Poké Ball pattern in the background
-            Positioned(
-              right: -50,
-              top: -50,
-              child: Icon(
-                Icons.catching_pokemon,
-                size: 200,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-
-            // Pokemon info at the bottom
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                color: appBarColor.withValues(alpha: 0.7),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Pokemon ID
-                    Text(
-                      '#${pokemon.id.toString().padLeft(3, '0')}',
-                      style: AppTypography.pokemonId.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    // Pokemon Name
-                    Text(
-                      _capitalizeFirstLetter(pokemon.name),
-                      style: AppTypography.pokemonName.copyWith(
-                        color: Colors.white,
-                        fontSize: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Pokemon Types
-                    if (pokemon.types != null) _buildPokemonTypes(pokemon),
-                  ],
-                ),
-              ),
-            ),
-
-            // Pokemon image in the center
-            Align(
-              alignment: Alignment.center,
-              child: Hero(
-                tag: 'pokemon-${pokemon.id}',
-                child: ImageCacheUtils.buildPokemonImage(
-                  imageUrl:
-                      pokemon.sprites?.other?.officialArtwork?.frontDefault ??
-                          (pokemon.sprites?.frontDefault ?? ''),
-                  height: 200,
-                  width: 200,
-                  progressColor: Colors.white,
-                  errorWidget: (context, url, error) {
-                    return Container(
-                      height: 200,
-                      color: appBarColor.withValues(alpha: 0.5),
-                      child: const Icon(
-                        Icons.catching_pokemon,
-                        size: 100,
-                        color: Colors.white,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Mahas.back(),
-      ),
-    );
-  }
-
-  Widget _buildPokemonTypes(Pokemon pokemon) {
-    return Row(
-      children: pokemon.types!
-          .map((type) => Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: PokemonTypeBadge(typeName: type.type.name),
-              ))
-          .toList(),
-    );
+  Widget _buildTypeEffectiveness(Pokemon pokemon) {
+    // Simplified placeholder - in a real app this would compute actual type effectiveness
+    return Text('Type effectiveness information would be displayed here.',
+        style: TextStyle(color: Colors.grey.shade700));
   }
 
   String _capitalizeFirstLetter(String text) {

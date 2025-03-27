@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/mahas/services/logger_service.dart';
 import '../../models/api_response_model.dart';
+import '../../models/pokemon_list_item_model.dart';
 import '../../models/pokemon_model.dart';
 import '../../network/service/pokemon_service.dart';
 import '../repositories/local_pokemon_repository.dart';
@@ -153,6 +154,19 @@ class LocalPokemonService {
   /// Akses lokal ke detail Pokemon
   Future<Pokemon?> getPokemonDetail(dynamic idOrName) async {
     final pokemon = await _localRepository.getPokemonDetail(idOrName);
+
+    // Check for missing type data (for debugging purposes)
+    if (pokemon != null && (pokemon.types == null || pokemon.types!.isEmpty)) {
+      debugPrint(
+          'Warning: Retrieved Pokemon ${pokemon.name} (ID: ${pokemon.id}) has no type data');
+    }
+
+    return pokemon;
+  }
+
+  /// Akses lokal ke detail Pokemon
+  Future<PokemonList?> getPokemonDetailList(dynamic idOrName) async {
+    final pokemon = await _localRepository.getPokemonDetailList(idOrName);
 
     // Check for missing type data (for debugging purposes)
     if (pokemon != null && (pokemon.types == null || pokemon.types!.isEmpty)) {

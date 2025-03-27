@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '../../models/api_response_model.dart';
+import '../../models/pokemon_list_item_model.dart';
 import '../../models/pokemon_model.dart';
 import '../db/db_local.dart';
 
@@ -302,6 +303,91 @@ class LocalPokemonRepository {
       };
 
       return Pokemon.fromJson(pokemonJson);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Mendapatkan detail Pokemon dari database lokal
+  Future<PokemonList?> getPokemonDetailList(dynamic idOrName) async {
+    try {
+      int id;
+      if (idOrName is int) {
+        id = idOrName;
+      } else if (idOrName is String && int.tryParse(idOrName) != null) {
+        id = int.parse(idOrName);
+      } else {
+        // Query by name
+        final result = await _db.queryWhere(
+          DBLocal.tablePokemon,
+          'name = ?',
+          [idOrName.toString().toLowerCase()],
+        );
+        if (result.isNotEmpty) {
+          id = result.first['id'] as int;
+        } else {
+          return null;
+        }
+      }
+
+      // Get Pokemon data from DB
+      final pokemonResult = await _db.queryWhere(
+        DBLocal.tablePokemon,
+        'id = ?',
+        [id],
+      );
+
+      if (pokemonResult.isEmpty) {
+        return null;
+      }
+
+      final pokemon = pokemonResult.first;
+
+      // Check if there is more detailed info in the pokemon_detail table
+      final detailResult = await _db.queryWhere(
+        DBLocal.tablePokemonDetail,
+        'id = ?',
+        [id],
+      );
+
+      // Use detail data if available
+      final Map<String, dynamic> pokemonData = detailResult.isNotEmpty
+          ? {...pokemon, ...detailResult.first}
+          : pokemon;
+
+      // If there's JSON data in pokemon_detail, parse it directly
+      if (detailResult.isNotEmpty && detailResult.first['json_data'] != null) {
+        try {
+          final jsonData =
+              jsonDecode(detailResult.first['json_data'] as String);
+          return PokemonList.fromJson(jsonData);
+        } catch (e) {
+          // If parsing fails, continue with fallback approach
+        }
+      }
+
+      // Generate a default type based on Pokemon name
+      final name = pokemonData['name'] as String;
+      final defaultType = _getDefaultTypeFromName(name);
+
+      // Construct simplified JSON for Pokemon
+      final Map<String, dynamic> pokemonJson = {
+        "id": id,
+        "name": pokemonData['name'],
+        "url": pokemonData['url'] ?? 'https://pokeapi.co/api/v2/pokemon/$id/',
+        "types": [
+          {
+            "slot": 1,
+            "type": {
+              "name": defaultType,
+              "url":
+                  "https://pokeapi.co/api/v2/type/${_getTypeId(defaultType)}/",
+            }
+          }
+        ],
+      };
+
+      return PokemonList.fromJson(pokemonJson);
     } catch (e) {
       return null;
     }

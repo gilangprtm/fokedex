@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/base/base_provider.dart';
 import '../../../data/datasource/local/services/local_pokemon_service.dart';
 import '../../../data/datasource/models/api_response_model.dart';
+import '../../../data/datasource/models/pokemon_list_item_model.dart';
 import '../../../data/datasource/models/pokemon_model.dart';
 import '../../../data/datasource/models/type_model.dart';
 import '../../../data/datasource/network/service/pokemon_service.dart';
@@ -30,8 +31,8 @@ class PokemonListProvider extends BaseProvider {
   List<ResourceListItem> get pokemonList => List.unmodifiable(_pokemonList);
 
   // Map to store Pokemon details
-  final Map<int, Pokemon> _pokemonDetails = {};
-  Pokemon? getPokemonDetails(int id) => _pokemonDetails[id];
+  final Map<int, PokemonList> _pokemonDetails = {};
+  PokemonList? getPokemonDetails(int id) => _pokemonDetails[id];
 
   List<ResourceListItem> _pokemonTypes = [];
   List<ResourceListItem> get pokemonTypes => List.unmodifiable(_pokemonTypes);
@@ -166,7 +167,7 @@ class PokemonListProvider extends BaseProvider {
             if (!_pokemonDetails.containsKey(pokemon.id)) {
               try {
                 final details = await _pokemonService
-                    .getPokemonDetail(pokemon.id.toString());
+                    .getPokemonDetailList(pokemon.id.toString());
                 _pokemonDetails[pokemon.id] = details;
 
                 // Notify periodically for better UX when loading many pokemon
@@ -215,7 +216,7 @@ class PokemonListProvider extends BaseProvider {
 
       for (var pokemon in _pokemonList) {
         if (!_pokemonDetails.containsKey(pokemon.id)) {
-          final detail = await _localService.getPokemonDetail(pokemon.id);
+          final detail = await _localService.getPokemonDetailList(pokemon.id);
           processedCount++;
 
           if (detail != null) {

@@ -1,6 +1,7 @@
 import '../../../../core/base/base_network.dart';
 import '../../../datasource/models/pokemon_model.dart';
 import '../../../datasource/models/api_response_model.dart';
+import '../../models/pokemon_list_item_model.dart';
 import '../repository/pokemon_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Pokemon
@@ -43,6 +44,28 @@ class PokemonService extends BaseService {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _pokemonRepository.getPokemonDetail(idOrName);
+        } catch (e, stackTrace) {
+          logger.e(
+            'Failed to load Pokemon detail',
+            error: e,
+            stackTrace: stackTrace,
+            tag: 'PokemonService',
+          );
+          rethrow;
+        }
+      },
+      tag: 'PokemonService',
+    );
+  }
+
+  /// Ambil detail Pokemon berdasarkan ID atau nama
+  Future<PokemonList> getPokemonDetailList(String idOrName) async {
+    return performanceAsync(
+      operationName: 'PokemonService.getPokemonList',
+      function: () async {
+        try {
+          // Repository sudah mengembalikan data dalam bentuk model
+          return await _pokemonRepository.getPokemonDetailList(idOrName);
         } catch (e, stackTrace) {
           logger.e(
             'Failed to load Pokemon detail',

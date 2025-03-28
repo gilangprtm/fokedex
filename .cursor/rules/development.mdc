@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Specific Rules for Flutter Pokedex Project
 
 ## Project Structure

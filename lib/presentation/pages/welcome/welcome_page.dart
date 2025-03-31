@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
-import '../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_color.dart';
 import '../../../core/theme/app_typografi.dart';
 import '../../../core/utils/mahas.dart';
 import '../../../presentation/routes/app_routes.dart';
+import '../../providers/welcome/welcome_notifier.dart';
 import '../../providers/welcome/welcome_provider.dart';
+import '../../providers/welcome/welcome_state.dart';
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends ConsumerWidget {
   const WelcomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<WelcomeProvider>(
-      createProvider: () => WelcomeProvider(),
-      builder: (context, provider) => _buildWelcomePage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only get the notifier, don't watch the entire state
+    final notifier = ref.read(welcomeProvider.notifier);
 
-  Widget _buildWelcomePage(BuildContext context, WelcomeProvider provider) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -61,12 +59,20 @@ class WelcomePage extends StatelessWidget {
 
                       const SizedBox(height: 48),
 
-                      // Loading indicator and status
-                      if (provider.isDataLoading) ...[
-                        _buildLoadingProgress(provider),
-                      ] else ...[
-                        _buildStartButton(context, provider),
-                      ],
+                      // Loading indicator or start button - only rebuilds when loading state changes
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final isLoading = ref.watch(welcomeProvider
+                              .select((state) => state.isLoading));
+
+                          if (isLoading) {
+                            return _buildLoadingProgressConsumer(ref);
+                          } else {
+                            return _buildStartButtonConsumer(
+                                context, ref, notifier);
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -129,7 +135,18 @@ class WelcomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingProgress(WelcomeProvider provider) {
+  Widget _buildLoadingProgressConsumer(WidgetRef ref) {
+    // Only watch loading-related state properties
+    final loadingState = ref.watch(welcomeProvider.select((state) => {
+          'loadingProgress': state.loadingProgress,
+          'loadingStatusText': state.loadingStatusText,
+          'loadingDetailText': state.loadingDetailText,
+        }));
+
+    final loadingProgress = loadingState['loadingProgress'] as double;
+    final loadingStatusText = loadingState['loadingStatusText'] as String;
+    final loadingDetailText = loadingState['loadingDetailText'] as String;
+
     return Column(
       children: [
         // Loading progress indicator
@@ -141,7 +158,7 @@ class WelcomePage extends StatelessWidget {
               height: 120,
               width: 120,
               child: CircularProgressIndicator(
-                value: provider.loadingProgress,
+                value: loadingProgress,
                 backgroundColor: Colors.white.withValues(alpha: 0.3),
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 strokeWidth: 8.0,
@@ -150,7 +167,7 @@ class WelcomePage extends StatelessWidget {
 
             // Progress percentage
             Text(
-              '${(provider.loadingProgress * 100).toInt()}%',
+              '${(loadingProgress * 100).toInt()}%',
               style: AppTypography.headline5.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -163,7 +180,7 @@ class WelcomePage extends StatelessWidget {
 
         // Loading status text
         Text(
-          provider.loadingStatusText,
+          loadingStatusText,
           style: AppTypography.bodyText1.copyWith(
             color: Colors.white,
           ),
@@ -174,7 +191,7 @@ class WelcomePage extends StatelessWidget {
 
         // Loading detail text
         Text(
-          provider.loadingDetailText,
+          loadingDetailText,
           style: AppTypography.caption.copyWith(
             color: Colors.white.withValues(alpha: 0.8),
           ),
@@ -184,7 +201,17 @@ class WelcomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStartButton(BuildContext context, WelcomeProvider provider) {
+  Widget _buildStartButtonConsumer(
+      BuildContext context, WidgetRef ref, WelcomeNotifier notifier) {
+    // Only watch button-related state properties
+    final buttonState = ref.watch(welcomeProvider.select((state) => {
+          'isInitialDataLoaded': state.isInitialDataLoaded,
+          'lastUpdatedText': state.lastUpdatedText,
+        }));
+
+    final isInitialDataLoaded = buttonState['isInitialDataLoaded'] as bool;
+    final lastUpdatedText = buttonState['lastUpdatedText'] as String;
+
     return Column(
       children: [
         // Main action buttons
@@ -193,12 +220,12 @@ class WelcomePage extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  if (provider.isInitialDataLoaded) {
+                  if (isInitialDataLoaded) {
                     // Navigate to home if we have data
                     Mahas.routeTo(AppRoutes.home);
                   } else {
                     // Otherwise, start loading process
-                    provider.startLoadingPokemonData();
+                    notifier.startLoadingPokemonData();
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -212,7 +239,7 @@ class WelcomePage extends StatelessWidget {
                   elevation: 4,
                 ),
                 child: Text(
-                  provider.isInitialDataLoaded
+                  isInitialDataLoaded
                       ? 'Mulai Menjelajah'
                       : 'Unduh Data Pokemon',
                   style: AppTypography.button.copyWith(
@@ -225,11 +252,11 @@ class WelcomePage extends StatelessWidget {
           ],
         ),
 
-        if (provider.isInitialDataLoaded) ...[
+        if (isInitialDataLoaded) ...[
           const SizedBox(height: 16),
           // Last updated info
           Text(
-            'Terakhir diperbarui: ${provider.lastUpdatedText}',
+            'Terakhir diperbarui: $lastUpdatedText',
             style: AppTypography.caption.copyWith(
               color: Colors.white.withValues(alpha: 0.8),
             ),

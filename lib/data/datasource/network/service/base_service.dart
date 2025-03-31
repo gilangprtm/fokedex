@@ -1,5 +1,5 @@
-import '../../../../core/base/base_network.dart';
-import '../../models/api_response_model.dart';
+import '../../../../../../core/base/base_network.dart';
+import '../../../../../../data/models/api_response_model.dart';
 
 /// Interface untuk service yang digunakan dalam provider generik
 ///

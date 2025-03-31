@@ -5,7 +5,6 @@ import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
 import '../../../providers/type/type_chart_provider.dart';
 
 class TypeChartPage extends StatelessWidget {

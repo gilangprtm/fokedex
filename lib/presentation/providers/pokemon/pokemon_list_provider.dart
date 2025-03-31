@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/base/base_provider.dart';
 import '../../../data/datasource/local/services/local_pokemon_service.dart';
-import '../../../data/datasource/models/api_response_model.dart';
-import '../../../data/datasource/models/pokemon_list_item_model.dart';
-import '../../../data/datasource/models/type_model.dart';
+import '../../../data/models/api_response_model.dart';
+import '../../../data/models/pokemon_list_item_model.dart';
+import '../../../data/models/type_model.dart';
 import '../../../data/datasource/network/service/pokemon_service.dart';
 
 class PokemonListProvider extends BaseProvider {

@@ -235,6 +235,11 @@ class Pokemon {
   // Get capitalized name
   String get capitalizedName =>
       name.substring(0, 1).toUpperCase() + name.substring(1);
+
+  // Static method to get the official artwork URL for a Pokemon by ID
+  static String getOfficialArtworkUrl(String id) {
+    return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png';
+  }
 }
 
 class PokemonType {

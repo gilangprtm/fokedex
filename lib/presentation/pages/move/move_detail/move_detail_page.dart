@@ -8,7 +8,7 @@ import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
-import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../data/models/pokemon_model.dart';
 import '../../../providers/move/move_detail_provider.dart';
 import '../../../pages/pokemon/pokemon_detail/widgets/pokemon_type_badge.dart';
 import '../../../widgets/pokemon_grid_tab.dart';

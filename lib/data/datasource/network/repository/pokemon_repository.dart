@@ -1,8 +1,8 @@
 import '../../../../core/base/base_network.dart';
 import '../../../../core/env/app_environment.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/pokemon_model.dart';
-import '../../models/pokemon_list_item_model.dart';
+import '../../../models/api_response_model.dart';
+import '../../../models/pokemon_model.dart';
+import '../../../models/pokemon_list_item_model.dart';
 
 /// Repository untuk mengambil data dari Pokemon API
 class PokemonRepository extends BaseRepository {
@@ -188,6 +188,19 @@ class PokemonRepository extends BaseRepository {
       return response.data;
     } catch (e, stackTrace) {
       logError('Failed to fetch Pokemon ability detail',
+          error: e, stackTrace: stackTrace, tag: 'PokemonRepository');
+      rethrow;
+    }
+  }
+
+  /// Ambil data dari URL lengkap
+  Future<Map<String, dynamic>> getDataFromUrl(String url) async {
+    logInfo('Fetching data from URL: $url', tag: 'PokemonRepository');
+    try {
+      final response = await dioService.get(url, isFullUrl: true);
+      return response.data;
+    } catch (e, stackTrace) {
+      logError('Failed to fetch data from URL',
           error: e, stackTrace: stackTrace, tag: 'PokemonRepository');
       rethrow;
     }

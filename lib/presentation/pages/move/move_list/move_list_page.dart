@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -8,23 +8,18 @@ import '../../../../core/utils/mahas.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/move/move_list_provider.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../providers/move/move_list/move_list_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../../../core/mahas/widget/mahas_tile.dart';
 
-class MoveListPage extends StatelessWidget {
+class MoveListPage extends ConsumerWidget {
   const MoveListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<MoveListProvider>(
-      createProvider: () => MoveListProvider(),
-      builder: (context, provider) => _buildMoveListPage(context, provider),
-    );
-  }
-
-  Widget _buildMoveListPage(BuildContext context, MoveListProvider provider) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(moveListProvider.notifier);
+    final state = ref.watch(moveListProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -38,47 +33,37 @@ class MoveListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          PropertySelector<MoveListProvider, String>(
-            property: 'searchQuery',
-            selector: (provider) => provider.searchQuery,
-            builder: (context, searchQuery) {
+          Consumer(
+            builder: (context, ref, child) {
               return MahasSearchBar(
-                controller: provider.searchController,
-                hintText: 'Search Moves',
-                onChanged: provider.onSearchChanged,
-                onClear: provider.clearSearch,
+                controller: state.searchController,
+                hintText: 'Search moves',
+                onChanged: (value) => notifier.onSearchChanged(value),
+                onClear: notifier.clearSearch,
               );
             },
           ),
 
           // Move list
           Expanded(
-            child: _buildMoveList(context, provider),
+            child: _buildMoveList(context, ref),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMoveList(BuildContext context, MoveListProvider provider) {
-    return PropertySelector<MoveListProvider, Map<String, dynamic>>(
-      property: 'filteredMoveList',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'filteredMoveList': provider.filteredMoveList,
-        'hasMoreData': provider.hasMoreData,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final filteredMoveList =
-            data['filteredMoveList'] as List<ResourceListItem>;
-        final hasMoreData = data['hasMoreData'] as bool;
+  Widget _buildMoveList(BuildContext context, WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final state = ref.watch(moveListProvider);
+        final notifier = ref.read(moveListProvider.notifier);
+        final error = state.error;
+        final isLoading = state.isLoading;
+        final scrollController = state.scrollController;
+        final activeMoves = state.filteredMoves;
 
-        if (hasError) {
+        if (error != null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -92,13 +77,13 @@ class MoveListPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  errorMessage,
+                  error.toString(),
                   style: AppTypography.bodyText2,
                 ),
                 const SizedBox(height: 16),
                 MahasButton(
                   text: 'Retry',
-                  onPressed: () => provider.loadMoveList(refresh: true),
+                  onPressed: () => notifier.loadMoves(refresh: true),
                   type: ButtonType.primary,
                   color: AppColors.pokemonRed,
                 ),
@@ -107,11 +92,11 @@ class MoveListPage extends StatelessWidget {
           );
         }
 
-        if (isLoading && filteredMoveList.isEmpty) {
+        if (isLoading && activeMoves.isEmpty) {
           return const MahasLoader(isLoading: true);
         }
 
-        if (filteredMoveList.isEmpty) {
+        if (activeMoves.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -131,7 +116,7 @@ class MoveListPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 MahasButton(
                   text: 'Clear Search',
-                  onPressed: () => provider.clearSearch(),
+                  onPressed: notifier.clearSearch,
                   type: ButtonType.primary,
                   color: AppColors.pokemonRed,
                 ),
@@ -141,14 +126,14 @@ class MoveListPage extends StatelessWidget {
         }
 
         return RefreshIndicator(
-          onRefresh: () => provider.refresh(),
+          onRefresh: () => notifier.loadMoves(refresh: true),
           child: ListView.builder(
-            controller: provider.scrollController,
+            controller: scrollController,
             padding: const EdgeInsets.all(AppTheme.spacing16),
-            itemCount: filteredMoveList.length + (hasMoreData ? 1 : 0),
+            itemCount: activeMoves.length,
             itemBuilder: (context, index) {
-              if (index < filteredMoveList.length) {
-                final move = filteredMoveList[index];
+              if (index < activeMoves.length) {
+                final move = activeMoves[index];
                 return _buildMoveItem(context, move);
               } else {
                 return Container(
@@ -168,12 +153,6 @@ class MoveListPage extends StatelessWidget {
   }
 
   Widget _buildMoveItem(BuildContext context, ResourceListItem move) {
-    // Extract the move ID from the URL to potentially customize the tile
-    final url = move.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final moveId = int.parse(pathSegments[pathSegments.length - 2]);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: MahasTile(
@@ -189,7 +168,7 @@ class MoveListPage extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              '#${moveId.toString().padLeft(3, '0')}',
+              '#${move.id.toString().padLeft(3, '0')}',
               style: const TextStyle(
                 color: AppColors.pokemonRed,
                 fontWeight: FontWeight.bold,
@@ -210,24 +189,16 @@ class MoveListPage extends StatelessWidget {
   }
 
   void _navigateToMoveDetail(BuildContext context, ResourceListItem move) {
-    // Extract the move ID from the URL
-    final url = move.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final moveId = pathSegments[pathSegments.length - 2];
-
-    // Navigate to move detail page
     Mahas.routeTo(
       AppRoutes.moveDetail,
       arguments: {
-        'id': moveId,
+        'id': move.id.toString(),
         'name': move.name,
       },
     );
   }
 
   String _formatMoveName(String name) {
-    // Format nama move (contoh: "thunder-punch" menjadi "Thunder Punch")
     return name
         .split('-')
         .map((word) =>

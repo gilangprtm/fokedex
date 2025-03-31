@@ -1,6 +1,6 @@
-import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/move_model.dart';
+import '../../../../../../core/base/base_network.dart';
+import '../../../../../data/models/api_response_model.dart';
+import '../../../../../data/models/move_model.dart';
 import '../repository/move_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Move

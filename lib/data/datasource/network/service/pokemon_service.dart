@@ -1,7 +1,7 @@
-import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/pokemon_model.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../models/pokemon_list_item_model.dart';
+import '../../../../../../core/base/base_network.dart';
+import '../../../models/api_response_model.dart';
+import '../../../models/pokemon_list_item_model.dart';
+import '../../../models/pokemon_model.dart';
 import '../repository/pokemon_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Pokemon

@@ -1,6 +1,6 @@
-import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/item_model.dart';
+import '../../../../../../core/base/base_network.dart';
+import '../../../../../data/models/api_response_model.dart';
+import '../../../../../data/models/item_model.dart';
 import '../repository/item_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Item

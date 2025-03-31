@@ -1,6 +1,6 @@
-import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/type_model.dart' show TypeDetail;
+import '../../../../../../core/base/base_network.dart';
+import '../../../../../data/models/api_response_model.dart';
+import '../../../../../data/models/type_model.dart' show TypeDetail;
 import '../repository/pokemon_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Type

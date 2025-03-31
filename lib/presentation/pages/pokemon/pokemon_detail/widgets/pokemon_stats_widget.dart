@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../../data/models/pokemon_model.dart';
 
 class PokemonStatsWidget extends StatelessWidget {
   final List<PokemonStat> stats;

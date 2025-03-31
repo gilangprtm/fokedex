@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../../data/models/pokemon_model.dart';
 
 class PokemonMovesWidget extends StatefulWidget {
   final List<PokemonMove> moves;

@@ -7,7 +7,7 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
+import '../../../../data/models/api_response_model.dart';
 import '../../../providers/location/location_detail_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../../../core/utils/mahas.dart';

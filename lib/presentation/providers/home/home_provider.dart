@@ -1,3 +1,8 @@
-import '../../../core/base/base_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'home_state.dart';
+import 'home_notifier.dart';
 
-class HomeProvider extends BaseProvider {}
+/// Provider for Home Screen
+final homeProvider = StateNotifierProvider<HomeNotifier, HomeState>(
+  (ref) => HomeNotifier(const HomeState(), ref),
+);

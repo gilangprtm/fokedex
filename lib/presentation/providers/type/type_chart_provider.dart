@@ -1,7 +1,6 @@
 import '../../../core/base/base_provider.dart';
-import '../../../core/utils/mahas.dart';
-import '../../../data/datasource/models/api_response_model.dart';
-import '../../../data/datasource/models/type_model.dart' hide ResourceListItem;
+import '../../../data/models/api_response_model.dart';
+import '../../../data/models/type_model.dart';
 import '../../../data/datasource/network/service/type_service.dart';
 import 'package:flutter/widgets.dart';
 

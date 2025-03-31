@@ -1,7 +1,7 @@
+import '../../../models/ability_model.dart';
+import '../../../models/api_response_model.dart';
 import 'base_service.dart';
 import 'ability_service.dart';
-import '../../models/api_response_model.dart';
-import '../../models/ability_model.dart';
 
 /// Adapter untuk AbilityService yang mengimplementasikan IListDetailService
 ///

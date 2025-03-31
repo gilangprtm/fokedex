@@ -1,6 +1,6 @@
 import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/ability_model.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../../data/models/ability_model.dart';
 import '../../../../core/env/app_environment.dart';
 
 /// Repository untuk mengambil data dari Ability endpoint

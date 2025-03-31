@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import '../../../core/base/base_provider.dart';
 import '../../../core/utils/mahas.dart';
-import '../../../data/datasource/models/location_model.dart';
+import '../../../data/models/location_model.dart';
 import '../../../data/datasource/network/service/location_service.dart';
 
 class LocationDetailProvider extends BaseProvider {

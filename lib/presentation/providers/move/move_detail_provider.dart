@@ -1,6 +1,6 @@
 import 'package:flutter_pokedex/core/utils/mahas.dart';
 import '../../../core/base/base_provider.dart';
-import '../../../data/datasource/models/move_model.dart';
+import '../../../data/models/move_model.dart';
 import '../../../data/datasource/network/service/move_service.dart';
 
 class MoveDetailProvider extends BaseProvider {

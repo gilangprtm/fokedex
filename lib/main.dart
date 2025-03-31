@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/mahas/mahas_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/mahas.dart';
-import 'presentation/routes/app_providers.dart';
 import 'presentation/routes/app_routes_provider.dart';
 import 'core/mahas/pages/log_viewer_page.dart';
 import 'core/env/app_environment.dart';
@@ -20,8 +19,7 @@ void main() async {
   final String initialRoute = await MahasService.determineInitialRoute();
 
   runApp(
-    MultiProvider(
-      providers: AppProviders.getProviders(),
+    ProviderScope(
       child: MyApp(initialRoute: initialRoute),
     ),
   );

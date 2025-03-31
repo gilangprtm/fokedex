@@ -7,7 +7,7 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/pokemon_model.dart';
+import '../../../../data/models/pokemon_model.dart';
 import '../../../providers/ability/ability_detail_provider.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 

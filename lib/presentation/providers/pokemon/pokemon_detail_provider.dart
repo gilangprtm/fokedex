@@ -1,7 +1,7 @@
 import 'package:flutter_pokedex/core/utils/mahas.dart';
 import '../../../core/base/base_provider.dart';
-import '../../../data/datasource/models/pokemon_model.dart';
-import '../../../data/datasource/models/evolution_stage_model.dart';
+import '../../../data/models/pokemon_model.dart';
+import '../../../data/models/evolution_stage_model.dart';
 import '../../../data/datasource/network/service/pokemon_service.dart';
 import '../../../data/datasource/network/repository/pokemon_repository.dart';
 

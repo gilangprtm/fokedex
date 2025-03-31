@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../di/service_locator.dart';
 import 'services/firebase_service.dart';
 import 'services/storage_service.dart';
 import 'services/logger_service.dart';
@@ -8,7 +7,7 @@ import '../env/app_environment.dart';
 import 'services/initial_route_service.dart';
 
 /// MahasService adalah kelas singleton yang mengelola inisialisasi aplikasi
-/// seperti service locator, firebase, local storage, dll.
+/// seperti firebase, local storage, dll.
 class MahasService {
   static final MahasService _instance = MahasService._internal();
   static MahasService get instance => _instance;
@@ -36,9 +35,6 @@ class MahasService {
       // Inisialisasi error handler
       await _initErrorHandler();
 
-      // Inisialisasi service locator / dependency injection
-      await _initServiceLocator();
-
       // Inisialisasi Firebase (jika diperlukan)
       // await _initFirebase();
 
@@ -61,7 +57,7 @@ class MahasService {
   static Future<String> determineInitialRoute() async {
     try {
       // Use the InitialRouteService to determine the initial route
-      final initialRouteService = serviceLocator<InitialRouteService>();
+      final initialRouteService = InitialRouteService();
       return await initialRouteService.determineInitialRoute();
     } catch (e, stackTrace) {
       LoggerService.instance.e(
@@ -78,7 +74,6 @@ class MahasService {
   /// Inisialisasi error handler
   static Future<void> _initErrorHandler() async {
     final logger = LoggerService.instance;
-
     final errorHandler = ErrorHandlerService.instance;
 
     // Contoh implementasi, bisa diganti dengan layanan pelaporan error seperti Firebase Crashlytics
@@ -100,15 +95,6 @@ class MahasService {
     errorHandler.init();
 
     logger.i('✅ Error Handler initialized successfully!', tag: 'MAHAS');
-  }
-
-  /// Inisialisasi service locator
-  static Future<void> _initServiceLocator() async {
-    final logger = LoggerService.instance;
-
-    await setupServiceLocator();
-
-    logger.i('✅ Service Locator initialized successfully!', tag: 'MAHAS');
   }
 
   /// Inisialisasi Firebase (menggunakan FirebaseService yang terpisah)

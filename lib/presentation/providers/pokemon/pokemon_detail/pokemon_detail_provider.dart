@@ -1,6 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../data/datasource/network/service/pokemon_service.dart';
-import '../../../../data/datasource/network/repository/pokemon_repository.dart';
 import '../../../../core/di/providers.dart';
 import 'pokemon_detail_state.dart';
 import 'pokemon_detail_notifier.dart';
@@ -14,11 +12,7 @@ final pokemonDetailProvider = StateNotifierProvider.autoDispose<
     final pokemonRepository = ref.read(pokemonRepositoryProvider);
 
     // Create initial state
-    final initialState = PokemonDetailState(
-      isLoading: true,
-      currentPokemonId: '',
-      currentPokemonName: '',
-    );
+    const initialState = PokemonDetailState();
 
     // Return notifier with dependencies
     return PokemonDetailNotifier(

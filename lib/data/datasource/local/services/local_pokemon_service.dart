@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../../../core/di/service_locator.dart';
 import '../../../../core/mahas/services/logger_service.dart';
 import '../../../models/api_response_model.dart';
 import '../../../models/pokemon_list_item_model.dart';
@@ -12,7 +11,7 @@ import '../repositories/local_pokemon_repository.dart';
 class LocalPokemonService {
   final LocalPokemonRepository _localRepository = LocalPokemonRepository();
   final PokemonService _pokemonService = PokemonService();
-  final LoggerService _logger = serviceLocator<LoggerService>();
+  final LoggerService _logger = LoggerService.instance;
 
   // Singleton pattern
   static final LocalPokemonService _instance = LocalPokemonService._internal();

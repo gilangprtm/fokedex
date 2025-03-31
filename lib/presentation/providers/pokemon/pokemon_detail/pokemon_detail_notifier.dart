@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/base/base_state_notifier.dart';
 import '../../../../core/utils/mahas.dart';
@@ -82,8 +81,7 @@ class PokemonDetailNotifier extends BaseStateNotifier<PokemonDetailState> {
       );
 
       // Check if there's an evolution chain to load
-      if (speciesData != null &&
-          speciesData['evolution_chain'] != null &&
+      if (speciesData['evolution_chain'] != null &&
           speciesData['evolution_chain']['url'] != null) {
         await _loadEvolutionData(speciesData['evolution_chain']['url']);
       }
@@ -103,7 +101,7 @@ class PokemonDetailNotifier extends BaseStateNotifier<PokemonDetailState> {
       final evolutionData =
           await _pokemonRepository.getDataFromUrl(evolutionUrl);
 
-      if (evolutionData != null && evolutionData['chain'] != null) {
+      if (evolutionData['chain'] != null) {
         final evolutionStages =
             _precomputeEvolutionChain(evolutionData['chain']);
 

@@ -6,7 +6,6 @@ import '../../../core/utils/mahas.dart';
 import '../../../presentation/routes/app_routes.dart';
 import '../../providers/welcome/welcome_notifier.dart';
 import '../../providers/welcome/welcome_provider.dart';
-import '../../providers/welcome/welcome_state.dart';
 
 class WelcomePage extends ConsumerWidget {
   const WelcomePage({super.key});

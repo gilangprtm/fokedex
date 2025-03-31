@@ -79,7 +79,7 @@ class PokemonGridItem extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.grey.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -120,7 +120,7 @@ class PokemonGridItem extends ConsumerWidget {
                     imageUrl: imageUrl,
                     height: 80,
                     width: 80,
-                    progressColor: typeColor.withOpacity(0.7),
+                    progressColor: typeColor.withValues(alpha: 0.7),
                     errorWidget: (context, url, error) => const Icon(
                       Icons.catching_pokemon,
                       size: 60,

@@ -262,7 +262,7 @@ class TypeChartPage extends StatelessWidget {
                       height: 60,
                       alignment: Alignment.center,
                       color: Color(provider.getTypeColor(typeName))
-                          .withOpacity(0.7),
+                          .withValues(alpha: 0.7),
                       child: RotatedBox(
                         quarterTurns: 3,
                         child: Text(

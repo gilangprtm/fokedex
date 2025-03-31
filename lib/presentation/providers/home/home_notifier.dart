@@ -1,7 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/base/base_state_notifier.dart';
 import 'home_state.dart';
-import 'home_provider.dart';
 
 /// StateNotifier for the Home Screen
 class HomeNotifier extends BaseStateNotifier<HomeState> {

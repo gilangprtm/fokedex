@@ -9,12 +9,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../data/models/pokemon_model.dart';
-import '../../../../data/models/evolution_stage_model.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../core/utils/image_cache_utils.dart';
 import '../../../providers/pokemon/pokemon_detail/pokemon_detail_provider.dart';
-import '../../../providers/pokemon/pokemon_detail/pokemon_detail_notifier.dart';
 import 'widgets/pokemon_stats_widget.dart';
 import 'widgets/pokemon_type_badge.dart';
 import 'widgets/pokemon_evolution_widget.dart';
@@ -33,21 +31,14 @@ class PokemonDetailPage extends ConsumerWidget {
     // Watch only base state properties for main UI render decisions
     return Consumer(
       builder: (context, ref, child) {
-        final baseState = ref.watch(pokemonDetailProvider.select((state) => ({
-              'isLoading': state.isLoading,
-              'error': state.error,
-              'pokemon': state.pokemon,
-              'currentPokemonName': state.currentPokemonName,
-              'currentPokemonId': state.currentPokemonId,
-            })));
-
-        final isLoading = baseState['isLoading'] as bool;
-        final error = baseState['error'];
+        final state = ref.watch(pokemonDetailProvider);
+        final isLoading = state.isLoading;
+        final error = state.error;
         final hasError = error != null;
         final errorMessage = error?.toString() ?? '';
-        final pokemon = baseState['pokemon'] as Pokemon?;
-        final currentPokemonName = baseState['currentPokemonName'] as String;
-        final currentPokemonId = baseState['currentPokemonId'] as String;
+        final pokemon = state.pokemon;
+        final currentPokemonName = state.currentPokemonName;
+        final currentPokemonId = state.currentPokemonId;
 
         // Show loading state
         if (isLoading) {
@@ -131,17 +122,6 @@ class PokemonDetailPage extends ConsumerWidget {
     );
   }
 
-  // Determine app bar color based on Pokemon type
-  Color _getTypeColor(Pokemon pokemon) {
-    // Get the primary type color if available
-    if (pokemon.types != null && pokemon.types!.isNotEmpty) {
-      final primaryType = pokemon.types!.first.type.name;
-      return PokemonTypeUtils.getTypeColor(primaryType);
-    }
-    // Default to red if no type info
-    return AppColors.pokemonRed;
-  }
-
   Widget _buildPokemonDetails(
       BuildContext context, WidgetRef ref, Pokemon pokemon) {
     final primaryType = pokemon.types?.firstOrNull?.type.name ?? 'normal';
@@ -208,12 +188,8 @@ class PokemonDetailPage extends ConsumerWidget {
   Widget _buildAboutTab(BuildContext context, WidgetRef ref, Pokemon pokemon) {
     return Consumer(
       builder: (context, ref, child) {
-        final speciesData = ref
-            .watch(pokemonDetailProvider.select((state) => state.speciesData));
-        final description = ref
-            .watch(pokemonDetailProvider.select((state) => state.description));
-        final category =
-            ref.watch(pokemonDetailProvider.select((state) => state.category));
+        final state = ref.watch(pokemonDetailProvider);
+        final description = state.description;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
@@ -420,7 +396,7 @@ class PokemonDetailPage extends ConsumerWidget {
               child: Icon(
                 Icons.catching_pokemon,
                 size: 200,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ),
 
@@ -431,7 +407,7 @@ class PokemonDetailPage extends ConsumerWidget {
               right: 0,
               child: Container(
                 padding: const EdgeInsets.all(16.0),
-                color: appBarColor.withOpacity(0.7),
+                color: appBarColor.withValues(alpha: 0.7),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -439,7 +415,7 @@ class PokemonDetailPage extends ConsumerWidget {
                     Text(
                       '#${pokemon.id.toString().padLeft(3, '0')}',
                       style: AppTypography.headline6.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     // Pokemon Name
@@ -471,7 +447,7 @@ class PokemonDetailPage extends ConsumerWidget {
                   errorWidget: (context, url, error) {
                     return Container(
                       height: 200,
-                      color: appBarColor.withOpacity(0.5),
+                      color: appBarColor.withValues(alpha: 0.5),
                       child: const Icon(
                         Icons.catching_pokemon,
                         size: 100,

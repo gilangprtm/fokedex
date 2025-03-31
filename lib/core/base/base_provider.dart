@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/mahas/services/logger_service.dart';
 import '../../core/mahas/services/error_handler_service.dart';
-import '../../core/di/service_locator.dart';
 
 /// A base class for all providers in the application that extends [ChangeNotifier].
 ///
@@ -20,9 +19,8 @@ abstract class BaseProvider extends ChangeNotifier {
   bool _isBatchUpdate = false;
 
   // Core services made available to all providers
-  final LoggerService _logger = serviceLocator<LoggerService>();
-  final ErrorHandlerService _errorHandler =
-      serviceLocator<ErrorHandlerService>();
+  final LoggerService _logger = LoggerService.instance;
+  final ErrorHandlerService _errorHandler = ErrorHandlerService.instance;
 
   // Expose services to subclasses
   LoggerService get logger => _logger;

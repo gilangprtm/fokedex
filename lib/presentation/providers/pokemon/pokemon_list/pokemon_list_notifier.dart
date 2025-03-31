@@ -148,7 +148,7 @@ class PokemonListNotifier extends BaseStateNotifier<PokemonListState> {
           await _loadPokemonDetailsFromLocalStorage();
         } else {
           // Fallback to API if local data is not available
-          final limit = 20;
+          const limit = 20;
           final offset = state.offset;
 
           final response = await _pokemonService.getPokemonList(

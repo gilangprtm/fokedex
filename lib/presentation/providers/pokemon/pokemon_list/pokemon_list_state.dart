@@ -85,8 +85,8 @@ class PokemonListState extends BaseState {
           ? null
           : activeTypeFilter ?? this.activeTypeFilter,
       searchQuery: searchQuery ?? this.searchQuery,
-      scrollController: this.scrollController,
-      searchController: this.searchController,
+      scrollController: scrollController,
+      searchController: searchController,
     );
   }
 }

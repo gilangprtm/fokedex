@@ -4,18 +4,12 @@ import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/mahas/mahas_type.dart';
-import '../../../../core/utils/mahas.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../core/utils/pokemon_type_utils.dart';
-import '../../../../data/models/pokemon_list_item_model.dart';
 import '../../../providers/pokemon/pokemon_list/pokemon_list_provider.dart';
 import '../../../providers/pokemon/pokemon_list/pokemon_list_notifier.dart';
-import '../../../routes/app_routes.dart';
 import 'widgets/pokemon_grid_item.dart';
 import 'widgets/type_filter_chip.dart';
-import 'widgets/type_icon_grid.dart';
 
 class PokemonListPage extends ConsumerWidget {
   const PokemonListPage({super.key});
@@ -64,16 +58,7 @@ class PokemonListPage extends ConsumerWidget {
           Expanded(
             child: Consumer(
               builder: (context, ref, child) {
-                final gridState =
-                    ref.watch(pokemonListProvider.select((state) => {
-                          'isLoading': state.isLoading,
-                          'error': state.error,
-                          'displayPokemonList': state.displayPokemonList,
-                          'hasMoreData': state.hasMoreData,
-                          'scrollController': state.scrollController,
-                          'activeTypeFilter': state.activeTypeFilter,
-                        }));
-                return _buildPokemonGrid(context, gridState, notifier);
+                return _buildPokemonGrid(context, ref, notifier);
               },
             ),
           ),
@@ -124,16 +109,16 @@ class PokemonListPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPokemonGrid(BuildContext context, Map<String, dynamic> gridState,
-      PokemonListNotifier notifier) {
-    final isLoading = gridState['isLoading'] as bool;
-    final error = gridState['error'];
+  Widget _buildPokemonGrid(
+      BuildContext context, WidgetRef ref, PokemonListNotifier notifier) {
+    final state = ref.watch(pokemonListProvider);
+    final isLoading = state.isLoading;
+    final error = state.error;
     final hasError = error != null;
     final errorMessage = error?.toString() ?? "Unknown error";
-    final pokemonList = gridState['displayPokemonList'] as List;
-    final hasMoreData = gridState['hasMoreData'] as bool;
-    final scrollController = gridState['scrollController'] as ScrollController;
-    final activeTypeFilter = gridState['activeTypeFilter'] as String?;
+    final hasMoreData = state.hasMoreData;
+    final scrollController = state.scrollController;
+    final pokemonList = state.displayPokemonList;
 
     if (hasError) {
       return Center(

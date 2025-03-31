@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_typografi.dart';
 import '../../../core/utils/mahas.dart';
-import '../../providers/home/home_provider.dart';
 import '../../../core/mahas/mahas_type.dart';
 import '../../routes/app_routes.dart';
 

@@ -1,11 +1,10 @@
 import '../../../data/datasource/local/services/local_pokemon_service.dart';
-import '../../di/service_locator.dart';
 import 'logger_service.dart';
 import '../../../presentation/routes/app_routes.dart';
 
 /// Service to determine the initial route of the application based on data availability
 class InitialRouteService {
-  final LoggerService _logger = serviceLocator<LoggerService>();
+  final LoggerService _logger = LoggerService.instance;
 
   /// Singleton pattern
   static final InitialRouteService _instance = InitialRouteService._internal();

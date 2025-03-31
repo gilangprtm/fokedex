@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/mahas/services/logger_service.dart';
 import '../../core/mahas/services/error_handler_service.dart';
-import '../../core/di/service_locator.dart';
 
 /// A base state class for Riverpod StateNotifier implementations
 /// Can be extended for specific feature states
@@ -49,9 +48,8 @@ abstract class BaseStateNotifier<T extends BaseState> extends StateNotifier<T> {
   BuildContext? _context;
 
   // Core services made available to all providers
-  final LoggerService _logger = serviceLocator<LoggerService>();
-  final ErrorHandlerService _errorHandler =
-      serviceLocator<ErrorHandlerService>();
+  final LoggerService _logger = LoggerService.instance;
+  final ErrorHandlerService _errorHandler = ErrorHandlerService.instance;
 
   // Expose services to subclasses
   LoggerService get logger => _logger;
@@ -67,7 +65,10 @@ abstract class BaseStateNotifier<T extends BaseState> extends StateNotifier<T> {
   /// Subclasses can override this to provide a custom tag.
   String get logTag => runtimeType.toString();
 
-  BaseStateNotifier(T initialState, this._ref) : super(initialState) {
+  BaseStateNotifier(
+    super.initialState,
+    this._ref,
+  ) {
     onInit();
     // onReady will be called explicitly after widget initialization
   }

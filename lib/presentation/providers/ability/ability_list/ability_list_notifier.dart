@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import '../../../../core/base/base_state_notifier.dart';
 import '../../../../data/datasource/network/service/ability_service.dart';
-import '../../../../data/models/api_response_model.dart';
 import 'ability_list_state.dart';
 
 class AbilityListNotifier extends BaseStateNotifier<AbilityListState> {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -8,131 +8,123 @@ import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../data/models/pokemon_model.dart';
-import '../../../providers/ability/ability_detail_provider.dart';
+import '../../../../data/models/ability_model.dart';
+import '../../../providers/ability/ability_detail/ability_detail_provider.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
-class AbilityDetailPage extends StatelessWidget {
+class AbilityDetailPage extends ConsumerWidget {
   const AbilityDetailPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<AbilityDetailProvider>(
-      createProvider: () => AbilityDetailProvider(),
-      builder: (context, provider) => _buildDetailPage(context, provider),
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch loading, error states and ability existence at the top level
+    // This prevents unnecessary rebuilds of the entire screen
+    final isLoading =
+        ref.watch(abilityDetailProvider.select((state) => state.isLoading));
+    final error =
+        ref.watch(abilityDetailProvider.select((state) => state.error));
+    final hasAbility = ref
+        .watch(abilityDetailProvider.select((state) => state.ability != null));
+    final notifier = ref.read(abilityDetailProvider.notifier);
+
+    // Show loading state
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Consumer(
+            builder: (context, ref, _) {
+              final abilityName = ref.watch(abilityDetailProvider
+                  .select((state) => state.currentAbilityName));
+              return Text(
+                _capitalizeFirstLetter(abilityName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              );
+            },
+          ),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: const MahasLoader(isLoading: true),
+      );
+    }
+
+    // Show error state
+    if (error != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Consumer(
+            builder: (context, ref, _) {
+              final abilityName = ref.watch(abilityDetailProvider
+                  .select((state) => state.currentAbilityName));
+              return Text(
+                _capitalizeFirstLetter(abilityName),
+                style: AppTypography.headline6.copyWith(color: Colors.white),
+              );
+            },
+          ),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  size: 48, color: AppColors.errorColor),
+              const SizedBox(height: 16),
+              Text(
+                'Error loading ability details',
+                style: AppTypography.headline6,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: AppTypography.bodyText2,
+              ),
+              const SizedBox(height: 16),
+              MahasButton(
+                text: 'Try Again',
+                onPressed: () => notifier.getArgs(),
+                type: ButtonType.primary,
+                color: AppColors.pokemonRed,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // No data loaded yet
+    if (!hasAbility) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Ability Details',
+            style: AppTypography.headline6.copyWith(color: Colors.white),
+          ),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Text(
+            'No data available',
+            style: AppTypography.bodyText1,
+          ),
+        ),
+      );
+    }
+
+    // We only get here when we have ability data and no errors
+    return Scaffold(
+      body: _buildBody(context),
     );
   }
 
-  Widget _buildDetailPage(
-      BuildContext context, AbilityDetailProvider provider) {
-    return PropertySelector<AbilityDetailProvider, Map<String, dynamic>>(
-      property: 'abilityDetail',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'abilityDetail': provider.abilityDetail,
-        'currentAbilityName': provider.currentAbilityName,
-        'currentAbilityId': provider.currentAbilityId,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final abilityDetail = data['abilityDetail'];
-        final currentAbilityName = data['currentAbilityName'] as String;
-        final currentAbilityId = data['currentAbilityId'] as String;
-
-        // Show loading state
-        if (isLoading) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                _capitalizeFirstLetter(currentAbilityName),
-                style: AppTypography.headline6.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
-            ),
-            body: const MahasLoader(isLoading: true),
-          );
-        }
-
-        // Show error state
-        if (hasError) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                _capitalizeFirstLetter(currentAbilityName),
-                style: AppTypography.headline6.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline,
-                      size: 48, color: AppColors.errorColor),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading ability details',
-                    style: AppTypography.headline6,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    errorMessage,
-                    style: AppTypography.bodyText2,
-                  ),
-                  const SizedBox(height: 16),
-                  MahasButton(
-                    text: 'Try Again',
-                    onPressed: () => provider.loadAbilityDetail(
-                        currentAbilityId.isNotEmpty
-                            ? currentAbilityId
-                            : currentAbilityName),
-                    type: ButtonType.primary,
-                    color: AppColors.pokemonRed,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        // No data loaded yet
-        if (abilityDetail == null) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                _capitalizeFirstLetter(currentAbilityName),
-                style: AppTypography.headline6.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
-            ),
-            body: Center(
-              child: Text(
-                'No data available',
-                style: AppTypography.bodyText1,
-              ),
-            ),
-          );
-        }
-
-        // Show Ability details
-        return Scaffold(
-          body: _buildBody(context, provider),
-        );
-      },
-    );
-  }
-
-  Widget _buildBody(BuildContext context, AbilityDetailProvider provider) {
+  Widget _buildBody(BuildContext context) {
     return CustomScrollView(
       slivers: [
         // Custom app bar with Ability basic info
-        _buildSliverAppBar(context, provider),
+        _buildSliverAppBar(context),
         // Add padding at the bottom
         const SliverToBoxAdapter(
           child: SizedBox(height: 16),
@@ -146,9 +138,9 @@ class AbilityDetailPage extends StatelessWidget {
               tabLabels: const ['Overview', 'Pokémon'],
               tabViews: [
                 // Overview Tab
-                _buildOverviewTab(provider),
+                _buildOverviewTab(),
                 // Pokémon Tab
-                _buildPokemonTab(context, provider),
+                _buildPokemonTab(context),
               ],
               activeColor: AppColors.pokemonRed,
               backgroundColor: Colors.grey[200]!,
@@ -167,94 +159,122 @@ class AbilityDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar(
-      BuildContext context, AbilityDetailProvider provider) {
-    return SliverAppBar(
-      expandedHeight: 200.0,
-      floating: false,
-      pinned: true,
-      backgroundColor: AppColors.pokemonRed,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            // Background color
-            Container(
-              color: AppColors.pokemonRed,
-            ),
+  Widget _buildSliverAppBar(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final abilityName = ref.watch(
+            abilityDetailProvider.select((state) => state.currentAbilityName));
 
-            // Decorative Poké Ball pattern in the background
-            Positioned(
-              right: -50,
-              top: -50,
-              child: Icon(
-                Icons.catching_pokemon,
-                size: 200,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-
-            // Ability name
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 32),
-                  Text(
-                    _capitalizeFirstLetter(
-                        provider.currentAbilityName.replaceAll('-', ' ')),
-                    style: AppTypography.headline5.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverviewTab(AbilityDetailProvider provider) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MahasCustomizableCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        return SliverAppBar(
+          expandedHeight: 200.0,
+          floating: false,
+          pinned: true,
+          backgroundColor: AppColors.pokemonRed,
+          flexibleSpace: FlexibleSpaceBar(
+            background: Stack(
               children: [
-                Text(
-                  'Description',
-                  style: AppTypography.headline6,
+                // Background color
+                Container(
+                  color: AppColors.pokemonRed,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  provider.getAbilityDescription(),
-                  style: AppTypography.bodyText1,
+
+                // Decorative Poké Ball pattern in the background
+                Positioned(
+                  right: -50,
+                  top: -50,
+                  child: Icon(
+                    Icons.catching_pokemon,
+                    size: 200,
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
+                ),
+
+                // Ability name
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 32),
+                      Text(
+                        _capitalizeFirstLetter(
+                            abilityName.replaceAll('-', ' ')),
+                        style: AppTypography.headline5.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildPokemonTab(
-      BuildContext context, AbilityDetailProvider provider) {
-    final pokemonList = provider.getPokemonWithAbility();
-    final gridItems = pokemonList
-        .map((pokemon) => PokemonReference(
-            name: pokemon.pokemon.name, url: pokemon.pokemon.url))
-        .toList();
+  Widget _buildOverviewTab() {
+    return Consumer(
+      builder: (context, ref, _) {
+        final notifier = ref.read(abilityDetailProvider.notifier);
+        final ability =
+            ref.watch(abilityDetailProvider.select((state) => state.ability));
 
-    return PokemonGridTab(
-      title: 'Pokémon with this ability',
-      pokemons: gridItems,
+        final description = ability != null
+            ? notifier.getAbilityDescription()
+            : 'No description available';
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MahasCustomizableCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Description',
+                      style: AppTypography.headline6,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      description,
+                      style: AppTypography.bodyText1,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPokemonTab(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final notifier = ref.read(abilityDetailProvider.notifier);
+        final ability =
+            ref.watch(abilityDetailProvider.select((state) => state.ability));
+
+        final pokemonList = ability != null
+            ? notifier.getPokemonWithAbility()
+            : <AbilityPokemon>[];
+
+        final gridItems = pokemonList
+            .map((pokemon) => PokemonReference(
+                name: pokemon.pokemon.name, url: pokemon.pokemon.url))
+            .toList();
+
+        return PokemonGridTab(
+          title: 'Pokémon with this ability',
+          pokemons: gridItems,
+        );
+      },
     );
   }
 

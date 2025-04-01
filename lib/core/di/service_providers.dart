@@ -4,6 +4,7 @@ import '../../data/datasource/network/service/move_service.dart';
 import '../../data/datasource/network/service/ability_service.dart';
 import '../../data/datasource/network/service/item_service.dart';
 import '../../data/datasource/local/services/local_pokemon_service.dart';
+import '../../data/datasource/network/service/location_service.dart';
 
 // Network Services
 final pokemonServiceProvider = Provider<PokemonService>((ref) {
@@ -20,6 +21,10 @@ final abilityServiceProvider = Provider<AbilityService>((ref) {
 
 final itemServiceProvider = Provider<ItemService>((ref) {
   return ItemService();
+});
+
+final locationServiceProvider = Provider<LocationService>((ref) {
+  return LocationService();
 });
 
 // Local Services

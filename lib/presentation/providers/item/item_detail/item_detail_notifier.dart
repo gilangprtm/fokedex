@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/base/base_state_notifier.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../data/datasource/network/service/item_service.dart';
@@ -7,8 +6,7 @@ import 'item_detail_state.dart';
 class ItemDetailNotifier extends BaseStateNotifier<ItemDetailState> {
   final ItemService _service;
 
-  ItemDetailNotifier(ItemDetailState initialState, Ref ref, this._service)
-      : super(initialState, ref);
+  ItemDetailNotifier(super.initialState, super.ref, this._service);
 
   @override
   void onInit() {

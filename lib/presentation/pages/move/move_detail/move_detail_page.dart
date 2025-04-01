@@ -358,17 +358,6 @@ class MoveDetailPage extends ConsumerWidget {
   }
 
   // Helper methods to access state data
-  String _getMoveNameFromState(MoveDetailState state) {
-    return _capitalizeFirstLetter(state.move?.name ?? '');
-  }
-
-  String _getMoveType(MoveDetailState state) {
-    if (state.move == null || state.move!.type == null) {
-      return 'normal';
-    }
-    return state.move!.type!.name;
-  }
-
   String _getMovePower(MoveDetailState state) {
     if (state.move == null || state.move!.power == null) {
       return 'N/A';

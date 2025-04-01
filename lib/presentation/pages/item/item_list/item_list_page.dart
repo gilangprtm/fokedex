@@ -19,7 +19,6 @@ class ItemListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Only watch loading, error states and items at the top level
-    // This prevents unnecessary rebuilds of the entire screen
     final notifier = ref.read(itemListProvider.notifier);
 
     return Scaffold(
@@ -42,7 +41,7 @@ class ItemListPage extends ConsumerWidget {
               return MahasSearchBar(
                 controller: searchController,
                 hintText: 'Search Items',
-                onChanged: notifier.onSearchChanged,
+                onChanged: (value) => notifier.onSearchChanged(value),
                 onClear: notifier.clearSearch,
               );
             },
@@ -203,12 +202,6 @@ class ItemListPage extends ConsumerWidget {
   }
 
   void _navigateToItemDetail(BuildContext context, ResourceListItem item) {
-    // Extract the item ID from the URL
-    final url = item.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final itemId = pathSegments[pathSegments.length - 2];
-
     // Navigate to item detail page
     Mahas.routeTo(
       AppRoutes.itemDetail,

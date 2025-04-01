@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/base/base_state_notifier.dart';
 import '../../../../core/utils/mahas.dart';
-import '../../../../data/models/move_model.dart';
 import '../../../../data/datasource/network/service/move_service.dart';
 import 'move_detail_state.dart';
 
@@ -30,19 +27,6 @@ class MoveDetailNotifier extends BaseStateNotifier<MoveDetailState> {
       final String id = args['id'] ?? '';
       loadMoveDetail(id);
     }
-  }
-
-  void _onSearchChanged() {
-    state = state.copyWith(
-      searchQuery: state.searchController.text,
-      isLoadingSearch: true,
-    );
-
-    // Simulasi delay untuk animasi loading
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-      state = state.copyWith(isLoadingSearch: false);
-    });
   }
 
   Future<void> loadMoveDetail(String id) async {

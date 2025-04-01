@@ -1,11 +1,11 @@
 import '../../../../core/base/base_state_notifier.dart';
-import '../../../../data/datasource/network/service/ability_service.dart';
-import 'ability_list_state.dart';
+import '../../../../data/datasource/network/service/item_service.dart';
+import 'item_list_state.dart';
 
-class AbilityListNotifier extends BaseStateNotifier<AbilityListState> {
-  final AbilityService _abilityService;
+class ItemListNotifier extends BaseStateNotifier<ItemListState> {
+  final ItemService _itemService;
 
-  AbilityListNotifier(super.initialState, super.ref, this._abilityService);
+  ItemListNotifier(super.initialState, super.ref, this._itemService);
 
   @override
   void onInit() {
@@ -27,41 +27,41 @@ class AbilityListNotifier extends BaseStateNotifier<AbilityListState> {
       // Check if we're near the bottom of the list
       if (state.scrollController.position.pixels >=
           state.scrollController.position.maxScrollExtent - 200) {
-        // Load more abilities
-        loadMoreAbilities();
+        // Load more items
+        loadMoreItems();
       }
     });
   }
 
   // Handle search text changes
   void onSearchChanged(String value) {
-    searchAbilities(value);
+    searchItems(value);
   }
 
   // Clear search
   void clearSearch() {
     state.searchController.clear();
-    searchAbilities('');
+    searchItems('');
   }
 
   // Load initial data
   Future<void> loadInitialData() async {
-    await loadAbilities();
+    await loadItems();
   }
 
-  // Load abilities with pagination
-  Future<void> loadAbilities({bool refresh = false}) async {
+  // Load items with pagination
+  Future<void> loadItems({bool refresh = false}) async {
     if (refresh) {
       state = state.copyWith(
         offset: 0,
-        abilities: [],
+        items: [],
         hasMore: true,
-        filteredAbilities: [],
+        filteredItems: [],
         isLoading: true,
       );
     }
 
-    // Don't load more if there are no more abilities or already loading
+    // Don't load more if there are no more items or already loading
     if (!state.hasMore || (state.isLoading && !refresh)) {
       return;
     }
@@ -69,16 +69,16 @@ class AbilityListNotifier extends BaseStateNotifier<AbilityListState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      final response = await _abilityService.getAbilityList(
+      final response = await _itemService.getItemList(
         offset: state.offset,
-        limit: 500,
+        limit: 2200,
       );
 
       // Create the new state
       state = state.copyWith(
         hasMore: response.hasMore,
         offset: response.nextOffset ?? state.offset,
-        abilities: [...state.abilities, ...response.results],
+        items: [...state.items, ...response.results],
         isLoading: false,
       );
 
@@ -95,28 +95,28 @@ class AbilityListNotifier extends BaseStateNotifier<AbilityListState> {
         isLoading: false,
       );
 
-      logger.e('Error loading ability list: $e', stackTrace: stackTrace);
+      logger.e('Error loading item list: $e', stackTrace: stackTrace);
     }
   }
 
-  // Load more abilities (infinite scroll)
-  Future<void> loadMoreAbilities() async {
+  // Load more items (infinite scroll)
+  Future<void> loadMoreItems() async {
     if (state.isLoading || !state.hasMore) {
       return;
     }
 
-    await loadAbilities();
+    await loadItems();
   }
 
-  // Filter abilities based on search query
-  void searchAbilities(String query) {
+  // Filter items based on search query
+  void searchItems(String query) {
     // First update state to indicate we're searching
     state = state.copyWith(
       isLoading: true,
       searchQuery: query.toLowerCase(),
     );
 
-    // Then filter the abilities
+    // Then filter the items
     _filterBySearch(state.searchQuery);
 
     // Update loading state
@@ -129,22 +129,21 @@ class AbilityListNotifier extends BaseStateNotifier<AbilityListState> {
   void _filterBySearch(String query) {
     if (query.isEmpty) {
       state = state.copyWith(
-        filteredAbilities: [],
+        filteredItems: [],
       );
     } else {
-      final filtered = state.abilities
-          .where(
-              (ability) => ability.normalizedName.toLowerCase().contains(query))
+      final filtered = state.items
+          .where((item) => item.normalizedName.toLowerCase().contains(query))
           .toList();
 
       state = state.copyWith(
-        filteredAbilities: filtered,
+        filteredItems: filtered,
       );
     }
   }
 
   // Refresh data
   Future<void> refresh() async {
-    await loadAbilities(refresh: true);
+    await loadItems(refresh: true);
   }
 }

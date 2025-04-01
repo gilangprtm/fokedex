@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -10,21 +10,18 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../data/models/api_response_model.dart';
-import '../../../providers/item/item_list_provider.dart';
+import '../../../providers/item/item_list/item_list_provider.dart';
 import '../../../routes/app_routes.dart';
 
-class ItemListPage extends StatelessWidget {
+class ItemListPage extends ConsumerWidget {
   const ItemListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<ItemListProvider>(
-      createProvider: () => ItemListProvider(),
-      builder: (context, provider) => _buildItemListPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch loading, error states and items at the top level
+    // This prevents unnecessary rebuilds of the entire screen
+    final notifier = ref.read(itemListProvider.notifier);
 
-  Widget _buildItemListPage(BuildContext context, ItemListProvider provider) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -38,116 +35,113 @@ class ItemListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          PropertySelector<ItemListProvider, String>(
-            property: 'searchQuery',
-            selector: (provider) => provider.searchQuery,
-            builder: (context, searchQuery) {
+          Consumer(
+            builder: (context, ref, _) {
+              final searchController = ref.watch(
+                  itemListProvider.select((state) => state.searchController));
               return MahasSearchBar(
-                controller: provider.searchController,
+                controller: searchController,
                 hintText: 'Search Items',
-                onChanged: provider.onSearchChanged,
-                onClear: provider.clearSearch,
+                onChanged: notifier.onSearchChanged,
+                onClear: notifier.clearSearch,
               );
             },
           ),
 
           // Item list
           Expanded(
-            child: _buildItemList(context, provider),
+            child: _buildItemList(context, ref),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildItemList(BuildContext context, ItemListProvider provider) {
-    return PropertySelector<ItemListProvider, Map<String, dynamic>>(
-      property: 'filteredItems',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'filteredItems': provider.filteredItems,
-        'hasMore': provider.hasMore,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final filteredItems = data['filteredItems'] as List<ResourceListItem>;
-        final hasMore = data['hasMore'] as bool;
+  Widget _buildItemList(BuildContext context, WidgetRef ref) {
+    final isLoading =
+        ref.watch(itemListProvider.select((state) => state.isLoading));
+    final error = ref.watch(itemListProvider.select((state) => state.error));
+    final items =
+        ref.watch(itemListProvider.select((state) => state.displayItems));
+    final hasMore =
+        ref.watch(itemListProvider.select((state) => state.hasMore));
+    final notifier = ref.read(itemListProvider.notifier);
 
-        if (hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline,
-                    size: 48, color: AppColors.errorColor),
-                const SizedBox(height: 16),
-                Text(
-                  'Error loading Items',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  errorMessage,
-                  style: AppTypography.bodyText2,
-                ),
-                const SizedBox(height: 16),
-                MahasButton(
-                  text: 'Retry',
-                  onPressed: () => provider.loadItems(refresh: true),
-                  type: ButtonType.primary,
-                  color: AppColors.pokemonRed,
-                ),
-              ],
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline,
+                size: 48, color: AppColors.errorColor),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading Items',
+              style: AppTypography.headline6,
             ),
-          );
-        }
-
-        if (isLoading && filteredItems.isEmpty) {
-          return const MahasLoader(isLoading: true);
-        }
-
-        if (filteredItems.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.backpack,
-                    size: 48, color: AppColors.pokemonGray),
-                const SizedBox(height: 16),
-                Text(
-                  'No Items Found',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Try changing your search criteria',
-                  style: AppTypography.bodyText2,
-                ),
-                const SizedBox(height: 16),
-                MahasButton(
-                  text: 'Clear Search',
-                  onPressed: () => provider.clearSearch(),
-                  type: ButtonType.primary,
-                  color: AppColors.pokemonRed,
-                ),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              error.toString(),
+              style: AppTypography.bodyText2,
             ),
-          );
-        }
+            const SizedBox(height: 16),
+            MahasButton(
+              text: 'Retry',
+              onPressed: () => notifier.refresh(),
+              type: ButtonType.primary,
+              color: AppColors.pokemonRed,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isLoading && items.isEmpty) {
+      return const MahasLoader(isLoading: true);
+    }
+
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.backpack, size: 48, color: AppColors.pokemonGray),
+            const SizedBox(height: 16),
+            Text(
+              'No Items Found',
+              style: AppTypography.headline6,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try changing your search criteria',
+              style: AppTypography.bodyText2,
+            ),
+            const SizedBox(height: 16),
+            MahasButton(
+              text: 'Clear Search',
+              onPressed: () => notifier.clearSearch(),
+              type: ButtonType.primary,
+              color: AppColors.pokemonRed,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Consumer(
+      builder: (context, ref, _) {
+        final scrollController = ref
+            .watch(itemListProvider.select((state) => state.scrollController));
 
         return RefreshIndicator(
-          onRefresh: () => provider.refresh(),
+          onRefresh: () => notifier.refresh(),
           child: ListView.builder(
-            controller: provider.scrollController,
+            controller: scrollController,
             padding: const EdgeInsets.all(AppTheme.spacing16),
-            itemCount: filteredItems.length + (hasMore ? 1 : 0),
+            itemCount: items.length + (hasMore ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index < filteredItems.length) {
-                final item = filteredItems[index];
+              if (index < items.length) {
+                final item = items[index];
                 return _buildItemItem(context, item);
               } else {
                 return Container(

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasource/network/service/pokemon_service.dart';
 import '../../data/datasource/network/service/move_service.dart';
+import '../../data/datasource/network/service/ability_service.dart';
 import '../../data/datasource/local/services/local_pokemon_service.dart';
 
 // Network Services
@@ -10,6 +11,10 @@ final pokemonServiceProvider = Provider<PokemonService>((ref) {
 
 final moveServiceProvider = Provider<MoveService>((ref) {
   return MoveService();
+});
+
+final abilityServiceProvider = Provider<AbilityService>((ref) {
+  return AbilityService();
 });
 
 // Local Services

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
@@ -10,22 +10,17 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../data/models/api_response_model.dart';
-import '../../../providers/ability/ability_list_provider.dart';
+import '../../../providers/ability/ability_list/ability_list_provider.dart';
 import '../../../routes/app_routes.dart';
 
-class AbilityListPage extends StatelessWidget {
+class AbilityListPage extends ConsumerWidget {
   const AbilityListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<AbilityListProvider>(
-      createProvider: () => AbilityListProvider(),
-      builder: (context, provider) => _buildAbilityListPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch essential state properties at the top level
+    final notifier = ref.read(abilityListProvider.notifier);
 
-  Widget _buildAbilityListPage(
-      BuildContext context, AbilityListProvider provider) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -38,48 +33,41 @@ class AbilityListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Search bar
-          PropertySelector<AbilityListProvider, String>(
-            property: 'searchQuery',
-            selector: (provider) => provider.searchQuery,
-            builder: (context, searchQuery) {
+          // Search bar - uses Consumer for independent updates
+          Consumer(
+            builder: (context, ref, _) {
+              final searchController = ref.watch(abilityListProvider
+                  .select((state) => state.searchController));
               return MahasSearchBar(
-                controller: provider.searchController,
+                controller: searchController,
                 hintText: 'Search Abilities',
-                onChanged: provider.onSearchChanged,
-                onClear: provider.clearSearch,
+                onChanged: notifier.onSearchChanged,
+                onClear: notifier.clearSearch,
               );
             },
           ),
 
           // Ability list
           Expanded(
-            child: _buildAbilityList(context, provider),
+            child: _buildAbilityList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAbilityList(BuildContext context, AbilityListProvider provider) {
-    return PropertySelector<AbilityListProvider, Map<String, dynamic>>(
-      property: 'filteredAbilities',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'filteredAbilities': provider.filteredAbilities,
-        'hasMore': provider.hasMore,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final filteredAbilities =
-            data['filteredAbilities'] as List<ResourceListItem>;
-        final hasMore = data['hasMore'] as bool;
+  Widget _buildAbilityList(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final state = ref.watch(abilityListProvider);
+        final notifier = ref.read(abilityListProvider.notifier);
 
-        if (hasError) {
+        final isLoading = state.isLoading;
+        final error = state.error;
+        final abilities = state.displayAbilities;
+        final hasMore = state.hasMore;
+
+        if (error != null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -93,13 +81,13 @@ class AbilityListPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  errorMessage,
+                  error.toString(),
                   style: AppTypography.bodyText2,
                 ),
                 const SizedBox(height: 16),
                 MahasButton(
                   text: 'Retry',
-                  onPressed: () => provider.loadAbilities(refresh: true),
+                  onPressed: () => notifier.loadAbilities(refresh: true),
                   type: ButtonType.primary,
                   color: AppColors.pokemonRed,
                 ),
@@ -108,11 +96,11 @@ class AbilityListPage extends StatelessWidget {
           );
         }
 
-        if (isLoading && filteredAbilities.isEmpty) {
+        if (isLoading && abilities.isEmpty) {
           return const MahasLoader(isLoading: true);
         }
 
-        if (filteredAbilities.isEmpty) {
+        if (abilities.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -132,7 +120,7 @@ class AbilityListPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 MahasButton(
                   text: 'Clear Search',
-                  onPressed: () => provider.clearSearch(),
+                  onPressed: () => notifier.clearSearch(),
                   type: ButtonType.primary,
                   color: AppColors.pokemonRed,
                 ),
@@ -142,14 +130,14 @@ class AbilityListPage extends StatelessWidget {
         }
 
         return RefreshIndicator(
-          onRefresh: () => provider.refresh(),
+          onRefresh: () => notifier.refresh(),
           child: ListView.builder(
-            controller: provider.scrollController,
+            controller: state.scrollController,
             padding: const EdgeInsets.all(AppTheme.spacing16),
-            itemCount: filteredAbilities.length + (hasMore ? 1 : 0),
+            itemCount: abilities.length + (hasMore ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index < filteredAbilities.length) {
-                final ability = filteredAbilities[index];
+              if (index < abilities.length) {
+                final ability = abilities[index];
                 return _buildAbilityItem(context, ability);
               } else {
                 return Container(

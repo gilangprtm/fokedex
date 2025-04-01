@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
-import '../../env/app_environment.dart';
 import 'logger_service.dart';
 
 /// Service untuk monitoring dan mengoptimasi performa aplikasi
@@ -22,7 +21,7 @@ class PerformanceService {
 
   // Constructor
   PerformanceService._internal() {
-    _trackPerformance = kDebugMode || AppEnvironment.instance.isStaging;
+    _trackPerformance = kDebugMode;
   }
 
   /// Memulai pengukuran waktu eksekusi suatu fungsi/operasi

@@ -1,7 +1,6 @@
 import '../../../../core/base/base_network.dart';
 import '../../../../data/models/api_response_model.dart';
 import '../../../../data/models/ability_model.dart';
-import '../../../../core/env/app_environment.dart';
 
 /// Repository untuk mengambil data dari Ability endpoint
 class AbilityRepository extends BaseRepository {
@@ -10,11 +9,9 @@ class AbilityRepository extends BaseRepository {
     int offset = 0,
     int? limit,
   }) async {
-    final abilityLimit =
-        limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
+    final abilityLimit = limit ?? 20;
     final String endpoint = '/ability?offset=$offset&limit=$abilityLimit';
 
-    logInfo('Fetching Ability list: $endpoint', tag: 'AbilityRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -34,7 +31,6 @@ class AbilityRepository extends BaseRepository {
   Future<Ability> getAbilityDetail(String idOrName) async {
     final String endpoint = '/ability/$idOrName';
 
-    logInfo('Fetching Ability detail: $endpoint', tag: 'AbilityRepository');
     try {
       final response = await dioService.get(endpoint);
       // Konversi data JSON ke model Ability

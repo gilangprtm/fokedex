@@ -1,5 +1,4 @@
 import '../../../../core/base/base_network.dart';
-import '../../../../core/env/app_environment.dart';
 import '../../../models/api_response_model.dart';
 import '../../../models/pokemon_model.dart';
 import '../../../models/pokemon_list_item_model.dart';
@@ -11,11 +10,9 @@ class PokemonRepository extends BaseRepository {
     int offset = 0,
     int? limit,
   }) async {
-    final pokemonLimit =
-        limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
+    final pokemonLimit = limit ?? 20;
     final String endpoint = '/pokemon?offset=$offset&limit=$pokemonLimit';
 
-    logInfo('Fetching Pokemon list: $endpoint', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -35,7 +32,6 @@ class PokemonRepository extends BaseRepository {
   Future<Pokemon> getPokemonDetail(String idOrName) async {
     final String endpoint = '/pokemon/$idOrName';
 
-    logInfo('Fetching Pokemon detail: $endpoint', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -52,7 +48,6 @@ class PokemonRepository extends BaseRepository {
   Future<PokemonList> getPokemonDetailList(String idOrName) async {
     final String endpoint = '/pokemon/$idOrName';
 
-    logInfo('Fetching Pokemon detail: $endpoint', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -69,7 +64,6 @@ class PokemonRepository extends BaseRepository {
   Future<Map<String, dynamic>> getPokemonSpecies(String idOrName) async {
     final String endpoint = '/pokemon-species/$idOrName';
 
-    logInfo('Fetching Pokemon species: $endpoint', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
       return response.data;
@@ -83,7 +77,6 @@ class PokemonRepository extends BaseRepository {
   /// Ambil rantai evolusi Pokemon berdasarkan URL chain
   Future<Map<String, dynamic>> getEvolutionChain(String url) async {
     // This is a special case as it's a full URL coming from the species response
-    logInfo('Fetching evolution chain: $url', tag: 'PokemonRepository');
     try {
       // Using isFullUrl parameter since this is a full URL from the API response
       final response = await dioService.get(url, isFullUrl: true);
@@ -99,7 +92,6 @@ class PokemonRepository extends BaseRepository {
   Future<PaginatedApiResponse<ResourceListItem>> getPokemonTypes() async {
     const String endpoint = '/type';
 
-    logInfo('Fetching Pokemon types: $endpoint', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -119,8 +111,6 @@ class PokemonRepository extends BaseRepository {
   Future<Map<String, dynamic>> getPokemonTypeDetail(String nameOrId) async {
     final String endpoint = '/type/$nameOrId';
 
-    logInfo('Fetching Pokemon type detail: $endpoint',
-        tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
       return response.data;
@@ -133,7 +123,6 @@ class PokemonRepository extends BaseRepository {
 
   /// Ambil daftar Pokemon berdasarkan tipe
   Future<List<ResourceListItem>> getPokemonByType(String typeName) async {
-    logInfo('Fetching Pokemon by type: $typeName', tag: 'PokemonRepository');
     try {
       final response = await getPokemonTypeDetail(typeName);
       final pokemonList = response['pokemon'] as List<dynamic>;
@@ -157,11 +146,9 @@ class PokemonRepository extends BaseRepository {
     int offset = 0,
     int? limit,
   }) async {
-    final abilityLimit =
-        limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
+    final abilityLimit = limit ?? 20;
     final String endpoint = '/ability?offset=$offset&limit=$abilityLimit';
 
-    logInfo('Fetching Pokemon abilities: $endpoint', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -181,8 +168,6 @@ class PokemonRepository extends BaseRepository {
   Future<Map<String, dynamic>> getPokemonAbilityDetail(String nameOrId) async {
     final String endpoint = '/ability/$nameOrId';
 
-    logInfo('Fetching Pokemon ability detail: $endpoint',
-        tag: 'PokemonRepository');
     try {
       final response = await dioService.get(endpoint);
       return response.data;
@@ -195,7 +180,6 @@ class PokemonRepository extends BaseRepository {
 
   /// Ambil data dari URL lengkap
   Future<Map<String, dynamic>> getDataFromUrl(String url) async {
-    logInfo('Fetching data from URL: $url', tag: 'PokemonRepository');
     try {
       final response = await dioService.get(url, isFullUrl: true);
       return response.data;

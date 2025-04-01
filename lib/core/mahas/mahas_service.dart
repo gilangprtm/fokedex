@@ -3,7 +3,6 @@ import 'services/firebase_service.dart';
 import 'services/storage_service.dart';
 import 'services/logger_service.dart';
 import 'services/error_handler_service.dart';
-import '../env/app_environment.dart';
 import 'services/initial_route_service.dart';
 
 /// MahasService adalah kelas singleton yang mengelola inisialisasi aplikasi
@@ -16,21 +15,10 @@ class MahasService {
   MahasService._internal();
 
   /// Inisialisasi seluruh layanan yang dibutuhkan sebelum aplikasi dijalankan
-  static Future<void> init(
-      {Environment environment = Environment.development}) async {
+  static Future<void> init() async {
     try {
-      // Inisialisasi Environment terlebih dahulu
-      AppEnvironment.instance.initEnvironment(environment);
-
       // Inisialisasi Logger terlebih dahulu untuk bisa mencatat progress inisialisasi lainnya
       final logger = LoggerService.instance;
-
-      // Init logger dengan environment settings
-      logger.init();
-
-      logger.i(
-          '🚀 Initializing application services in ${environment.toString()} mode...',
-          tag: 'MAHAS');
 
       // Inisialisasi error handler
       await _initErrorHandler();

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 
 /// Kelas utilitas utama yang menyediakan berbagai fungsi helper untuk aplikasi
 ///
@@ -215,13 +214,6 @@ class Mahas {
       );
     }
     return null;
-  }
-
-  // =============== Dependency Injection ===============
-
-  /// Mendapatkan dependensi dari service locator
-  static T find<T extends Object>() {
-    return GetIt.instance<T>();
   }
 
   // =============== Localization & Theme ===============

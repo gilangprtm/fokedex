@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
-import '../../env/app_environment.dart';
 
 /// Level log yang didukung
 enum LogLevel {
@@ -24,49 +23,6 @@ class LoggerService {
 
   // History logs untuk keperluan debugging
   final List<Map<String, dynamic>> _logHistory = [];
-
-  // Maksimum ukuran history log
-  int _maxLogHistorySize = 1000;
-
-  // Flag untuk mengaktifkan/menonaktifkan logging detail
-  bool _enableDetailedLogs = true;
-
-  /// Inisialisasi logger berdasarkan environment
-  void init() {
-    final env = AppEnvironment.instance;
-
-    // Set log level berdasarkan environment
-    String logLevelStr = env.get<String>('logLevel');
-    _currentLogLevel = _getLogLevelFromString(logLevelStr);
-
-    // Set maksimum ukuran history log
-    _maxLogHistorySize = env.get<int>('maxLogHistory');
-
-    // Set flag detailed logging
-    _enableDetailedLogs = env.get<bool>('enableDetailedLogs');
-
-    // Log inisialisasi
-    i('Logger initialized with level: $_currentLogLevel, max history: $_maxLogHistorySize, detailed logs: $_enableDetailedLogs',
-        tag: 'LOGGER');
-  }
-
-  /// Mengkonversi string ke LogLevel
-  LogLevel _getLogLevelFromString(String level) {
-    switch (level.toLowerCase()) {
-      case 'debug':
-        return LogLevel.debug;
-      case 'info':
-        return LogLevel.info;
-      case 'warning':
-        return LogLevel.warning;
-      case 'error':
-        return LogLevel.error;
-      case 'fatal':
-        return LogLevel.fatal;
-      default:
-        return LogLevel.info;
-    }
-  }
 
   /// Mendapatkan history logs
   List<Map<String, dynamic>> get logHistory => _logHistory;
@@ -123,25 +79,6 @@ class LoggerService {
     // Emoji untuk masing-masing level
     _getEmojiForLevel(level);
 
-    // Tambahkan data jika ada dan detailed logs diaktifkan
-    String? dataString;
-    if (data != null && _enableDetailedLogs) {
-      try {
-        if (data is Map || data is List) {
-          dataString = const JsonEncoder.withIndent('  ').convert(data);
-        } else if (data is String) {
-          dataString = data;
-        } else {
-          dataString = data.toString();
-        }
-      } catch (e) {
-        dataString = data.toString();
-      }
-    }
-
-    // Tambahkan stack trace jika tersedia dan dalam mode development
-    if (stackTrace != null && _enableDetailedLogs) {}
-
     // Log ke console dalam mode debug
     if (kDebugMode) {
       // Gunakan warna berbeda untuk level berbeda
@@ -153,27 +90,6 @@ class LoggerService {
         error: data is Exception || data is Error ? data : null,
         stackTrace: stackTrace,
       );
-    }
-
-    // Simpan ke history jika bukan di production atau jika level error/fatal
-    if (_enableDetailedLogs || level.index >= LogLevel.error.index) {
-      final logEntry = {
-        'level': level.toString().split('.').last,
-        'message': message,
-        'tag': logTag,
-        'timestamp': now.toIso8601String(),
-        if (data != null && _enableDetailedLogs)
-          'data': dataString ?? data.toString(),
-        if (stackTrace != null && _enableDetailedLogs)
-          'stackTrace': stackTrace.toString(),
-      };
-
-      _logHistory.add(logEntry);
-
-      // Batasi ukuran history log
-      if (_logHistory.length > _maxLogHistorySize) {
-        _logHistory.removeAt(0);
-      }
     }
   }
 

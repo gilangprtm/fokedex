@@ -9,12 +9,12 @@ class MoveListNotifier extends BaseStateNotifier<MoveListState> {
 
   @override
   void onInit() {
+    super.onInit();
     state.searchController.addListener(() {
       onSearchChanged(state.searchController.text);
     });
     _setupScrollListener();
     loadMoves();
-    super.onInit();
   }
 
   @override
@@ -46,22 +46,24 @@ class MoveListNotifier extends BaseStateNotifier<MoveListState> {
       return;
     }
 
-    try {
-      state = state.copyWith(isLoading: true);
+    await runAsync('loadMoves', () async {
+      try {
+        state = state.copyWith(isLoading: true);
 
-      final response = await _moveService.getMoveList(limit: 1000);
+        final response = await _moveService.getMoveList(limit: 1000);
 
-      state = state.copyWith(
-        moves: [...state.moves, ...response.results],
-        filteredMoves: response.results,
-        isLoading: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        isLoading: false,
-      );
-    }
+        state = state.copyWith(
+          moves: [...state.moves, ...response.results],
+          filteredMoves: response.results,
+          isLoading: false,
+        );
+      } catch (e) {
+        state = state.copyWith(
+          error: e.toString(),
+          isLoading: false,
+        );
+      }
+    });
   }
 
   void onSearchChanged(String value) {

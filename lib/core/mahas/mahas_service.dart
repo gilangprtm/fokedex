@@ -21,13 +21,13 @@ class MahasService {
       final logger = LoggerService.instance;
 
       // Inisialisasi error handler
-      await _initErrorHandler();
+      await initErrorHandler();
 
       // Inisialisasi Firebase (jika diperlukan)
-      // await _initFirebase();
+      //await initFirebase();
 
       // Inisialisasi Local Storage (jika diperlukan)
-      // await _initStorage();
+      //await initStorage();
 
       logger.i('✅ All services initialized successfully!', tag: 'MAHAS');
     } catch (e, stackTrace) {
@@ -60,7 +60,7 @@ class MahasService {
   }
 
   /// Inisialisasi error handler
-  static Future<void> _initErrorHandler() async {
+  static Future<void> initErrorHandler() async {
     final logger = LoggerService.instance;
     final errorHandler = ErrorHandlerService.instance;
 
@@ -86,7 +86,7 @@ class MahasService {
   }
 
   /// Inisialisasi Firebase (menggunakan FirebaseService yang terpisah)
-  static Future<void> _initFirebase() async {
+  static Future<void> initFirebase() async {
     final logger = LoggerService.instance;
 
     await FirebaseService.instance.init();
@@ -95,7 +95,7 @@ class MahasService {
   }
 
   /// Inisialisasi Storage (menggunakan StorageService yang terpisah)
-  static Future<void> _initStorage() async {
+  static Future<void> initStorage() async {
     final logger = LoggerService.instance;
 
     await StorageService.instance.init();

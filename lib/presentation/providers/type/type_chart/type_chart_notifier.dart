@@ -1,56 +1,14 @@
-import '../../../core/base/base_provider.dart';
-import '../../../data/models/api_response_model.dart';
-import '../../../data/models/type_model.dart';
-import '../../../data/datasource/network/service/type_service.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/base/base_state_notifier.dart';
+import '../../../../data/datasource/network/service/type_service.dart';
+import 'type_chart_state.dart';
 
-class TypeChartProvider extends BaseProvider {
-  final TypeService _typeService = TypeService();
+class TypeChartNotifier extends BaseStateNotifier<TypeChartState> {
+  final TypeService _typeService;
 
-  // Data state
-  List<ResourceListItem> _typesList = [];
-  List<ResourceListItem> get typesList => _typesList;
-
-  void _setTypesList(List<ResourceListItem> value) {
-    if (_typesList != value) {
-      _typesList = value;
-      notifyPropertyListeners('typesList');
-    }
-  }
-
-  final Map<String, TypeDetail> _typeDetails = {};
-  Map<String, TypeDetail> get typeDetails => _typeDetails;
-
-  // UI state
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
-  void _setLoading(bool value) {
-    if (_isLoading != value) {
-      _isLoading = value;
-      notifyPropertyListeners('isLoading');
-    }
-  }
-
-  bool _hasError = false;
-  bool get hasError => _hasError;
-
-  void _setHasError(bool value) {
-    if (_hasError != value) {
-      _hasError = value;
-      notifyPropertyListeners('hasError');
-    }
-  }
-
-  String _errorMessage = '';
-  String get errorMessage => _errorMessage;
-
-  void _setErrorMessage(String value) {
-    if (_errorMessage != value) {
-      _errorMessage = value;
-      notifyPropertyListeners('errorMessage');
-    }
-  }
+  TypeChartNotifier(this._typeService, Ref ref)
+      : super(const TypeChartState(), ref);
 
   @override
   void onInit() {
@@ -66,48 +24,49 @@ class TypeChartProvider extends BaseProvider {
   }
 
   Future<void> loadTypesList() async {
-    _setLoading(true);
-    _setHasError(false);
-    _setErrorMessage('');
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final response = await _typeService.getTypeList();
-      _setTypesList(response.results);
+      state = state.copyWith(typesList: response.results);
 
       // Load detail for each type
-      if (_typesList.isNotEmpty) {
+      if (state.typesList.isNotEmpty) {
         await loadTypeDetails();
       }
     } catch (e, stackTrace) {
       logger.e('Error loading types list: $e', stackTrace: stackTrace);
-      _setHasError(true);
-      _setErrorMessage('Failed to load types list');
+      state = state.copyWith(
+        error: 'Failed to load types list',
+        stackTrace: stackTrace,
+      );
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<void> loadTypeDetails() async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true);
 
     try {
       // Load details for each type in parallel
       final futures =
-          _typesList.map((type) => _loadSingleTypeDetail(type.name));
+          state.typesList.map((type) => _loadSingleTypeDetail(type.name));
       await Future.wait(futures);
-      notifyPropertyListeners('typeDetails');
     } catch (e, stackTrace) {
       logger.e('Error loading type details: $e', stackTrace: stackTrace);
       // We'll continue even if some types fail to load
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<void> _loadSingleTypeDetail(String typeName) async {
     try {
       final typeDetail = await _typeService.getTypeDetail(typeName);
-      _typeDetails[typeName] = typeDetail;
+      state = state.copyWith(
+        typeDetails: {...state.typeDetails, typeName: typeDetail},
+      );
     } catch (e) {
       logger.e('Error loading detail for type $typeName: $e');
       // Continue with other types
@@ -115,8 +74,7 @@ class TypeChartProvider extends BaseProvider {
   }
 
   Future<void> refresh() async {
-    _typeDetails.clear();
-    notifyPropertyListeners('typeDetails');
+    state = state.copyWith(typeDetails: {});
     await loadTypesList();
   }
 
@@ -124,12 +82,12 @@ class TypeChartProvider extends BaseProvider {
 
   // Get the damage multiplier that attacking type does to defending type
   double getDamageMultiplier(String attackingType, String defendingType) {
-    if (!_typeDetails.containsKey(attackingType) ||
-        !_typeDetails.containsKey(defendingType)) {
+    if (!state.typeDetails.containsKey(attackingType) ||
+        !state.typeDetails.containsKey(defendingType)) {
       return 1.0; // Default if types not loaded
     }
 
-    final attackerDetail = _typeDetails[attackingType]!;
+    final attackerDetail = state.typeDetails[attackingType]!;
 
     // Check double damage
     if (attackerDetail.damageRelations.doubleDamageTo

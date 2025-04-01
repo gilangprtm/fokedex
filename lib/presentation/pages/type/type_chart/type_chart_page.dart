@@ -1,120 +1,104 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../providers/type/type_chart_provider.dart';
+import '../../../providers/type/type_chart/type_chart_notifier.dart';
+import '../../../providers/type/type_chart/type_chart_provider.dart';
 
-class TypeChartPage extends StatelessWidget {
+class TypeChartPage extends ConsumerWidget {
   const TypeChartPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<TypeChartProvider>(
-      createProvider: () => TypeChartProvider(),
-      builder: (context, provider) => _buildPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch essential state at top level
+    final isLoading =
+        ref.watch(typeChartProvider.select((state) => state.isLoading));
+    final error = ref.watch(typeChartProvider.select((state) => state.error));
+    final typesList =
+        ref.watch(typeChartProvider.select((state) => state.typesList));
+    final notifier = ref.read(typeChartProvider.notifier);
 
-  Widget _buildPage(BuildContext context, TypeChartProvider provider) {
-    return PropertySelector<TypeChartProvider, Map<String, dynamic>>(
-      property: 'typesList',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'typesList': provider.typesList,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final typesList = data['typesList'] as List<dynamic>;
+    // Loading state
+    if (isLoading && typesList.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Type Chart'),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: const MahasLoader(isLoading: true),
+      );
+    }
 
-        // Loading state
-        if (isLoading && typesList.isEmpty) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Type Chart'),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
-            ),
-            body: const MahasLoader(isLoading: true),
-          );
-        }
-
-        // Error state
-        if (hasError && typesList.isEmpty) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Type Chart'),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline,
-                      size: 48, color: AppColors.errorColor),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading type data',
-                    style: AppTypography.headline6,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    errorMessage,
-                    style: AppTypography.bodyText2,
-                  ),
-                  const SizedBox(height: 16),
-                  MahasButton(
-                    text: 'Try Again',
-                    onPressed: () => provider.refresh(),
-                    type: ButtonType.primary,
-                    color: AppColors.pokemonRed,
-                  ),
-                ],
+    // Error state
+    if (error != null && typesList.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Type Chart'),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  size: 48, color: AppColors.errorColor),
+              const SizedBox(height: 16),
+              Text(
+                'Error loading type data',
+                style: AppTypography.headline6,
               ),
-            ),
-          );
-        }
-
-        // Main content
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Type Chart'),
-            backgroundColor: AppColors.pokemonRed,
-            elevation: 0,
-            actions: [
-              if (!isLoading)
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () => provider.refresh(),
-                  tooltip: 'Refresh',
-                ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: AppTypography.bodyText2,
+              ),
+              const SizedBox(height: 16),
+              MahasButton(
+                text: 'Try Again',
+                onPressed: () => notifier.refresh(),
+                type: ButtonType.primary,
+                color: AppColors.pokemonRed,
+              ),
             ],
           ),
-          body: _buildContent(context, provider),
-        );
-      },
+        ),
+      );
+    }
+
+    // Main content
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Type Chart'),
+        backgroundColor: AppColors.pokemonRed,
+        elevation: 0,
+        actions: [
+          if (!isLoading)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => notifier.refresh(),
+              tooltip: 'Refresh',
+            ),
+        ],
+      ),
+      body: _buildContent(context, ref),
     );
   }
 
-  Widget _buildContent(BuildContext context, TypeChartProvider provider) {
-    return PropertySelector<TypeChartProvider, Map<String, dynamic>>(
-      property: 'typeDetails',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'typesList': provider.typesList,
-        'typeDetails': provider.typeDetails,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final typesList = data['typesList'] as List<dynamic>;
-        final typeDetails = data['typeDetails'] as Map<String, dynamic>;
+  Widget _buildContent(BuildContext context, WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final isLoading =
+            ref.watch(typeChartProvider.select((state) => state.isLoading));
+        final typesList =
+            ref.watch(typeChartProvider.select((state) => state.typesList));
+        final typeDetails =
+            ref.watch(typeChartProvider.select((state) => state.typeDetails));
+        final notifier = ref.read(typeChartProvider.notifier);
 
         if (typesList.isEmpty) {
           return const Center(
@@ -127,7 +111,7 @@ class TypeChartPage extends StatelessWidget {
           ..sort((a, b) => a.name.compareTo(b.name));
 
         return RefreshIndicator(
-          onRefresh: () => provider.refresh(),
+          onRefresh: () => notifier.refresh(),
           color: AppColors.pokemonRed,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -188,7 +172,7 @@ class TypeChartPage extends StatelessWidget {
                           ? const Center(
                               child: Text("No type details available"),
                             )
-                          : _buildTypeChart(sortedTypes, provider),
+                          : _buildTypeChart(sortedTypes, notifier),
                     ),
                 ],
               ),
@@ -228,7 +212,7 @@ class TypeChartPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTypeChart(List<dynamic> types, TypeChartProvider provider) {
+  Widget _buildTypeChart(List<dynamic> types, TypeChartNotifier notifier) {
     return SingleChildScrollView(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -248,25 +232,39 @@ class TypeChartPage extends StatelessWidget {
                     color: Colors.grey[200],
                     child: Text(
                       'ATK \\ DEF',
-                      style: AppTypography.caption.copyWith(
+                      style: AppTypography.subtitle1.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                   // Defending type headers
-                  ...types.map((type) {
-                    final typeName = type.name;
-                    return Container(
-                      width: 60,
-                      height: 60,
-                      alignment: Alignment.center,
-                      color: Color(provider.getTypeColor(typeName))
-                          .withValues(alpha: 0.7),
-                      child: RotatedBox(
-                        quarterTurns: 3,
+                  ...types.map((type) => Container(
+                        width: 60,
+                        height: 60,
+                        alignment: Alignment.center,
+                        color: Color(notifier.getTypeColor(type.name)),
                         child: Text(
-                          provider.formatTypeName(typeName),
+                          notifier.formatTypeName(type.name),
+                          style: AppTypography.caption.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      )),
+                ],
+              ),
+              // Rows for each attacking type
+              ...types.map((attackingType) => Row(
+                    children: [
+                      // Attacking type header
+                      Container(
+                        width: 100,
+                        height: 60,
+                        alignment: Alignment.center,
+                        color: Color(notifier.getTypeColor(attackingType.name)),
+                        child: Text(
+                          notifier.formatTypeName(attackingType.name),
                           style: AppTypography.caption.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -274,76 +272,44 @@ class TypeChartPage extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    );
-                  }),
-                ],
-              ),
-
-              // Type effectiveness rows
-              ...types.map((attackingType) {
-                final attackingTypeName = attackingType.name;
-                return Row(
-                  children: [
-                    // Attacking type header
-                    Container(
-                      width: 100,
-                      height: 40,
-                      alignment: Alignment.center,
-                      color: Color(provider.getTypeColor(attackingTypeName)),
-                      child: Text(
-                        provider.formatTypeName(attackingTypeName),
-                        style: AppTypography.bodyText2.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    // Effectiveness cells
-                    ...types.map((defendingType) {
-                      final defendingTypeName = defendingType.name;
-                      final effectiveness = provider.getDamageMultiplier(
-                          attackingTypeName, defendingTypeName);
-                      return _buildEffectivenessCell(effectiveness);
-                    }),
-                  ],
-                );
-              }),
+                      // Effectiveness cells
+                      ...types.map((defendingType) {
+                        final multiplier = notifier.getDamageMultiplier(
+                            attackingType.name, defendingType.name);
+                        Color cellColor;
+                        if (multiplier == 2.0) {
+                          cellColor = Colors.green[700]!;
+                        } else if (multiplier == 1.0) {
+                          cellColor = Colors.grey[400]!;
+                        } else if (multiplier == 0.5) {
+                          cellColor = Colors.red[300]!;
+                        } else {
+                          cellColor = Colors.black45;
+                        }
+                        return Container(
+                          width: 60,
+                          height: 60,
+                          alignment: Alignment.center,
+                          color: cellColor,
+                          child: Text(
+                            multiplier == 0.0
+                                ? '0×'
+                                : multiplier == 0.5
+                                    ? '½'
+                                    : multiplier == 2.0
+                                        ? '2×'
+                                        : '1×',
+                            style: AppTypography.caption.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  )),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEffectivenessCell(double effectiveness) {
-    Color cellColor;
-    String text;
-
-    if (effectiveness == 2.0) {
-      cellColor = Colors.green[700]!;
-      text = '2×';
-    } else if (effectiveness == 0.5) {
-      cellColor = Colors.red[300]!;
-      text = '½';
-    } else if (effectiveness == 0.0) {
-      cellColor = Colors.black45;
-      text = '0';
-    } else {
-      cellColor = Colors.grey[400]!;
-      text = '1';
-    }
-
-    return Container(
-      width: 60,
-      height: 40,
-      alignment: Alignment.center,
-      color: cellColor,
-      child: Text(
-        text,
-        style: AppTypography.bodyText2.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

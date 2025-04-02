@@ -61,7 +61,7 @@ class PerformanceService {
     }
 
     // Log execution time
-    if (executionTime > 100) {
+    if (executionTime > 1000) {
       _logger.w('⏱️ Slow operation: $operationName took ${executionTime}ms',
           tag: tag ?? 'PERFORMANCE');
     } else {

@@ -28,57 +28,65 @@ class WelcomePage extends ConsumerWidget {
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              // Top spacing
-              const SizedBox(height: 32),
-
-              // App logo and title
-              _buildAppHeader(),
-
-              // App description and loading progress
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // App description
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          'Pokedex adalah ensiklopedia Pokemon lengkap yang memuat data dari semua generasi! Aplikasi ini dapat digunakan secara offline setelah data diunduh.',
-                          style: AppTypography.bodyText1.copyWith(
-                            color: Colors.white,
-                            height: 1.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                      const SizedBox(height: 48),
-
-                      // Loading indicator or start button - only rebuilds when loading state changes
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final isLoading = ref.watch(welcomeProvider
-                              .select((state) => state.isLoading));
-
-                          if (isLoading) {
-                            return _buildLoadingProgressConsumer(ref);
-                          } else {
-                            return _buildStartButtonConsumer(
-                                context, ref, notifier);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+              // Pokeball decoration at the bottom as background
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: _buildPokeballDecoration(),
                 ),
               ),
 
-              // Pokeball decoration
-              _buildPokeballDecoration(),
+              // Main content
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App logo and title
+                  _buildAppHeader(),
+
+                  // App description and loading progress
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // App description
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'Pokedex adalah ensiklopedia Pokemon lengkap yang memuat data dari semua generasi!',
+                            style: AppTypography.bodyText1.copyWith(
+                              color: Colors.white,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const SizedBox(height: 48),
+
+                        // Loading indicator or start button - only rebuilds when loading state changes
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final isLoading = ref.watch(welcomeProvider
+                                .select((state) => state.isLoading));
+
+                            if (isLoading) {
+                              return _buildLoadingProgressConsumer(ref);
+                            } else {
+                              return _buildStartButtonConsumer(
+                                  context, ref, notifier);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -136,43 +144,42 @@ class WelcomePage extends ConsumerWidget {
 
   Widget _buildLoadingProgressConsumer(WidgetRef ref) {
     // Only watch loading-related state properties
-    final loadingState = ref.watch(welcomeProvider.select((state) => {
-          'loadingProgress': state.loadingProgress,
-          'loadingStatusText': state.loadingStatusText,
-          'loadingDetailText': state.loadingDetailText,
-        }));
+    final state = ref.watch(welcomeProvider);
 
-    final loadingProgress = loadingState['loadingProgress'] as double;
-    final loadingStatusText = loadingState['loadingStatusText'] as String;
-    final loadingDetailText = loadingState['loadingDetailText'] as String;
+    final loadingProgress = state.loadingProgress;
+    final loadingStatusText = state.loadingStatusText;
+    final loadingDetailText = state.loadingDetailText;
 
     return Column(
       children: [
         // Loading progress indicator
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // Circular progress indicator background
-            SizedBox(
-              height: 120,
-              width: 120,
-              child: CircularProgressIndicator(
-                value: loadingProgress,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 8.0,
+        SizedBox(
+          height: 130,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Circular progress indicator background
+              SizedBox(
+                height: 120,
+                width: 120,
+                child: CircularProgressIndicator(
+                  value: loadingProgress,
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 8.0,
+                ),
               ),
-            ),
 
-            // Progress percentage
-            Text(
-              '${(loadingProgress * 100).toInt()}%',
-              style: AppTypography.headline5.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+              // Progress percentage
+              Text(
+                '${(loadingProgress * 100).toInt()}%',
+                style: AppTypography.headline5.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(height: 24),
@@ -203,13 +210,10 @@ class WelcomePage extends ConsumerWidget {
   Widget _buildStartButtonConsumer(
       BuildContext context, WidgetRef ref, WelcomeNotifier notifier) {
     // Only watch button-related state properties
-    final buttonState = ref.watch(welcomeProvider.select((state) => {
-          'isInitialDataLoaded': state.isInitialDataLoaded,
-          'lastUpdatedText': state.lastUpdatedText,
-        }));
+    final state = ref.watch(welcomeProvider);
 
-    final isInitialDataLoaded = buttonState['isInitialDataLoaded'] as bool;
-    final lastUpdatedText = buttonState['lastUpdatedText'] as String;
+    final isInitialDataLoaded = state.isInitialDataLoaded;
+    final lastUpdatedText = state.lastUpdatedText;
 
     return Column(
       children: [
@@ -221,7 +225,7 @@ class WelcomePage extends ConsumerWidget {
                 onPressed: () {
                   if (isInitialDataLoaded) {
                     // Navigate to home if we have data
-                    Mahas.routeTo(AppRoutes.home);
+                    Mahas.routeToAndRemove(AppRoutes.home);
                   } else {
                     // Otherwise, start loading process
                     notifier.startLoadingPokemonData();
@@ -269,8 +273,8 @@ class WelcomePage extends ConsumerWidget {
     return Opacity(
       opacity: 0.1,
       child: Container(
-        height: 200,
-        width: 200,
+        height: 250,
+        width: 250,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/pokeball.png'),

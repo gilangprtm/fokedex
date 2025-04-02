@@ -25,6 +25,19 @@ class PaginatedApiResponse<T> {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'count': count,
+      'next': next,
+      'previous': previous,
+      'results': results is List<ResourceListItem>
+          ? (results as List<ResourceListItem>)
+              .map((item) => item.toJson())
+              .toList()
+          : results, // Untuk tipe lain perlu dihandle khusus
+    };
+  }
+
   // Check if there are more items to load
   bool get hasMore => next != null;
 

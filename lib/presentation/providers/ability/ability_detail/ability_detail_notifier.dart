@@ -25,11 +25,11 @@ class AbilityDetailNotifier extends BaseStateNotifier<AbilityDetailState> {
   void getArgs() {
     final args = Mahas.arguments();
     if (args.isNotEmpty) {
-      final String id = args['id'] ?? '';
+      final int id = args['id'] ?? '';
       final String name = args['name'] ?? '';
 
       state = state.copyWith(
-        currentAbilityId: id,
+        currentAbilityId: id.toString(),
         currentAbilityName: name,
       );
 
@@ -57,7 +57,6 @@ class AbilityDetailNotifier extends BaseStateNotifier<AbilityDetailState> {
       state = state.copyWith(
         isLoading: true,
         clearError: true,
-        currentAbilityName: identifier,
       );
 
       final ability = await _abilityService.getAbilityDetail(identifier);

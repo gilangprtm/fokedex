@@ -12,10 +12,18 @@ class PokemonService extends BaseService {
   Future<PaginatedApiResponse<ResourceListItem>> getPokemonList({
     int offset = 0,
     int? limit,
+    bool forceRefresh = false,
   }) async {
-    return performanceAsync(
+    // Cache key yang unik berdasarkan parameter
+    final cacheKey = 'pokemon_list_${offset}_${limit ?? "all"}';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonList',
-      function: () async {
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _pokemonRepository.getPokemonList(
@@ -32,6 +40,10 @@ class PokemonService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => PaginatedApiResponse<ResourceListItem>.fromJson(
+        json,
+        (item) => ResourceListItem.fromJson(item),
+      ),
       tag: 'PokemonService',
     );
   }
@@ -59,16 +71,24 @@ class PokemonService extends BaseService {
   }
 
   /// Ambil detail Pokemon berdasarkan ID atau nama
-  Future<PokemonList> getPokemonDetailList(String idOrName) async {
-    return performanceAsync(
-      operationName: 'PokemonService.getPokemonList',
-      function: () async {
+  Future<PokemonList> getPokemonDetailList(String idOrName,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan ID/nama
+    final cacheKey = 'pokemon_detail_list_$idOrName';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
+      operationName: 'PokemonService.getPokemonDetailList',
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _pokemonRepository.getPokemonDetailList(idOrName);
         } catch (e, stackTrace) {
           logger.e(
-            'Failed to load Pokemon detail',
+            'Failed to load Pokemon detail list',
             error: e,
             stackTrace: stackTrace,
             tag: 'PokemonService',
@@ -76,15 +96,24 @@ class PokemonService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => PokemonList.fromJson(json),
       tag: 'PokemonService',
     );
   }
 
   /// Ambil daftar semua tipe Pokemon
-  Future<PaginatedApiResponse<ResourceListItem>> getPokemonTypes() async {
-    return performanceAsync(
+  Future<PaginatedApiResponse<ResourceListItem>> getPokemonTypes(
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik
+    const cacheKey = 'pokemon_types';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonTypes',
-      function: () async {
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _pokemonRepository.getPokemonTypes();
@@ -98,15 +127,27 @@ class PokemonService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => PaginatedApiResponse<ResourceListItem>.fromJson(
+        json,
+        (item) => ResourceListItem.fromJson(item),
+      ),
       tag: 'PokemonService',
     );
   }
 
   /// Ambil detail tipe Pokemon
-  Future<Map<String, dynamic>> getPokemonTypeDetail(String nameOrId) async {
-    return performanceAsync(
+  Future<Map<String, dynamic>> getPokemonTypeDetail(String nameOrId,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan ID/nama
+    final cacheKey = 'pokemon_type_detail_$nameOrId';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonTypeDetail',
-      function: () async {
+      fetchFunction: () async {
         try {
           return await _pokemonRepository.getPokemonTypeDetail(nameOrId);
         } catch (e, stackTrace) {
@@ -124,10 +165,18 @@ class PokemonService extends BaseService {
   }
 
   /// Ambil daftar Pokemon berdasarkan tipe
-  Future<List<ResourceListItem>> getPokemonByType(String typeName) async {
-    return performanceAsync(
+  Future<List<ResourceListItem>> getPokemonByType(String typeName,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan tipe
+    final cacheKey = 'pokemon_by_type_$typeName';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonByType',
-      function: () async {
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _pokemonRepository.getPokemonByType(typeName);
@@ -149,10 +198,18 @@ class PokemonService extends BaseService {
   Future<PaginatedApiResponse<ResourceListItem>> getPokemonAbilities({
     int offset = 0,
     int? limit,
+    bool forceRefresh = false,
   }) async {
-    return performanceAsync(
+    // Cache key yang unik berdasarkan parameter
+    final cacheKey = 'pokemon_abilities_${offset}_${limit ?? "all"}';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonAbilities',
-      function: () async {
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _pokemonRepository.getPokemonAbilities(
@@ -169,15 +226,27 @@ class PokemonService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => PaginatedApiResponse<ResourceListItem>.fromJson(
+        json,
+        (item) => ResourceListItem.fromJson(item),
+      ),
       tag: 'PokemonService',
     );
   }
 
   /// Ambil detail ability Pokemon
-  Future<Map<String, dynamic>> getPokemonAbilityDetail(String nameOrId) async {
-    return performanceAsync(
+  Future<Map<String, dynamic>> getPokemonAbilityDetail(String nameOrId,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan ID/nama
+    final cacheKey = 'pokemon_ability_detail_$nameOrId';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonAbilityDetail',
-      function: () async {
+      fetchFunction: () async {
         try {
           return await _pokemonRepository.getPokemonAbilityDetail(nameOrId);
         } catch (e, stackTrace) {
@@ -195,10 +264,18 @@ class PokemonService extends BaseService {
   }
 
   /// Ambil informasi species Pokemon
-  Future<Map<String, dynamic>> getPokemonSpecies(String idOrName) async {
-    return performanceAsync(
+  Future<Map<String, dynamic>> getPokemonSpecies(String idOrName,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan ID/nama
+    final cacheKey = 'pokemon_species_$idOrName';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getPokemonSpecies',
-      function: () async {
+      fetchFunction: () async {
         try {
           return await _pokemonRepository.getPokemonSpecies(idOrName);
         } catch (e, stackTrace) {
@@ -216,10 +293,21 @@ class PokemonService extends BaseService {
   }
 
   /// Ambil rantai evolusi Pokemon
-  Future<Map<String, dynamic>> getEvolutionChain(String url) async {
-    return performanceAsync(
+  Future<Map<String, dynamic>> getEvolutionChain(String url,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan URL
+    // Hapus http/https dan ganti slash dengan underscore untuk key yang aman
+    final safeUrl =
+        url.replaceAll(RegExp(r'https?://'), '').replaceAll('/', '_');
+    final cacheKey = 'evolution_chain_$safeUrl';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'PokemonService.getEvolutionChain',
-      function: () async {
+      fetchFunction: () async {
         try {
           return await _pokemonRepository.getEvolutionChain(url);
         } catch (e, stackTrace) {

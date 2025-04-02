@@ -6,6 +6,7 @@ import '../mahas/services/performance_service.dart';
 import '../mahas/services/initial_route_service.dart';
 import '../mahas/services/firebase_service.dart';
 import '../mahas/services/storage_service.dart';
+import '../mahas/services/cache_service.dart';
 
 // Logger dan Error Handler (singleton)
 final loggerServiceProvider = Provider<LoggerService>((ref) {
@@ -34,4 +35,9 @@ final firebaseServiceProvider = Provider<FirebaseService>((ref) {
 // Storage Service (lazy singleton)
 final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService.instance;
+});
+
+// Cache Service (singleton)
+final cacheServiceProvider = Provider<CacheService>((ref) {
+  return CacheService.instance;
 });

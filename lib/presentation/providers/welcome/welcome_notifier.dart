@@ -2,10 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:math';
 import '../../../core/base/base_state_notifier.dart';
-import '../../../core/utils/mahas.dart';
 import '../../../data/datasource/local/services/local_pokemon_service.dart';
 import '../../../data/models/api_response_model.dart';
-import '../../routes/app_routes.dart';
 import './welcome_state.dart';
 import 'welcome_provider.dart';
 
@@ -235,9 +233,6 @@ class WelcomeNotifier extends BaseStateNotifier<WelcomeState> {
 
         // Wait a bit to show 100% completion
         await Future.delayed(const Duration(seconds: 1));
-
-        // Navigate to home page after data is loaded
-        Mahas.routeToAndRemove(AppRoutes.home);
       } on TimeoutException {
         state = state.copyWith(
           isLoading: false,

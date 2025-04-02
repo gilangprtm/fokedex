@@ -4,6 +4,7 @@ import 'services/storage_service.dart';
 import 'services/logger_service.dart';
 import 'services/error_handler_service.dart';
 import 'services/initial_route_service.dart';
+import 'services/cache_service.dart';
 
 /// MahasService adalah kelas singleton yang mengelola inisialisasi aplikasi
 /// seperti firebase, local storage, dll.
@@ -22,6 +23,9 @@ class MahasService {
 
       // Inisialisasi error handler
       await initErrorHandler();
+
+      // Inisialisasi Cache Service
+      await initCache();
 
       // Inisialisasi Firebase (jika diperlukan)
       //await initFirebase();
@@ -59,47 +63,77 @@ class MahasService {
     }
   }
 
-  /// Inisialisasi error handler
+  /// Inisialisasi Error Handler
   static Future<void> initErrorHandler() async {
-    final logger = LoggerService.instance;
-    final errorHandler = ErrorHandlerService.instance;
-
-    // Contoh implementasi, bisa diganti dengan layanan pelaporan error seperti Firebase Crashlytics
-    errorHandler.setErrorReportFunction((error, stackTrace) async {
-      // Log error untuk keperluan debugging
-      logger.e(
-        'Error reported to error service',
-        error: error,
+    try {
+      final errorHandler = ErrorHandlerService.instance;
+      errorHandler.init();
+      LoggerService.instance
+          .i('✅ Error Handler initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Error Handler',
+        error: e,
         stackTrace: stackTrace,
-        tag: 'ERROR_REPORTING',
+        tag: 'MAHAS',
       );
-
-      // Di sini bisa tambahkan implementasi untuk report ke layanan lain
-      // Misalnya Firebase Crashlytics, Sentry, dll
-      return;
-    });
-
-    // Initialize global error catching
-    errorHandler.init();
-
-    logger.i('✅ Error Handler initialized successfully!', tag: 'MAHAS');
+      rethrow;
+    }
   }
 
-  /// Inisialisasi Firebase (menggunakan FirebaseService yang terpisah)
+  /// Inisialisasi Cache Service
+  static Future<void> initCache() async {
+    try {
+      await CacheService.instance.initialize();
+
+      // Cache service sudah di-refactor sehingga preemptive cleaning
+      // berjalan otomatis sebagai bagian dari initialize()
+      // Lihat implementasi di CacheService
+
+      LoggerService.instance
+          .i('✅ Cache Service initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Cache Service',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      rethrow;
+    }
+  }
+
+  /// Inisialisasi Firebase
   static Future<void> initFirebase() async {
-    final logger = LoggerService.instance;
-
-    await FirebaseService.instance.init();
-
-    logger.i('✅ Firebase initialized successfully!', tag: 'MAHAS');
+    try {
+      await FirebaseService.instance.init();
+      LoggerService.instance
+          .i('✅ Firebase initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Firebase',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      rethrow;
+    }
   }
 
-  /// Inisialisasi Storage (menggunakan StorageService yang terpisah)
+  /// Inisialisasi Storage
   static Future<void> initStorage() async {
-    final logger = LoggerService.instance;
-
-    await StorageService.instance.init();
-
-    logger.i('✅ Storage initialized successfully!', tag: 'MAHAS');
+    try {
+      await StorageService.instance.init();
+      LoggerService.instance
+          .i('✅ Storage initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Storage',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      rethrow;
+    }
   }
 }

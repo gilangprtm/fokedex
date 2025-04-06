@@ -1,32 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../../../data/datasource/models/api_response_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../data/models/api_response_model.dart';
+import '../../../../../data/models/pokemon_list_item_model.dart';
 import '../../../../../core/theme/app_color.dart';
 import '../../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../../core/utils/image_cache_utils.dart';
-import '../../../../providers/pokemon/pokemon_list_provider.dart';
+import '../../../../../core/utils/mahas.dart';
+import '../../../../routes/app_routes.dart';
+import '../../../../providers/pokemon/pokemon_list/pokemon_list_provider.dart';
 
-class PokemonGridItem extends StatelessWidget {
+/// A grid item displaying a Pokémon card with image, name, and ID
+/// This widget is optimized to only rebuild when necessary
+class PokemonGridItem extends ConsumerWidget {
   final ResourceListItem pokemon;
-  final VoidCallback? onTap;
 
   const PokemonGridItem({
     super.key,
     required this.pokemon,
-    this.onTap,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Extract ID from URL
     final pokemonId = pokemon.id;
 
-    // Get Pokemon details from provider
-    final provider = context.watch<PokemonListProvider>();
-    final pokemonDetails = provider.getPokemonDetails(pokemonId);
-    final activeTypeFilter = provider.activeTypeFilter;
+    // Watch only the minimum state needed for this item
+    final itemState = ref.watch(pokemonListProvider.select((state) => ({
+          'details': state.getPokemonDetails(pokemonId),
+          'activeFilter': state.activeTypeFilter,
+        })));
 
-    // Get primary type color
+    final pokemonDetails = itemState['details'] as PokemonList?;
+    final activeTypeFilter = itemState['activeFilter'] as String?;
+
+    // Determine the primary color for the card
     Color typeColor;
 
     // If there's an active type filter, use its color first
@@ -55,7 +62,17 @@ class PokemonGridItem extends StatelessWidget {
         pokemon.name.substring(0, 1).toUpperCase() + pokemon.name.substring(1);
 
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        // Navigate to detail page
+        Mahas.routeTo(
+          AppRoutes.pokemonDetail,
+          arguments: {
+            'id': pokemonId.toString(),
+            'name': pokemon.name,
+          },
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -114,7 +131,7 @@ class PokemonGridItem extends StatelessWidget {
               ),
             ),
 
-            // Pokemon name
+            // Pokemon name with type-colored background
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(

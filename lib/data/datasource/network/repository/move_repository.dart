@@ -1,7 +1,6 @@
 import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/move_model.dart';
-import '../../../../core/env/app_environment.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../../data/models/move_model.dart';
 
 /// Repository untuk mengambil data dari Move endpoint
 class MoveRepository extends BaseRepository {
@@ -10,10 +9,9 @@ class MoveRepository extends BaseRepository {
     int offset = 0,
     int? limit,
   }) async {
-    final moveLimit = limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
+    final moveLimit = limit ?? 20;
     final String endpoint = '/move?offset=$offset&limit=$moveLimit';
 
-    logInfo('Fetching Move list: $endpoint', tag: 'MoveRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -33,7 +31,6 @@ class MoveRepository extends BaseRepository {
   Future<Move> getMoveDetail(String idOrName) async {
     final String endpoint = '/move/$idOrName';
 
-    logInfo('Fetching Move detail: $endpoint', tag: 'MoveRepository');
     try {
       final response = await dioService.get(endpoint);
       // Konversi data JSON ke model Move

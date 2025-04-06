@@ -4,7 +4,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../../../../core/di/service_locator.dart';
 import '../../../../core/mahas/services/logger_service.dart';
 
 /// Helper class untuk mengelola koneksi database SQLite dan operasi dasar
@@ -27,7 +26,7 @@ class DBLocal {
   static const String tableSettings = 'settings';
 
   // Logger
-  final LoggerService _logger = serviceLocator<LoggerService>();
+  final LoggerService _logger = LoggerService.instance;
 
   // Mendapatkan instance database
   Future<Database> get database async {

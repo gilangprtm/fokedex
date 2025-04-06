@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
 import '../../../../core/mahas/widget/mahas_card.dart';
@@ -8,49 +8,37 @@ import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/pokemon_model.dart';
-import '../../../../data/datasource/models/evolution_stage_model.dart';
+import '../../../../data/models/pokemon_model.dart';
 import '../../../../core/utils/pokemon_type_utils.dart';
 import '../../../../core/utils/mahas.dart';
 import '../../../../core/utils/image_cache_utils.dart';
-import '../../../providers/pokemon/pokemon_detail_provider.dart';
+import '../../../providers/pokemon/pokemon_detail/pokemon_detail_provider.dart';
 import 'widgets/pokemon_stats_widget.dart';
 import 'widgets/pokemon_type_badge.dart';
 import 'widgets/pokemon_evolution_widget.dart';
 import 'widgets/pokemon_moves_widget.dart';
 
-class PokemonDetailPage extends StatelessWidget {
+class PokemonDetailPage extends ConsumerWidget {
   const PokemonDetailPage({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<PokemonDetailProvider>(
-      createProvider: () => PokemonDetailProvider(),
-      builder: (context, provider) => _buildDetailPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Access the notifier for method calls
+    final notifier = ref.read(pokemonDetailProvider.notifier);
 
-  Widget _buildDetailPage(
-      BuildContext context, PokemonDetailProvider provider) {
-    return PropertySelector<PokemonDetailProvider, Map<String, dynamic>>(
-      property: 'pokemon',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'pokemon': provider.pokemon,
-        'currentPokemonName': provider.currentPokemonName,
-        'currentPokemonId': provider.currentPokemonId,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final pokemon = data['pokemon'] as Pokemon?;
-        final currentPokemonName = data['currentPokemonName'] as String;
-        final currentPokemonId = data['currentPokemonId'] as String;
+    // Watch only base state properties for main UI render decisions
+    return Consumer(
+      builder: (context, ref, child) {
+        final state = ref.watch(pokemonDetailProvider);
+        final isLoading = state.isLoading;
+        final error = state.error;
+        final hasError = error != null;
+        final errorMessage = error?.toString() ?? '';
+        final pokemon = state.pokemon;
+        final currentPokemonName = state.currentPokemonName;
+        final currentPokemonId = state.currentPokemonId;
 
         // Show loading state
         if (isLoading) {
@@ -98,7 +86,7 @@ class PokemonDetailPage extends StatelessWidget {
                   MahasButton(
                     text: 'Try Again',
                     onPressed: () =>
-                        provider.loadPokemonDetail(currentPokemonId),
+                        notifier.loadPokemonDetail(currentPokemonId),
                     type: ButtonType.primary,
                     color: AppColors.pokemonRed,
                   ),
@@ -129,24 +117,13 @@ class PokemonDetailPage extends StatelessWidget {
         }
 
         // Show Pokemon details
-        return _buildPokemonDetails(context, provider, pokemon);
+        return _buildPokemonDetails(context, ref, pokemon);
       },
     );
   }
 
-  // Determine app bar color based on Pokemon type
-  Color _getTypeColor(Pokemon pokemon) {
-    // Get the primary type color if available
-    if (pokemon.types != null && pokemon.types!.isNotEmpty) {
-      final primaryType = pokemon.types!.first.type.name;
-      return PokemonTypeUtils.getTypeColor(primaryType);
-    }
-    // Default to red if no type info
-    return AppColors.pokemonRed;
-  }
-
   Widget _buildPokemonDetails(
-      BuildContext context, PokemonDetailProvider provider, Pokemon pokemon) {
+      BuildContext context, WidgetRef ref, Pokemon pokemon) {
     final primaryType = pokemon.types?.firstOrNull?.type.name ?? 'normal';
     final Color appBarColor = PokemonTypeUtils.getTypeColor(primaryType);
 
@@ -161,7 +138,7 @@ class PokemonDetailPage extends StatelessWidget {
               child: CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  _buildSliverAppBar(context, provider, pokemon, appBarColor),
+                  _buildSliverAppBar(context, ref, pokemon, appBarColor),
 
                   // Add padding at the bottom
                   const SliverToBoxAdapter(
@@ -183,15 +160,18 @@ class PokemonDetailPage extends StatelessWidget {
                 inactiveTextColor: Colors.grey.shade700,
                 height: 45.0,
                 borderRadius: 15,
+                onTabChanged: (index) => ref
+                    .read(pokemonDetailProvider.notifier)
+                    .setSelectedTab(index),
                 tabViews: [
                   // About Tab
-                  _buildAboutTab(context, provider, pokemon),
+                  _buildAboutTab(context, ref, pokemon),
 
                   // Stats Tab
                   _buildStatsTab(pokemon),
 
                   // Evolution Tab
-                  _buildEvolutionTab(provider),
+                  _buildEvolutionTab(ref),
 
                   // Moves Tab
                   _buildMovesTab(pokemon),
@@ -205,15 +185,11 @@ class PokemonDetailPage extends StatelessWidget {
   }
 
   // About Tab
-  Widget _buildAboutTab(
-      BuildContext context, PokemonDetailProvider provider, Pokemon pokemon) {
-    return PropertySelector<PokemonDetailProvider, Map<String, dynamic>>(
-      property: 'speciesData',
-      selector: (provider) => {
-        'speciesData': provider.speciesData,
-      },
-      builder: (context, data) {
-        final speciesData = data['speciesData'] as Map<String, dynamic>?;
+  Widget _buildAboutTab(BuildContext context, WidgetRef ref, Pokemon pokemon) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final state = ref.watch(pokemonDetailProvider);
+        final description = state.description;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
@@ -238,9 +214,7 @@ class PokemonDetailPage extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       // Show description
-                      if (speciesData != null &&
-                          speciesData['flavor_text_entries'] != null &&
-                          speciesData['flavor_text_entries'].isNotEmpty) ...[
+                      if (description != null) ...[
                         Text(
                           'Description',
                           style: AppTypography.subtitle1
@@ -248,7 +222,7 @@ class PokemonDetailPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          provider.getDescription(),
+                          description,
                           style: AppTypography.bodyText1,
                         ),
                       ],
@@ -308,16 +282,22 @@ class PokemonDetailPage extends StatelessWidget {
   }
 
   // Evolution Tab
-  Widget _buildEvolutionTab(PokemonDetailProvider provider) {
-    return PropertySelector<PokemonDetailProvider, Map<String, dynamic>>(
-      property: 'evolutionStages',
-      selector: (provider) => {
-        'evolutionStages': provider.evolutionStages,
-        'currentPokemonId': provider.currentPokemonId,
-      },
-      builder: (context, data) {
-        final evolutionStages = data['evolutionStages'] as List<EvolutionStage>;
-        final currentPokemonId = data['currentPokemonId'] as String;
+  Widget _buildEvolutionTab(WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final evolutionStages = ref.watch(
+            pokemonDetailProvider.select((state) => state.evolutionStages));
+        final currentPokemonId = ref.watch(
+            pokemonDetailProvider.select((state) => state.currentPokemonId));
+        // We use notifier's isLoadingEvolution to avoid rebuilds when main isLoading changes
+        final isLoading =
+            ref.read(pokemonDetailProvider.notifier).isLoadingEvolution;
+
+        if (isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing8),
@@ -394,8 +374,8 @@ class PokemonDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context,
-      PokemonDetailProvider provider, Pokemon pokemon, Color appBarColor) {
+  Widget _buildSliverAppBar(
+      BuildContext context, WidgetRef ref, Pokemon pokemon, Color appBarColor) {
     return SliverAppBar(
       expandedHeight: 300.0,
       floating: false,
@@ -434,14 +414,14 @@ class PokemonDetailPage extends StatelessWidget {
                     // Pokemon ID
                     Text(
                       '#${pokemon.id.toString().padLeft(3, '0')}',
-                      style: AppTypography.pokemonId.copyWith(
+                      style: AppTypography.headline6.copyWith(
                         color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     // Pokemon Name
                     Text(
                       _capitalizeFirstLetter(pokemon.name),
-                      style: AppTypography.pokemonName.copyWith(
+                      style: AppTypography.headline5.copyWith(
                         color: Colors.white,
                         fontSize: 30,
                       ),
@@ -460,9 +440,7 @@ class PokemonDetailPage extends StatelessWidget {
               child: Hero(
                 tag: 'pokemon-${pokemon.id}',
                 child: ImageCacheUtils.buildPokemonImage(
-                  imageUrl:
-                      pokemon.sprites?.other?.officialArtwork?.frontDefault ??
-                          (pokemon.sprites?.frontDefault ?? ''),
+                  imageUrl: pokemon.officialArtworkImageUrl,
                   height: 200,
                   width: 200,
                   progressColor: Colors.white,
@@ -599,13 +577,5 @@ class PokemonDetailPage extends StatelessWidget {
   String _capitalizeFirstLetter(String text) {
     if (text.isEmpty) return text;
     return text.substring(0, 1).toUpperCase() + text.substring(1);
-  }
-
-  String _cleanDescription(String description) {
-    // Remove newlines and duplicate spaces
-    return description
-        .replaceAll('\n', ' ')
-        .replaceAll('\f', ' ')
-        .replaceAll(RegExp(r'\s+'), ' ');
   }
 }

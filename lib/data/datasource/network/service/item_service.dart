@@ -1,6 +1,6 @@
-import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/item_model.dart';
+import '../../../../../../core/base/base_network.dart';
+import '../../../../../data/models/api_response_model.dart';
+import '../../../../../data/models/item_model.dart';
 import '../repository/item_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Item
@@ -11,10 +11,18 @@ class ItemService extends BaseService {
   Future<PaginatedApiResponse<ResourceListItem>> getItemList({
     int offset = 0,
     int? limit,
+    bool forceRefresh = false,
   }) async {
-    return performanceAsync(
+    // Cache key yang unik berdasarkan parameter
+    final cacheKey = 'items_list_${offset}_${limit ?? "all"}';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'ItemService.getItemList',
-      function: () async {
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _itemRepository.getItemList(
@@ -31,15 +39,27 @@ class ItemService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => PaginatedApiResponse<ResourceListItem>.fromJson(
+        json,
+        (item) => ResourceListItem.fromJson(item),
+      ),
       tag: 'ItemService',
     );
   }
 
   /// Ambil detail Item berdasarkan ID atau nama
-  Future<Item> getItemDetail(String idOrName) async {
-    return performanceAsync(
+  Future<Item> getItemDetail(String idOrName,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan ID/nama
+    final cacheKey = 'item_detail_$idOrName';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
+      forceRefresh: forceRefresh,
       operationName: 'ItemService.getItemDetail',
-      function: () async {
+      fetchFunction: () async {
         try {
           return await _itemRepository.getItemDetail(idOrName);
         } catch (e, stackTrace) {
@@ -52,6 +72,7 @@ class ItemService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => Item.fromJson(json),
       tag: 'ItemService',
     );
   }

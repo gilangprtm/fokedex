@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -9,23 +9,18 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/mahas.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/location/location_list_provider.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../providers/location/location_list/location_list_provider.dart';
 import '../../../routes/app_routes.dart';
 
-class LocationListPage extends StatelessWidget {
+class LocationListPage extends ConsumerWidget {
   const LocationListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<LocationListProvider>(
-      createProvider: () => LocationListProvider(),
-      builder: (context, provider) => _buildLocationListPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch loading, error states and items at the top level
+    final notifier = ref.read(locationListProvider.notifier);
 
-  Widget _buildLocationListPage(
-      BuildContext context, LocationListProvider provider) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -39,113 +34,115 @@ class LocationListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          MahasSearchBar(
-            controller: provider.searchController,
-            hintText: 'Search Locations',
-            onChanged: provider.onSearchChanged,
-            onClear: provider.clearSearch,
+          Consumer(
+            builder: (context, ref, _) {
+              final searchController = ref.watch(locationListProvider
+                  .select((state) => state.searchController));
+              return MahasSearchBar(
+                controller: searchController,
+                hintText: 'Search Locations',
+                onChanged: (value) => notifier.onSearchChanged(value),
+                onClear: notifier.clearSearch,
+              );
+            },
           ),
 
-          // Location list
+          // Item list
           Expanded(
-            child: _buildLocationList(context, provider),
+            child: _buildItemList(context, ref),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLocationList(
-      BuildContext context, LocationListProvider provider) {
-    return PropertySelector<LocationListProvider, Map<String, dynamic>>(
-      property: 'filteredLocations',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'filteredLocations': provider.filteredLocations,
-        'hasMore': provider.hasMore,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final filteredLocations =
-            data['filteredLocations'] as List<ResourceListItem>;
-        final hasMore = data['hasMore'] as bool;
+  Widget _buildItemList(BuildContext context, WidgetRef ref) {
+    final isLoading =
+        ref.watch(locationListProvider.select((state) => state.isLoading));
+    final error =
+        ref.watch(locationListProvider.select((state) => state.error));
+    final locations = ref
+        .watch(locationListProvider.select((state) => state.displayLocations));
+    final hasMore =
+        ref.watch(locationListProvider.select((state) => state.hasMore));
+    final notifier = ref.read(locationListProvider.notifier);
 
-        if (hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline,
-                    size: 48, color: AppColors.errorColor),
-                const SizedBox(height: 16),
-                Text(
-                  'Error loading Locations',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  errorMessage,
-                  style: AppTypography.bodyText2,
-                ),
-                const SizedBox(height: 16),
-                MahasButton(
-                  text: 'Retry',
-                  onPressed: () => provider.refresh(),
-                  type: ButtonType.primary,
-                  color: AppColors.pokemonRed,
-                ),
-              ],
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline,
+                size: 48, color: AppColors.errorColor),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading Items',
+              style: AppTypography.headline6,
             ),
-          );
-        }
-
-        if (isLoading && filteredLocations.isEmpty) {
-          return const MahasLoader(isLoading: true);
-        }
-
-        if (filteredLocations.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.location_off,
-                    size: 48, color: AppColors.pokemonGray),
-                const SizedBox(height: 16),
-                Text(
-                  'No Locations Found',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Try changing your search criteria',
-                  style: AppTypography.bodyText2,
-                ),
-                const SizedBox(height: 16),
-                MahasButton(
-                  text: 'Clear Search',
-                  onPressed: () => provider.clearSearch(),
-                  type: ButtonType.primary,
-                  color: AppColors.pokemonRed,
-                ),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              error.toString(),
+              style: AppTypography.bodyText2,
             ),
-          );
-        }
+            const SizedBox(height: 16),
+            MahasButton(
+              text: 'Retry',
+              onPressed: () => notifier.refresh(),
+              type: ButtonType.primary,
+              color: AppColors.pokemonRed,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isLoading && locations.isEmpty) {
+      return const MahasLoader(isLoading: true);
+    }
+
+    if (locations.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.backpack, size: 48, color: AppColors.pokemonGray),
+            const SizedBox(height: 16),
+            Text(
+              'No Locations Found',
+              style: AppTypography.headline6,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try changing your search criteria',
+              style: AppTypography.bodyText2,
+            ),
+            const SizedBox(height: 16),
+            MahasButton(
+              text: 'Clear Search',
+              onPressed: () => notifier.clearSearch(),
+              type: ButtonType.primary,
+              color: AppColors.pokemonRed,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Consumer(
+      builder: (context, ref, _) {
+        final scrollController = ref.watch(
+            locationListProvider.select((state) => state.scrollController));
 
         return RefreshIndicator(
-          onRefresh: () => provider.refresh(),
+          onRefresh: () => notifier.refresh(),
           child: ListView.builder(
-            controller: provider.scrollController,
+            controller: scrollController,
             padding: const EdgeInsets.all(AppTheme.spacing16),
-            itemCount: filteredLocations.length + (hasMore ? 1 : 0),
+            itemCount: locations.length + (hasMore ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index < filteredLocations.length) {
-                final location = filteredLocations[index];
-                return _buildLocationItem(context, location);
+              if (index < locations.length) {
+                final location = locations[index];
+                return _buildItemItem(context, location);
               } else {
                 return Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -163,17 +160,17 @@ class LocationListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationItem(BuildContext context, ResourceListItem location) {
-    // Extract the location ID from the URL to potentially customize the tile
-    final url = location.url;
+  Widget _buildItemItem(BuildContext context, ResourceListItem item) {
+    // Extract the item ID from the URL to potentially customize the tile
+    final url = item.url;
     final uri = Uri.parse(url);
     final pathSegments = uri.pathSegments;
-    final locationId = int.parse(pathSegments[pathSegments.length - 2]);
+    final itemId = int.parse(pathSegments[pathSegments.length - 2]);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: MahasTile(
-        onTap: () => _navigateToLocationDetail(context, location),
+        onTap: () => _navigateToLocationDetail(context, item),
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
         backgroundColor: Colors.white,
         leading: Container(
@@ -185,7 +182,7 @@ class LocationListPage extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              '#${locationId.toString().padLeft(3, '0')}',
+              '#${itemId.toString().padLeft(3, '0')}',
               style: const TextStyle(
                 color: AppColors.pokemonRed,
                 fontWeight: FontWeight.bold,
@@ -195,7 +192,7 @@ class LocationListPage extends StatelessWidget {
           ),
         ),
         title: Text(
-          _formatLocationName(location.name),
+          _formatItemName(item.name),
           style: AppTypography.subtitle1.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -205,26 +202,19 @@ class LocationListPage extends StatelessWidget {
     );
   }
 
-  void _navigateToLocationDetail(
-      BuildContext context, ResourceListItem location) {
-    // Extract the location ID from the URL
-    final url = location.url;
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-    final locationId = pathSegments[pathSegments.length - 2];
-
-    // Navigate to location detail page
+  void _navigateToLocationDetail(BuildContext context, ResourceListItem item) {
+    // Navigate to item detail page
     Mahas.routeTo(
       AppRoutes.locationDetail,
       arguments: {
-        'id': locationId,
-        'name': location.name,
+        'id': item.id,
+        'name': item.name,
       },
     );
   }
 
-  String _formatLocationName(String name) {
-    // Format nama lokasi (contoh: "kanto-route-1" menjadi "Kanto Route 1")
+  String _formatItemName(String name) {
+    // Format nama item (contoh: "master-ball" menjadi "Master Ball")
     return name
         .split('-')
         .map((word) =>

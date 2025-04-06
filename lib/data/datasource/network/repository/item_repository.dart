@@ -1,7 +1,6 @@
 import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/item_model.dart';
-import '../../../../core/env/app_environment.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../../data/models/item_model.dart';
 
 /// Repository untuk mengambil data dari Item endpoint
 class ItemRepository extends BaseRepository {
@@ -10,10 +9,9 @@ class ItemRepository extends BaseRepository {
     int offset = 0,
     int? limit,
   }) async {
-    final itemLimit = limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
+    final itemLimit = limit ?? 20;
     final String endpoint = '/item?offset=$offset&limit=$itemLimit';
 
-    logInfo('Fetching Item list: $endpoint', tag: 'ItemRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -33,7 +31,6 @@ class ItemRepository extends BaseRepository {
   Future<Item> getItemDetail(String idOrName) async {
     final String endpoint = '/item/$idOrName';
 
-    logInfo('Fetching Item detail: $endpoint', tag: 'ItemRepository');
     try {
       final response = await dioService.get(endpoint);
       // Konversi data JSON ke model Item

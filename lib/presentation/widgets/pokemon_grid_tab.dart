@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_typografi.dart';
 import '../../core/utils/image_cache_utils.dart';
 import '../../core/utils/mahas.dart';
-import '../../data/datasource/models/pokemon_model.dart';
+import '../../data/models/pokemon_model.dart';
 import '../routes/app_routes.dart';
 
 class PokemonGridTab extends StatelessWidget {

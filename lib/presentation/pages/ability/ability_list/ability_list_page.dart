@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_searchbar.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
@@ -9,23 +9,18 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typografi.dart';
 import '../../../../core/utils/mahas.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/ability/ability_list_provider.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../providers/ability/ability_list/ability_list_provider.dart';
 import '../../../routes/app_routes.dart';
 
-class AbilityListPage extends StatelessWidget {
+class AbilityListPage extends ConsumerWidget {
   const AbilityListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<AbilityListProvider>(
-      createProvider: () => AbilityListProvider(),
-      builder: (context, provider) => _buildAbilityListPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch loading, error states and items at the top level
+    final notifier = ref.read(abilityListProvider.notifier);
 
-  Widget _buildAbilityListPage(
-      BuildContext context, AbilityListProvider provider) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -39,118 +34,114 @@ class AbilityListPage extends StatelessWidget {
       body: Column(
         children: [
           // Search bar
-          PropertySelector<AbilityListProvider, String>(
-            property: 'searchQuery',
-            selector: (provider) => provider.searchQuery,
-            builder: (context, searchQuery) {
+          Consumer(
+            builder: (context, ref, _) {
+              final searchController = ref.watch(abilityListProvider
+                  .select((state) => state.searchController));
               return MahasSearchBar(
-                controller: provider.searchController,
+                controller: searchController,
                 hintText: 'Search Abilities',
-                onChanged: provider.onSearchChanged,
-                onClear: provider.clearSearch,
+                onChanged: (value) => notifier.onSearchChanged(value),
+                onClear: notifier.clearSearch,
               );
             },
           ),
 
-          // Ability list
+          // Item list
           Expanded(
-            child: _buildAbilityList(context, provider),
+            child: _buildItemList(context, ref),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAbilityList(BuildContext context, AbilityListProvider provider) {
-    return PropertySelector<AbilityListProvider, Map<String, dynamic>>(
-      property: 'filteredAbilities',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'filteredAbilities': provider.filteredAbilities,
-        'hasMore': provider.hasMore,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final filteredAbilities =
-            data['filteredAbilities'] as List<ResourceListItem>;
-        final hasMore = data['hasMore'] as bool;
+  Widget _buildItemList(BuildContext context, WidgetRef ref) {
+    final isLoading =
+        ref.watch(abilityListProvider.select((state) => state.isLoading));
+    final error = ref.watch(abilityListProvider.select((state) => state.error));
+    final items = ref
+        .watch(abilityListProvider.select((state) => state.displayAbilities));
+    final hasMore =
+        ref.watch(abilityListProvider.select((state) => state.hasMore));
+    final notifier = ref.read(abilityListProvider.notifier);
 
-        if (hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline,
-                    size: 48, color: AppColors.errorColor),
-                const SizedBox(height: 16),
-                Text(
-                  'Error loading Abilities',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  errorMessage,
-                  style: AppTypography.bodyText2,
-                ),
-                const SizedBox(height: 16),
-                MahasButton(
-                  text: 'Retry',
-                  onPressed: () => provider.loadAbilities(refresh: true),
-                  type: ButtonType.primary,
-                  color: AppColors.pokemonRed,
-                ),
-              ],
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline,
+                size: 48, color: AppColors.errorColor),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading Abilities',
+              style: AppTypography.headline6,
             ),
-          );
-        }
-
-        if (isLoading && filteredAbilities.isEmpty) {
-          return const MahasLoader(isLoading: true);
-        }
-
-        if (filteredAbilities.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.auto_awesome,
-                    size: 48, color: AppColors.pokemonGray),
-                const SizedBox(height: 16),
-                Text(
-                  'No Abilities Found',
-                  style: AppTypography.headline6,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Try changing your search criteria',
-                  style: AppTypography.bodyText2,
-                ),
-                const SizedBox(height: 16),
-                MahasButton(
-                  text: 'Clear Search',
-                  onPressed: () => provider.clearSearch(),
-                  type: ButtonType.primary,
-                  color: AppColors.pokemonRed,
-                ),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              error.toString(),
+              style: AppTypography.bodyText2,
             ),
-          );
-        }
+            const SizedBox(height: 16),
+            MahasButton(
+              text: 'Retry',
+              onPressed: () => notifier.refresh(),
+              type: ButtonType.primary,
+              color: AppColors.pokemonRed,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isLoading && items.isEmpty) {
+      return const MahasLoader(isLoading: true);
+    }
+
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.backpack, size: 48, color: AppColors.pokemonGray),
+            const SizedBox(height: 16),
+            Text(
+              'No Abilities Found',
+              style: AppTypography.headline6,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try changing your search criteria',
+              style: AppTypography.bodyText2,
+            ),
+            const SizedBox(height: 16),
+            MahasButton(
+              text: 'Clear Search',
+              onPressed: () => notifier.clearSearch(),
+              type: ButtonType.primary,
+              color: AppColors.pokemonRed,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Consumer(
+      builder: (context, ref, _) {
+        final scrollController = ref.watch(
+            abilityListProvider.select((state) => state.scrollController));
 
         return RefreshIndicator(
-          onRefresh: () => provider.refresh(),
+          onRefresh: () => notifier.refresh(),
           child: ListView.builder(
-            controller: provider.scrollController,
+            controller: scrollController,
             padding: const EdgeInsets.all(AppTheme.spacing16),
-            itemCount: filteredAbilities.length + (hasMore ? 1 : 0),
+            itemCount: items.length + (hasMore ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index < filteredAbilities.length) {
-                final ability = filteredAbilities[index];
-                return _buildAbilityItem(context, ability);
+              if (index < items.length) {
+                final item = items[index];
+                return _buildItemItem(context, item);
               } else {
                 return Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -168,11 +159,17 @@ class AbilityListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAbilityItem(BuildContext context, ResourceListItem ability) {
+  Widget _buildItemItem(BuildContext context, ResourceListItem item) {
+    // Extract the item ID from the URL to potentially customize the tile
+    final url = item.url;
+    final uri = Uri.parse(url);
+    final pathSegments = uri.pathSegments;
+    final itemId = int.parse(pathSegments[pathSegments.length - 2]);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: MahasTile(
-        onTap: () => _navigateToAbilityDetail(context, ability),
+        onTap: () => _navigateToAbilityDetail(context, item),
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
         backgroundColor: Colors.white,
         leading: Container(
@@ -184,7 +181,7 @@ class AbilityListPage extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              '#${ability.id.toString().padLeft(3, '0')}',
+              '#${itemId.toString().padLeft(3, '0')}',
               style: const TextStyle(
                 color: AppColors.pokemonRed,
                 fontWeight: FontWeight.bold,
@@ -194,7 +191,7 @@ class AbilityListPage extends StatelessWidget {
           ),
         ),
         title: Text(
-          _formatAbilityName(ability.name),
+          _formatItemName(item.name),
           style: AppTypography.subtitle1.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -204,18 +201,19 @@ class AbilityListPage extends StatelessWidget {
     );
   }
 
-  void _navigateToAbilityDetail(
-      BuildContext context, ResourceListItem ability) {
+  void _navigateToAbilityDetail(BuildContext context, ResourceListItem item) {
+    // Navigate to item detail page
     Mahas.routeTo(
       AppRoutes.abilityDetail,
       arguments: {
-        'name': ability.name,
+        'id': item.id,
+        'name': item.name,
       },
     );
   }
 
-  String _formatAbilityName(String name) {
-    // Format nama ability (contoh: "overgrow" menjadi "Overgrow")
+  String _formatItemName(String name) {
+    // Format nama item (contoh: "master-ball" menjadi "Master Ball")
     return name
         .split('-')
         .map((word) =>

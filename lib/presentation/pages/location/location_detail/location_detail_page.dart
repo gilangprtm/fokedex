@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -7,234 +7,210 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/api_response_model.dart';
-import '../../../providers/location/location_detail_provider.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../providers/location/location_detail/location_detail_provider.dart';
 import '../../../routes/app_routes.dart';
 import '../../../../core/utils/mahas.dart';
 
-class LocationDetailPage extends StatelessWidget {
+class LocationDetailPage extends ConsumerWidget {
   const LocationDetailPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<LocationDetailProvider>(
-      createProvider: () => LocationDetailProvider(),
-      builder: (context, provider) => _buildDetailPage(context, provider),
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch essential state at top level
+    final isLoading =
+        ref.watch(locationDetailProvider.select((state) => state.isLoading));
+    final error =
+        ref.watch(locationDetailProvider.select((state) => state.error));
+    final location =
+        ref.watch(locationDetailProvider.select((state) => state.location));
+    final currentLocationName = ref.watch(
+        locationDetailProvider.select((state) => state.currentLocationName));
+    final currentLocationId = ref.watch(
+        locationDetailProvider.select((state) => state.currentLocationId));
+    final notifier = ref.read(locationDetailProvider.notifier);
+
+    // Show loading state
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _capitalizeFirstLetter(currentLocationName),
+            style: AppTypography.headline6.copyWith(color: Colors.white),
+          ),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: const MahasLoader(isLoading: true),
+      );
+    }
+
+    // Show error state
+    if (error != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _capitalizeFirstLetter(currentLocationName),
+            style: AppTypography.headline6.copyWith(color: Colors.white),
+          ),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  size: 48, color: AppColors.errorColor),
+              const SizedBox(height: 16),
+              Text(
+                'Error loading location details',
+                style: AppTypography.headline6,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: AppTypography.bodyText2,
+              ),
+              const SizedBox(height: 16),
+              MahasButton(
+                text: 'Try Again',
+                onPressed: () => notifier.loadLocationDetail(
+                    currentLocationId.isNotEmpty
+                        ? currentLocationId
+                        : currentLocationName),
+                type: ButtonType.primary,
+                color: AppColors.pokemonRed,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // No data loaded yet
+    if (location == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _capitalizeFirstLetter(currentLocationName),
+            style: AppTypography.headline6.copyWith(color: Colors.white),
+          ),
+          backgroundColor: AppColors.pokemonRed,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Text(
+            'No data available',
+            style: AppTypography.bodyText1,
+          ),
+        ),
+      );
+    }
+
+    // Show Location details
+    return Scaffold(
+      body: _buildBody(context, ref),
     );
   }
 
-  Widget _buildDetailPage(
-      BuildContext context, LocationDetailProvider provider) {
-    return PropertySelector<LocationDetailProvider, Map<String, dynamic>>(
-      property: 'location',
-      selector: (provider) => {
-        'isLoading': provider.isLoading,
-        'hasError': provider.hasError,
-        'errorMessage': provider.errorMessage,
-        'location': provider.location,
-        'currentLocationName': provider.currentLocationName,
-        'currentLocationId': provider.currentLocationId,
-      },
-      builder: (context, data) {
-        final isLoading = data['isLoading'] as bool;
-        final hasError = data['hasError'] as bool;
-        final errorMessage = data['errorMessage'] as String;
-        final location = data['location'];
-        final currentLocationName = data['currentLocationName'] as String;
-        final currentLocationId = data['currentLocationId'] as String;
-
-        // Show loading state
-        if (isLoading) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                _capitalizeFirstLetter(currentLocationName),
-                style: AppTypography.headline6.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
+  Widget _buildBody(BuildContext context, WidgetRef ref) {
+    return CustomScrollView(
+      slivers: [
+        // Custom app bar with Location basic info
+        _buildSliverAppBar(context, ref),
+        // Add padding at the bottom
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 16),
+        ),
+        // Tab Bar with content
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height -
+                100, // Subtract app bar height
+            child: MahasPillTabBar(
+              tabLabels: const ['Overview', 'Areas'],
+              tabViews: [
+                // Overview Tab
+                _buildOverviewTab(ref),
+                // Areas Tab
+                _buildAreasTab(ref),
+              ],
+              activeColor: AppColors.pokemonRed,
+              backgroundColor: Colors.grey[200]!,
+              activeTextColor: Colors.white,
+              inactiveTextColor: Colors.black87,
+              height: 45,
+              borderRadius: 15,
             ),
-            body: const MahasLoader(isLoading: true),
-          );
-        }
+          ),
+        ),
+        // Add padding at the bottom
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 32),
+        ),
+      ],
+    );
+  }
 
-        // Show error state
-        if (hasError) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                _capitalizeFirstLetter(currentLocationName),
-                style: AppTypography.headline6.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
+  Widget _buildSliverAppBar(BuildContext context, WidgetRef ref) {
+    final currentLocationName = ref.watch(
+        locationDetailProvider.select((state) => state.currentLocationName));
+
+    return SliverAppBar(
+      expandedHeight: 200.0,
+      floating: false,
+      pinned: true,
+      backgroundColor: AppColors.pokemonRed,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          children: [
+            // Background color
+            Container(
+              color: AppColors.pokemonRed,
             ),
-            body: Center(
+
+            // Decorative Poké Ball pattern in the background
+            Positioned(
+              right: -50,
+              top: -50,
+              child: Icon(
+                Icons.catching_pokemon,
+                size: 200,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+
+            // Location name
+            Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline,
-                      size: 48, color: AppColors.errorColor),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32),
                   Text(
-                    'Error loading location details',
-                    style: AppTypography.headline6,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    errorMessage,
-                    style: AppTypography.bodyText2,
-                  ),
-                  const SizedBox(height: 16),
-                  MahasButton(
-                    text: 'Try Again',
-                    onPressed: () => provider.loadLocationDetail(
-                        currentLocationId.isNotEmpty
-                            ? currentLocationId
-                            : currentLocationName),
-                    type: ButtonType.primary,
-                    color: AppColors.pokemonRed,
+                    _capitalizeFirstLetter(
+                        currentLocationName.replaceAll('-', ' ')),
+                    style: AppTypography.headline5.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-          );
-        }
-
-        // No data loaded yet
-        if (location == null) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                _capitalizeFirstLetter(currentLocationName),
-                style: AppTypography.headline6.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.pokemonRed,
-              elevation: 0,
-            ),
-            body: Center(
-              child: Text(
-                'No data available',
-                style: AppTypography.bodyText1,
-              ),
-            ),
-          );
-        }
-
-        // Show Location details
-        return Scaffold(
-          body: _buildBody(context, provider),
-        );
-      },
-    );
-  }
-
-  Widget _buildBody(BuildContext context, LocationDetailProvider provider) {
-    return PropertySelector<LocationDetailProvider, dynamic>(
-      property: 'location',
-      selector: (provider) => provider.location,
-      builder: (context, location) {
-        return CustomScrollView(
-          slivers: [
-            // Custom app bar with Location basic info
-            _buildSliverAppBar(context, provider),
-            // Add padding at the bottom
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16),
-            ),
-            // Tab Bar with content
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height -
-                    100, // Subtract app bar height
-                child: MahasPillTabBar(
-                  tabLabels: const ['Overview', 'Areas'],
-                  tabViews: [
-                    // Overview Tab
-                    _buildOverviewTab(provider),
-                    // Areas Tab
-                    _buildAreasTab(provider),
-                  ],
-                  activeColor: AppColors.pokemonRed,
-                  backgroundColor: Colors.grey[200]!,
-                  activeTextColor: Colors.white,
-                  inactiveTextColor: Colors.black87,
-                  height: 45,
-                  borderRadius: 15,
-                ),
-              ),
-            ),
-            // Add padding at the bottom
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 32),
-            ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildSliverAppBar(
-      BuildContext context, LocationDetailProvider provider) {
-    return PropertySelector<LocationDetailProvider, String>(
-      property: 'currentLocationName',
-      selector: (provider) => provider.currentLocationName,
-      builder: (context, currentLocationName) {
-        return SliverAppBar(
-          expandedHeight: 200.0,
-          floating: false,
-          pinned: true,
-          backgroundColor: AppColors.pokemonRed,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Stack(
-              children: [
-                // Background color
-                Container(
-                  color: AppColors.pokemonRed,
-                ),
+  Widget _buildOverviewTab(WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final location =
+            ref.watch(locationDetailProvider.select((state) => state.location));
 
-                // Decorative Poké Ball pattern in the background
-                Positioned(
-                  right: -50,
-                  top: -50,
-                  child: Icon(
-                    Icons.catching_pokemon,
-                    size: 200,
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
-                ),
-
-                // Location name
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 32),
-                      Text(
-                        _capitalizeFirstLetter(
-                            currentLocationName.replaceAll('-', ' ')),
-                        style: AppTypography.headline5.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildOverviewTab(LocationDetailProvider provider) {
-    return PropertySelector<LocationDetailProvider, dynamic>(
-      property: 'location',
-      selector: (provider) => provider.location,
-      builder: (context, location) {
         if (location == null) {
           return const Center(child: Text('No overview data available'));
         }
@@ -358,11 +334,12 @@ class LocationDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAreasTab(LocationDetailProvider provider) {
-    return PropertySelector<LocationDetailProvider, dynamic>(
-      property: 'location',
-      selector: (provider) => provider.location,
-      builder: (context, location) {
+  Widget _buildAreasTab(WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final location =
+            ref.watch(locationDetailProvider.select((state) => state.location));
+
         if (location == null) {
           return const Center(child: Text('No areas data available'));
         }

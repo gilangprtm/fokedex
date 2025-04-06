@@ -1,6 +1,6 @@
-import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/ability_model.dart';
+import '../../../../../../core/base/base_network.dart';
+import '../../../../../data/models/api_response_model.dart';
+import '../../../../../data/models/ability_model.dart';
 import '../repository/ability_repository.dart';
 
 /// Service untuk mengelola logika bisnis terkait Ability
@@ -11,10 +11,18 @@ class AbilityService extends BaseService {
   Future<PaginatedApiResponse<ResourceListItem>> getAbilityList({
     int offset = 0,
     int? limit,
+    bool forceRefresh = false,
   }) async {
-    return performanceAsync(
+    // Cache key yang unik berdasarkan parameter
+    final cacheKey = 'abilities_list_${offset}_${limit ?? "all"}';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
       operationName: 'AbilityService.getAbilityList',
-      function: () async {
+      forceRefresh: forceRefresh,
+      fetchFunction: () async {
         try {
           // Repository sudah mengembalikan data dalam bentuk model
           return await _abilityRepository.getAbilityList(
@@ -31,15 +39,27 @@ class AbilityService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => PaginatedApiResponse<ResourceListItem>.fromJson(
+        json,
+        (item) => ResourceListItem.fromJson(item),
+      ),
       tag: 'AbilityService',
     );
   }
 
   /// Ambil detail Ability berdasarkan ID atau nama
-  Future<Ability> getAbilityDetail(String idOrName) async {
-    return performanceAsync(
+  Future<Ability> getAbilityDetail(String idOrName,
+      {bool forceRefresh = false}) async {
+    // Cache key yang unik berdasarkan ID/nama
+    final cacheKey = 'ability_detail_$idOrName';
+
+    // Gunakan cachedOperationAsync dengan TTL 7 hari
+    return cachedOperationAsync(
+      cacheKey: cacheKey,
+      ttlMinutes: 60 * 24 * 7, // 7 hari
       operationName: 'AbilityService.getAbilityDetail',
-      function: () async {
+      forceRefresh: forceRefresh,
+      fetchFunction: () async {
         try {
           return await _abilityRepository.getAbilityDetail(idOrName);
         } catch (e, stackTrace) {
@@ -52,6 +72,7 @@ class AbilityService extends BaseService {
           rethrow;
         }
       },
+      fromJson: (json) => Ability.fromJson(json),
       tag: 'AbilityService',
     );
   }

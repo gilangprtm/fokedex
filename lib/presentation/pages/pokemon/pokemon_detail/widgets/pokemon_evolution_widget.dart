@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/utils/mahas.dart';
 import '../../../../../core/utils/image_cache_utils.dart';
-import '../../../../../data/datasource/models/evolution_stage_model.dart';
+import '../../../../../data/models/evolution_stage_model.dart';
 import '../../../../../presentation/routes/app_routes.dart';
 
 class PokemonEvolutionWidget extends StatelessWidget {

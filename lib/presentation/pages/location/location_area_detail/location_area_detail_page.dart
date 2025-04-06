@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/base/provider_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/mahas/mahas_type.dart';
 import '../../../../core/mahas/widget/mahas_loader.dart';
 import '../../../../core/mahas/widget/mahas_button.dart';
@@ -7,29 +7,34 @@ import '../../../../core/mahas/widget/mahas_card.dart';
 import '../../../../core/mahas/widget/mahas_tab.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/theme/app_typografi.dart';
-import '../../../../data/datasource/models/pokemon_model.dart';
-import '../../../providers/location/location_area_detail_provider.dart';
+import '../../../../data/models/pokemon_model.dart';
+import '../../../providers/location/location_area_detail/location_area_detail_provider.dart';
 import '../../../widgets/pokemon_grid_tab.dart';
 
-class LocationAreaDetailPage extends StatelessWidget {
+class LocationAreaDetailPage extends ConsumerWidget {
   const LocationAreaDetailPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderPage<LocationAreaDetailProvider>(
-      createProvider: () => LocationAreaDetailProvider(),
-      builder: (context, provider) => _buildDetailPage(context, provider),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch essential state at top level
+    final isLoading = ref
+        .watch(locationAreaDetailProvider.select((state) => state.isLoading));
+    final error =
+        ref.watch(locationAreaDetailProvider.select((state) => state.error));
+    final areaDetail = ref
+        .watch(locationAreaDetailProvider.select((state) => state.areaDetail));
+    final currentAreaName = ref.watch(
+        locationAreaDetailProvider.select((state) => state.currentAreaName));
+    final currentAreaId = ref.watch(
+        locationAreaDetailProvider.select((state) => state.currentAreaId));
+    final notifier = ref.read(locationAreaDetailProvider.notifier);
 
-  Widget _buildDetailPage(
-      BuildContext context, LocationAreaDetailProvider provider) {
     // Show loading state
-    if (provider.isLoading) {
+    if (isLoading) {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            _capitalizeFirstLetter(provider.currentAreaName),
+            _capitalizeFirstLetter(currentAreaName),
             style: AppTypography.headline6.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.pokemonRed,
@@ -40,11 +45,11 @@ class LocationAreaDetailPage extends StatelessWidget {
     }
 
     // Show error state
-    if (provider.hasError) {
+    if (error != null) {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            _capitalizeFirstLetter(provider.currentAreaName),
+            _capitalizeFirstLetter(currentAreaName),
             style: AppTypography.headline6.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.pokemonRed,
@@ -63,16 +68,14 @@ class LocationAreaDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                provider.errorMessage,
+                error.toString(),
                 style: AppTypography.bodyText2,
               ),
               const SizedBox(height: 16),
               MahasButton(
                 text: 'Try Again',
-                onPressed: () => provider.loadAreaDetail(
-                    provider.currentAreaId.isNotEmpty
-                        ? provider.currentAreaId
-                        : provider.currentAreaName),
+                onPressed: () => notifier.loadAreaDetail(
+                    currentAreaId.isNotEmpty ? currentAreaId : currentAreaName),
                 type: ButtonType.primary,
                 color: AppColors.pokemonRed,
               ),
@@ -83,11 +86,11 @@ class LocationAreaDetailPage extends StatelessWidget {
     }
 
     // No data loaded yet
-    if (provider.areaDetail == null) {
+    if (areaDetail == null) {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            _capitalizeFirstLetter(provider.currentAreaName),
+            _capitalizeFirstLetter(currentAreaName),
             style: AppTypography.headline6.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.pokemonRed,
@@ -104,15 +107,15 @@ class LocationAreaDetailPage extends StatelessWidget {
 
     // Show Area details
     return Scaffold(
-      body: _buildBody(context, provider),
+      body: _buildBody(context, ref),
     );
   }
 
-  Widget _buildBody(BuildContext context, LocationAreaDetailProvider provider) {
+  Widget _buildBody(BuildContext context, WidgetRef ref) {
     return CustomScrollView(
       slivers: [
         // Custom app bar with Area basic info
-        _buildSliverAppBar(context, provider),
+        _buildSliverAppBar(context, ref),
         // Add padding at the bottom
         const SliverToBoxAdapter(
           child: SizedBox(height: 16),
@@ -126,9 +129,9 @@ class LocationAreaDetailPage extends StatelessWidget {
               tabLabels: const ['Overview', 'Pokémon'],
               tabViews: [
                 // Overview Tab
-                _buildOverviewTab(provider),
+                _buildOverviewTab(ref),
                 // Pokemon Tab
-                _buildPokemonTab(context, provider),
+                _buildPokemonTab(context, ref),
               ],
               activeColor: AppColors.pokemonRed,
               backgroundColor: Colors.grey[200]!,
@@ -147,8 +150,14 @@ class LocationAreaDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverAppBar(
-      BuildContext context, LocationAreaDetailProvider provider) {
+  Widget _buildSliverAppBar(BuildContext context, WidgetRef ref) {
+    final currentAreaName = ref.watch(
+        locationAreaDetailProvider.select((state) => state.currentAreaName));
+    final locationName = ref.watch(
+        locationAreaDetailProvider.select((state) => state.locationName));
+    final areaDetail = ref
+        .watch(locationAreaDetailProvider.select((state) => state.areaDetail));
+
     return SliverAppBar(
       expandedHeight: 200.0,
       floating: false,
@@ -180,10 +189,10 @@ class LocationAreaDetailPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 24),
                   Text(
-                    provider.locationName.isNotEmpty
-                        ? provider.locationName
+                    locationName.isNotEmpty
+                        ? locationName
                         : _capitalizeFirstLetter(
-                            provider.areaDetail?.location.name ?? ''),
+                            areaDetail?.location.name ?? ''),
                     style: AppTypography.subtitle1.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
@@ -191,7 +200,7 @@ class LocationAreaDetailPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     _capitalizeFirstLetter(
-                        provider.currentAreaName.replaceAll('-', ' ')),
+                        currentAreaName.replaceAll('-', ' ')),
                     style: AppTypography.headline5.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -207,123 +216,179 @@ class LocationAreaDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOverviewTab(LocationAreaDetailProvider provider) {
-    final area = provider.areaDetail!;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Basic Info
-          MahasCustomizableCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Area Information',
-                  style: AppTypography.headline6,
+  Widget _buildOverviewTab(WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final areaDetail = ref.watch(
+            locationAreaDetailProvider.select((state) => state.areaDetail));
+
+        if (areaDetail == null) {
+          return const Center(child: Text('No overview data available'));
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Basic Info
+              MahasCustomizableCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Area Information',
+                      style: AppTypography.headline6,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Game Index: ${areaDetail.gameIndex}',
+                      style: AppTypography.bodyText1,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  'Game Index: ${area.gameIndex}',
-                  style: AppTypography.bodyText1,
+              ),
+              const SizedBox(height: 16),
+
+              // Encounter Method Rates
+              if (areaDetail.encounterMethodRates?.isNotEmpty == true) ...[
+                MahasCustomizableCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Encounter Methods',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(height: 10),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: areaDetail.encounterMethodRates?.length ?? 0,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final rate = areaDetail.encounterMethodRates?[index];
+                          if (rate == null) return const SizedBox.shrink();
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _capitalizeFirstLetter(
+                                    rate.encounterMethod.name),
+                                style: AppTypography.bodyText1,
+                              ),
+                              Text(
+                                rate.versionDetails.first.version.name,
+                                style: AppTypography.bodyText2.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Pokémon Encounters
+              if (areaDetail.pokemonEncounters?.isNotEmpty == true) ...[
+                MahasCustomizableCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Available Pokémon',
+                        style: AppTypography.headline6,
+                      ),
+                      const SizedBox(height: 10),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: areaDetail.pokemonEncounters?.length ?? 0,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final encounter =
+                              areaDetail.pokemonEncounters?[index];
+                          if (encounter == null) return const SizedBox.shrink();
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _capitalizeFirstLetter(encounter.pokemon.name),
+                                style: AppTypography.bodyText1,
+                              ),
+                              Text(
+                                encounter.versionDetails.first.version.name,
+                                style: AppTypography.bodyText2.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
+            ],
           ),
-          const SizedBox(height: 16),
-
-          // Encounter Method Rates
-          if (area.encounterMethodRates?.isNotEmpty == true) ...[
-            MahasCustomizableCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Encounter Methods',
-                    style: AppTypography.headline6,
-                  ),
-                  const SizedBox(height: 10),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: area.encounterMethodRates?.length ?? 0,
-                    separatorBuilder: (context, index) => const Divider(),
-                    itemBuilder: (context, index) {
-                      final methodRate = area.encounterMethodRates?[index];
-                      if (methodRate == null) return const SizedBox.shrink();
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _capitalizeFirstLetter(
-                                methodRate.encounterMethod.name),
-                            style: AppTypography.subtitle1.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Wrap(
-                            spacing: 8,
-                            children: methodRate.versionDetails?.map((detail) {
-                                  return Chip(
-                                    label: Text(
-                                      '${_capitalizeFirstLetter(detail.version.name)}: ${detail.rate}%',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    backgroundColor: AppColors.pokemonRed
-                                        .withValues(alpha: 0.1),
-                                  );
-                                }).toList() ??
-                                [],
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildPokemonTab(
-      BuildContext context, LocationAreaDetailProvider provider) {
-    final pokemonEncounters = provider.getPokemonEncounters();
+  Widget _buildPokemonTab(BuildContext context, WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final areaDetail = ref.watch(
+            locationAreaDetailProvider.select((state) => state.areaDetail));
 
-    if (pokemonEncounters.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.catching_pokemon,
-                size: 48, color: AppColors.pokemonGray),
-            const SizedBox(height: 16),
-            Text(
-              'No Pokémon Found',
-              style: AppTypography.headline6,
+        if (areaDetail == null) {
+          return const Center(child: Text('No Pokémon data available'));
+        }
+
+        if (areaDetail.pokemonEncounters?.isEmpty == true) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.catching_pokemon,
+                    size: 48, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  'No Pokémon Found',
+                  style: AppTypography.headline6,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This area has no available Pokémon',
+                  style: AppTypography.bodyText2,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'No Pokémon can be encountered in this area.',
-              style: AppTypography.bodyText2,
-            ),
-          ],
-        ),
-      );
-    }
+          );
+        }
 
-    final gridItems = pokemonEncounters
-        .map((encounter) => PokemonReference(
-            name: encounter.pokemon.name, url: encounter.pokemon.url))
-        .toList();
+        final pokemonList = areaDetail.pokemonEncounters?.map((encounter) {
+              final pokemon = encounter.pokemon;
+              return PokemonReference(
+                name: pokemon.name,
+                url: pokemon.url,
+              );
+            }).toList() ??
+            [];
 
-    return PokemonGridTab(
-      title: 'Pokémon in this area',
-      pokemons: gridItems,
+        return PokemonGridTab(
+          title: 'Pokémon in this area',
+          pokemons: pokemonList,
+        );
+      },
     );
   }
 

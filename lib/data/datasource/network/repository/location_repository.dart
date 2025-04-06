@@ -1,7 +1,6 @@
 import '../../../../core/base/base_network.dart';
-import '../../../datasource/models/api_response_model.dart';
-import '../../../datasource/models/location_model.dart';
-import '../../../../core/env/app_environment.dart';
+import '../../../../data/models/api_response_model.dart';
+import '../../../../data/models/location_model.dart';
 
 /// Repository untuk mengambil data dari Location endpoint
 class LocationRepository extends BaseRepository {
@@ -10,11 +9,9 @@ class LocationRepository extends BaseRepository {
     int offset = 0,
     int? limit,
   }) async {
-    final locationLimit =
-        limit ?? AppEnvironment.instance.get<int>('pokemonLimit');
+    final locationLimit = limit ?? 20;
     final String endpoint = '/location?offset=$offset&limit=$locationLimit';
 
-    logInfo('Fetching Location list: $endpoint', tag: 'LocationRepository');
     try {
       final response = await dioService.get(endpoint);
 
@@ -34,7 +31,6 @@ class LocationRepository extends BaseRepository {
   Future<Location> getLocationDetail(String idOrName) async {
     final String endpoint = '/location/$idOrName';
 
-    logInfo('Fetching Location detail: $endpoint', tag: 'LocationRepository');
     try {
       final response = await dioService.get(endpoint);
       // Konversi data JSON ke model Location

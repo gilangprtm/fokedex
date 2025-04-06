@@ -1,14 +1,13 @@
 import 'dart:async';
-import '../di/service_locator.dart';
 import 'services/firebase_service.dart';
 import 'services/storage_service.dart';
 import 'services/logger_service.dart';
 import 'services/error_handler_service.dart';
-import '../env/app_environment.dart';
 import 'services/initial_route_service.dart';
+import 'services/cache_service.dart';
 
 /// MahasService adalah kelas singleton yang mengelola inisialisasi aplikasi
-/// seperti service locator, firebase, local storage, dll.
+/// seperti firebase, local storage, dll.
 class MahasService {
   static final MahasService _instance = MahasService._internal();
   static MahasService get instance => _instance;
@@ -17,33 +16,22 @@ class MahasService {
   MahasService._internal();
 
   /// Inisialisasi seluruh layanan yang dibutuhkan sebelum aplikasi dijalankan
-  static Future<void> init(
-      {Environment environment = Environment.development}) async {
+  static Future<void> init() async {
     try {
-      // Inisialisasi Environment terlebih dahulu
-      AppEnvironment.instance.initEnvironment(environment);
-
       // Inisialisasi Logger terlebih dahulu untuk bisa mencatat progress inisialisasi lainnya
       final logger = LoggerService.instance;
 
-      // Init logger dengan environment settings
-      logger.init();
-
-      logger.i(
-          '🚀 Initializing application services in ${environment.toString()} mode...',
-          tag: 'MAHAS');
-
       // Inisialisasi error handler
-      await _initErrorHandler();
+      await initErrorHandler();
 
-      // Inisialisasi service locator / dependency injection
-      await _initServiceLocator();
+      // Inisialisasi Cache Service
+      await initCache();
 
       // Inisialisasi Firebase (jika diperlukan)
-      // await _initFirebase();
+      //await initFirebase();
 
       // Inisialisasi Local Storage (jika diperlukan)
-      // await _initStorage();
+      //await initStorage();
 
       logger.i('✅ All services initialized successfully!', tag: 'MAHAS');
     } catch (e, stackTrace) {
@@ -61,7 +49,7 @@ class MahasService {
   static Future<String> determineInitialRoute() async {
     try {
       // Use the InitialRouteService to determine the initial route
-      final initialRouteService = serviceLocator<InitialRouteService>();
+      final initialRouteService = InitialRouteService();
       return await initialRouteService.determineInitialRoute();
     } catch (e, stackTrace) {
       LoggerService.instance.e(
@@ -75,57 +63,77 @@ class MahasService {
     }
   }
 
-  /// Inisialisasi error handler
-  static Future<void> _initErrorHandler() async {
-    final logger = LoggerService.instance;
-
-    final errorHandler = ErrorHandlerService.instance;
-
-    // Contoh implementasi, bisa diganti dengan layanan pelaporan error seperti Firebase Crashlytics
-    errorHandler.setErrorReportFunction((error, stackTrace) async {
-      // Log error untuk keperluan debugging
-      logger.e(
-        'Error reported to error service',
-        error: error,
+  /// Inisialisasi Error Handler
+  static Future<void> initErrorHandler() async {
+    try {
+      final errorHandler = ErrorHandlerService.instance;
+      errorHandler.init();
+      LoggerService.instance
+          .i('✅ Error Handler initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Error Handler',
+        error: e,
         stackTrace: stackTrace,
-        tag: 'ERROR_REPORTING',
+        tag: 'MAHAS',
       );
-
-      // Di sini bisa tambahkan implementasi untuk report ke layanan lain
-      // Misalnya Firebase Crashlytics, Sentry, dll
-      return;
-    });
-
-    // Initialize global error catching
-    errorHandler.init();
-
-    logger.i('✅ Error Handler initialized successfully!', tag: 'MAHAS');
+      rethrow;
+    }
   }
 
-  /// Inisialisasi service locator
-  static Future<void> _initServiceLocator() async {
-    final logger = LoggerService.instance;
+  /// Inisialisasi Cache Service
+  static Future<void> initCache() async {
+    try {
+      await CacheService.instance.initialize();
 
-    await setupServiceLocator();
+      // Cache service sudah di-refactor sehingga preemptive cleaning
+      // berjalan otomatis sebagai bagian dari initialize()
+      // Lihat implementasi di CacheService
 
-    logger.i('✅ Service Locator initialized successfully!', tag: 'MAHAS');
+      LoggerService.instance
+          .i('✅ Cache Service initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Cache Service',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      rethrow;
+    }
   }
 
-  /// Inisialisasi Firebase (menggunakan FirebaseService yang terpisah)
-  static Future<void> _initFirebase() async {
-    final logger = LoggerService.instance;
-
-    await FirebaseService.instance.init();
-
-    logger.i('✅ Firebase initialized successfully!', tag: 'MAHAS');
+  /// Inisialisasi Firebase
+  static Future<void> initFirebase() async {
+    try {
+      await FirebaseService.instance.init();
+      LoggerService.instance
+          .i('✅ Firebase initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Firebase',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      rethrow;
+    }
   }
 
-  /// Inisialisasi Storage (menggunakan StorageService yang terpisah)
-  static Future<void> _initStorage() async {
-    final logger = LoggerService.instance;
-
-    await StorageService.instance.init();
-
-    logger.i('✅ Storage initialized successfully!', tag: 'MAHAS');
+  /// Inisialisasi Storage
+  static Future<void> initStorage() async {
+    try {
+      await StorageService.instance.init();
+      LoggerService.instance
+          .i('✅ Storage initialized successfully', tag: 'MAHAS');
+    } catch (e, stackTrace) {
+      LoggerService.instance.e(
+        '❌ Error initializing Storage',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'MAHAS',
+      );
+      rethrow;
+    }
   }
 }
